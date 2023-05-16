@@ -21,3 +21,9 @@ pip install -r requirements.txt
 ```
 python ml_pipeline
 ```
+
+## ToDo
+
+- Loss anders berechnen?
+- (DVC) Pipeline bauen
+- early stopping

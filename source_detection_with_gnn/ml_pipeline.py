@@ -1,20 +1,24 @@
+from GNN_model import GCN, train, evaluate
 from torch_geometric.utils.convert import from_networkx
-from GNN_model import GCN, train
 import data_creation as dc
 import constants as const
+import torch
 import utils
 
 
 def pipeline():
-    graph = dc.create_graph()
-    model = dc.model_SIR_signal_propagation(graph)
+    gcn = GCN()
 
-    features = utils.one_hot_encode(list(model.status.values()), const.N_FEATURES)
-    labels = utils.one_hot_encode(list(model.initial_status.values()), const.N_CLASSES)
-    graph_structure = from_networkx(graph)
+    train_data = dc.create_data_set(40)
+    gcn = train(gcn, train_data)
 
-    model = GCN()
-    train(model, graph_structure, features, labels)
+    val_data = dc.create_data_set(40)
+    evaluate(gcn, val_data)
+
+    utils.plot_predictions(gcn, 2)
+
+    # trained_gcn = GCN()
+    # trained_gcn.load_state_dict(torch.load(const.NET_PATH + "/gcn.pth"))
 
 
 if __name__ == "__main__":
