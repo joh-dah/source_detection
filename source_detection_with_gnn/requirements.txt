@@ -1,5 +1,0 @@
-networkx
-matplotlib
-torch
-ndlib
-torch_geometric
