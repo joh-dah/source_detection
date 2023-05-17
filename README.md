@@ -1,63 +1,42 @@
 # sourceDetection
 
-## TODO 09.05-16.05
+## Setup (Linux approved)
 
-- Olli + Alle
-    - GNN Paper
-        - Was sind unsere Ziele?
-        - Was unterscheidet das was wir machen wollen von diesem Paper?
-    - GNN Tutorials
+Setup virtual environment
+```
+sudo apt install python3.10
+sudo apt install python3-virtualenv
 
-- Conrad
-    - Signal Propagation
-        - Welche Signal Propagation für welche Anwendungsfälle?
-        - ...
+virtualenv -p python3.10 venv
+source venv/bin/activate
+```
 
-- Sina
-    - Graphen + Paper
+Install dependencies
+```
+pip install -r requirements.txt
+```
 
-- Johanna
-    - Git aufräumen
+## Usage
+
+```
+python -m src.ml_pipeline
+```
+
+## ToDo
+
+- Multiple Source Nodes --> Wie model ausgabe?
+- Loss anders berechnen?
+- (DVC) Pipeline bauen
+- early stopping beim training
 
 
-## Goal
+## Link Collection
+### GNN Tutorials:
+- https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/tutorial7/GNN_overview.html
+- https://towardsdatascience.com/graph-neural-networks-in-python-c310c7c18c83
+- https://distill.pub/2021/gnn-intro/
 
-Benchmark performance of GNN's in Source Detection compared to unsupervised approaches
+### Types of real world graphs:
+- https://aalab.cs.uni-kl.de/en/publikationen/peer_review/PDFs/KaufmannZweig_ModelingAndDesigningRealWorldNetworks.pdf
+- https://noduslabs.com/radar/types-networks-random-small-world-scale-free/
 
-## Todo
-
-### Step 1
-
-- Research different Signal Propagation Models
-    - Should be as realistic as possible
-    - consider use cases like rumor spreading, computer viruses, biomedical stuff
-    - check available python implementations
-
-- Research different Graph representations of Networks
-    - Should be as realistic as possible
-    - consider use cases like rumor spreading, computer viruses, biomedical stuff
-    - check available python implementations
-
-### Step 2
-
-- Create Python Framework for source detections via GNN's
-    - implement interface to create synthetic data possibly based on different models/graphs
-    - implement first version of GNN
-
-- do some hyperparameter optimization on the GNN
-
-### Step 3
-
-- Use existing implementations of Unsupervised Methods for Source Detection to create Benchmarks
-
-### Step 4
-
-- Acquire real World Data from different use cases
-    - Check if there is data with ground truth for source detection
-    - otherwise use real world graphs and model signal propagation
-
-- Benchmark GNN and unsupervised methods on real world data
-
-### Step 5
-
-- Write Report
