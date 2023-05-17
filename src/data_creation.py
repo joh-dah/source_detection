@@ -1,7 +1,6 @@
 import networkx as nx
 import ndlib.models.epidemics as ep
 import ndlib.models.ModelConfig as mc
-import src.utils as utils
 import src.constants as const
 import random
 import pickle
@@ -61,7 +60,7 @@ def model_SI_signal_propagation(graph, seed=None):
     return model
 
 
-def create_data_set(n, path, graph_type="watts_strogatz", model_type="SIR"):
+def create_data_set(n, path, graph_type=const.GRAPH_TYPE, model_type=const.PROP_MODEL):
     """
     Creates n graphs of type graph_type and runs a signal propagation model of type model_type on them.
     The graphs and the results of the signal propagation are saved to the given path.
@@ -100,9 +99,9 @@ def main():
     Creates a data set of graphs with modeled signal propagation for training and validation.
     """
     print("Create Train Data:")
-    create_data_set(40, "train", const.GRAPH_TYPE, const.PROP_MODEL)
+    create_data_set(40, "train")
     print("Create Validation Data:")
-    create_data_set(40, "validation", const.GRAPH_TYPE, const.PROP_MODEL)
+    create_data_set(40, "validation")
 
 
 if __name__ == "__main__":
