@@ -6,6 +6,7 @@ import numpy as np
 import networkx as nx
 from torch_geometric.utils.convert import from_networkx, to_networkx
 import src.utils as utils
+from tqdm import tqdm
 
 
 class GCN(torch.nn.Module):
@@ -39,12 +40,12 @@ class GCN(torch.nn.Module):
         return out, h
 
 
-def train_single_epoch(net, graph, features, labels):
+def train_single_epoch(model, graph, features, labels):
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(net.parameters(), lr=const.LEARNING_RATE)
+    optimizer = torch.optim.Adam(model.parameters(), lr=const.LEARNING_RATE)
 
     optimizer.zero_grad()
-    out, h = net(features, graph.edge_index)
+    out, h = model(features, graph.edge_index)
     loss = criterion(out, labels)
     loss.backward()
     optimizer.step()
@@ -52,29 +53,31 @@ def train_single_epoch(net, graph, features, labels):
     return loss, h
 
 
-def train(net, data):
+def train(model, data):
     epochs = range(1, const.EPOCHS)
     losses = []
     embeddings = []
-    for epoch in epochs:
+    print("Train Model:")
+    for epoch in tqdm(epochs):
         running_loss = 0.0
         for graph_structure, features, labels in data:
-            loss, h = train_single_epoch(net, graph_structure, features, labels)
+            loss, h = train_single_epoch(model, graph_structure, features, labels)
             running_loss += loss
             losses.append(loss)
             embeddings.append(h)
         print(f"Epoch: {epoch}\tLoss: {running_loss:.4f}")
-    return net
+    return model
 
 
-def evaluate(net, data):
+def evaluate(model, data):
     sources = []
     predictions = []
     ranks = []
-    for graph_structure, features, labels in data:
+    print("Evaluate Model:")
+    for graph_structure, features, labels in tqdm(data):
         source = labels.tolist().index([0, 1])
         ranked_predictions = utils.get_ranked_source_predictions(
-            net, features, graph_structure.edge_index
+            model, features, graph_structure.edge_index
         )
         sources.append(source)
         predictions.append(predictions)
@@ -84,16 +87,19 @@ def evaluate(net, data):
     print(np.mean(ranks))
 
 
-def prepare_data(models):
+def prepare_data(prop_models):
     data = []
-    for model in models:
+    print("Prepare Data:")
+    for prop_model in tqdm(prop_models):
         G = nx.Graph()
-        G.add_nodes_from(model.graph.nodes)
-        G.add_edges_from(model.graph.edges)
+        G.add_nodes_from(prop_model.graph.nodes)
+        G.add_edges_from(prop_model.graph.edges)
         graph_structure = from_networkx(G)
-        features = utils.one_hot_encode(list(model.status.values()), const.N_FEATURES)
+        features = utils.one_hot_encode(
+            list(prop_model.status.values()), const.N_FEATURES
+        )
         labels = utils.one_hot_encode(
-            list(model.initial_status.values()), const.N_CLASSES
+            list(prop_model.initial_status.values()), const.N_CLASSES
         )
         data.append([graph_structure, features, labels])
     return data

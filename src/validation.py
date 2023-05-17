@@ -8,9 +8,9 @@ def main():
 
     val_data = utils.load_data(const.DATA_PATH + "/validation")
 
-    if const.CLASSIFIER == "GCN":
-        net = gcn.GCN()
-        model = utils.load_model(net, f"{const.NET_PATH}/{const.CLASSIFIER}_latest.pth")
+    if const.MODEL == "GCN":
+        model = gcn.GCN()
+        model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
         val_data = gcn.prepare_data(val_data)
         gcn.evaluate(model, val_data)
 

@@ -1,10 +1,10 @@
 # Run Parameters
 PROP_MODEL = "SIR"  # "SIR" or "SI"
 GRAPH_TYPE = "watts_strogatz"  # "watts_strogatz" or "barabasi_albert"
-CLASSIFIER = "GCN"  # "GCN"
+MODEL = "GCN"  # "GCN"
 
 # General
-NET_PATH = "trained_nets"
+MODEL_PATH = "models"
 FIGURES_PATH = "figures"
 DATA_PATH = "data"
 SEED = 123

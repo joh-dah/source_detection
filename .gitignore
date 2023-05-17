@@ -3,5 +3,5 @@ __pycache__/
 venv/
 data/
 figures/
-trained_nets/
+models/
 src/__pycache__/

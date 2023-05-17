@@ -6,6 +6,7 @@ import src.constants as const
 import random
 import pickle
 from pathlib import Path
+from tqdm import tqdm
 
 
 def select_random_sources(graph, n):
@@ -23,7 +24,7 @@ def model_SIR_signal_propagation(graph, seed=None):
     Creates a SIR model and runs it on the given graph.
     :param graph: graph to run the model on
     :param seed: seed for signal propagation
-    :return: model
+    :return: propagation model
     """
     model = ep.SIRModel(graph, seed=seed)
     source_nodes = select_random_sources(graph, const.N_SOURCES)
@@ -79,23 +80,25 @@ def create_data_set(n, path, graph_type="watts_strogatz", model_type="SIR"):
         "barabasi_albert": nx.barabasi_albert_graph(const.N_NODES, 3, 8),
     }
 
-    for i in range(n):
+    for i in tqdm(range(n)):
         graph = graph_dict[graph_type]
         if model_type == "SI":
-            model = model_SI_signal_propagation(graph)
+            prop_model = model_SI_signal_propagation(graph)
         elif model_type == "SIR":
-            model = model_SIR_signal_propagation(graph)
+            prop_model = model_SIR_signal_propagation(graph)
         else:
             raise AssertionError("Unknown model type")
 
-        pickle.dump(model, open(path / f"{i}.pkl", "wb"))
+        pickle.dump(prop_model, open(path / f"{i}.pkl", "wb"))
 
 
 def main():
     """
     Creates a data set of graphs with modeled signal propagation for training and validation.
     """
+    print("Create Train Data:")
     create_data_set(40, "train")  # TODO: add model and graph type
+    print("Create Validation Data:")
     create_data_set(40, "validation")
 
 
