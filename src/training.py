@@ -1,5 +1,6 @@
 import src.constants as const
 import src.GCN_model as gcn
+import src.GCNSI_model as gcnsi
 import src.utils as utils
 import datetime
 
@@ -15,8 +16,9 @@ def main():
         model = gcn.train(model, train_data)
 
     elif const.MODEL == "GCNSI":
-        # TODO: implement
-        pass
+        model = gcnsi.GCNSI()
+        train_data = gcnsi.prepare_data(train_data)
+        model = gcnsi.train(model, train_data)
 
     current_time = datetime.datetime.now().strftime("%m-%d_%H-%M")
     utils.save_model(model, f"{const.MODEL}_{current_time}")

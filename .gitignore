@@ -5,3 +5,4 @@ data/
 figures/
 models/
 src/__pycache__/
+.idea/
