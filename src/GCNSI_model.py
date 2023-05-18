@@ -21,14 +21,14 @@ class GCNSI(torch.nn.Module):
             h = self.conv(h, edge_index)
             h = h.relu()
         out = self.classifier(h)
-        return out
+        return out, h
 
 def train_single_epoch(model, graph, features, labels):
     criterion = torch.nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), weight_decay=const.WEIGHT_DECAY)
 
     optimizer.zero_grad()
-    out = model(features, graph.edge_index)
+    out, h = model(features, graph.edge_index)
     loss = criterion(out, labels)
     loss.backward()
     optimizer.step()
@@ -64,21 +64,28 @@ def evaluate(model, data):
     print(np.mean(ranks))
 
 def prepare_input_features(graph, model, a):
-    Y = np.transpose(list(model.status.values()))
+    vector = [1]
+    vector[0] = list(model.status.values())
+    Y = np.array(vector).T
     S = nx.normalized_laplacian_matrix(graph)
-    V3 = Y
-    V4 = Y
+    V3 = Y.copy()
+    V4 = Y.copy()
     for i in range(0, len(Y)):
-        if Y[i] == -1:
-            Y[i] = 0
+        if Y[i] == 0:
+            V3[i] = 0
+            V4[i] = -1
+            Y[i] = -1
         else:
-            Y[i] = 0
+            V3[i] = 1
+            V4[i] = 0
+            Y[i] = 1
     I = np.identity(len(Y))
     d1 = Y
-    d2 = (1-a)*pow(I-a*S, -1)*Y
-    d3 = (1-a)*pow(I-a*S, -1)*V3
-    d4 = (1-a)*pow(I-a*S, -1)*V4
-    return np.concatenate((d1, d2, d3, d4))
+    d2 = (1-a)*np.linalg.inv(I-a*S).dot(Y)
+    d3 = (1-a)*np.linalg.inv(I-a*S).dot(V3)
+    d4 = (1-a)*np.linalg.inv(I-a*S).dot(V4)
+    con = np.column_stack((d1, d2, d3, d4))
+    return torch.from_numpy(con).float()
 
 
 def prepare_data(models):

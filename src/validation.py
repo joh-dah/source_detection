@@ -19,7 +19,7 @@ def main():
         model = gcnsi.GCNSI()
         model = utils.load_model(model, f"{const.MODEL_PATH}/{const.CLASSIFIER}_latest.pth")
         val_data = gcnsi.prepare_data(val_data)
-        gcn.evaluate(model, val_data)
+        gcnsi.evaluate(model, val_data)
 
 
 if __name__ == "__main__":
