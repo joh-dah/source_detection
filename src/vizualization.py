@@ -82,7 +82,9 @@ def linear_gradient(start_hex, finish_hex="#FFFFFF", n=10):
     return [RGB_to_hex(RGB) for RGB in RGB_list]
 
 
-def plot_predictions(prop_model, ranked_predictions, title, layout="spring"):
+def plot_predictions(
+    prop_model, ranked_predictions, title, layout="spring", colored_nodes=7
+):
     """
     Plots the initial and the current graph with their infection status.
     Additionally, a graph is plotted with the colors of the nodes representing the predicted likelihood of beeing source.
@@ -100,9 +102,15 @@ def plot_predictions(prop_model, ranked_predictions, title, layout="spring"):
     colors = get_colors_for_infection_status(prop_model.status)
     plot_graph_with_status(g, colors, f"current_{title}", layout)
 
-    color_gradient = linear_gradient("#FF0000", "#0000FF", const.N_NODES)
-    colors = [
-        color_gradient[ranked_predictions.tolist().index(j)]
-        for j in range(const.N_NODES)
-    ]
+    colors = ["#0000FF"] * const.N_NODES
+    color_gradient = linear_gradient("#FF0000", "#0000FF", colored_nodes)
+    for i, node in enumerate(ranked_predictions[:colored_nodes]):
+        colors[node] = color_gradient[i]
+
+    # color_gradient += ["#0000FF"] * (const.N_NODES - 10)
+    # colors = [
+    #     color_gradient[ranked_predictions.tolist().index(j)]
+    #     for j in range(const.N_NODES)
+    # ]
+
     plot_graph_with_status(g, colors, f"prediction_{title}.png", layout)

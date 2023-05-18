@@ -15,7 +15,7 @@ def main():
         train_data = gcn.prepare_data(train_data)
         model = gcn.train(model, train_data)
 
-    elif const.CLASSIFIER == "GCNSI":
+    elif const.MODEL == "GCNSI":
         model = gcnsi.GCNSI()
         train_data = gcnsi.prepare_data(train_data)
         model = gcnsi.train(model, train_data)

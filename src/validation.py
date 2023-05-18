@@ -15,11 +15,12 @@ def main():
         prep_val_data = gcn.prepare_data(val_data)
         gcn.evaluate(model, prep_val_data)
         gcn.vizualize_results(model, val_data[:5])
-    elif const.CLASSIFIER == "GCNSI":
+    elif const.MODEL == "GCNSI":
         model = gcnsi.GCNSI()
-        model = utils.load_model(model, f"{const.MODEL_PATH}/{const.CLASSIFIER}_latest.pth")
-        val_data = gcnsi.prepare_data(val_data)
-        gcnsi.evaluate(model, val_data)
+        model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
+        prep_val_data = gcnsi.prepare_data(val_data)
+        gcnsi.evaluate(model, prep_val_data)
+        gcnsi.vizualize_results(model, val_data[:5])
 
 
 if __name__ == "__main__":

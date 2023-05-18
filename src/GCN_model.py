@@ -140,4 +140,4 @@ def vizualize_results(model, data_set):
         graph_structure, features, _ = prep_data[i]
         predictions, _ = model(features, graph_structure.edge_index)
         ranked_predictions = utils.get_ranked_source_predictions(predictions)
-        viz.plot_predictions(raw_data, ranked_predictions, title=f"gcn_{i}")
+        viz.plot_predictions(raw_data, ranked_predictions, title=f"_{i}")

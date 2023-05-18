@@ -28,6 +28,7 @@ python -m src.ml_pipeline
 - Loss anders berechnen?
 - (DVC) Pipeline bauen
 - early stopping beim training
+- GCNSI wie umgehen mit SIR model
 
 
 ## Link Collection
