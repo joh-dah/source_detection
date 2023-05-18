@@ -75,10 +75,8 @@ def create_data_set(n, path, graph_type="watts_strogatz", model_type="SIR"):
 
     for i in tqdm(range(n)):
         if graph_type == "watts_strogatz":
-            graph = (
-                nx.watts_strogatz_graph(
-                    const.N_NODES, const.WS_NEIGHBOURS, const.WS_PROBABILITY
-                ),
+            graph = nx.watts_strogatz_graph(
+                const.N_NODES, const.WS_NEIGHBOURS, const.WS_PROBABILITY
             )
         elif graph_type == "barabasi_albert":
             graph = nx.barabasi_albert_graph(const.N_NODES, const.BA_NEIGHBOURS)
