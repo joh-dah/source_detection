@@ -10,6 +10,8 @@ from tqdm import tqdm
 
 
 class GCN(torch.nn.Module):
+    """Graph Convolutional Network."""
+
     def __init__(self):
         super(GCN, self).__init__()
         torch.manual_seed(42)
@@ -41,6 +43,14 @@ class GCN(torch.nn.Module):
 
 
 def train_single_epoch(model, graph, features, labels):
+    """
+    Trains the model for one epoch.
+    :param model: The model to train.
+    :param graph: The graph structure.
+    :param features: The features of the nodes.
+    :param labels: The labels of the nodes.
+    :return: The loss and the embeddings.
+    """
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=const.LEARNING_RATE)
 
@@ -54,6 +64,12 @@ def train_single_epoch(model, graph, features, labels):
 
 
 def train(model, data):
+    """
+    Trains the model.
+    :param model: The model to train.
+    :param data: The data to train on. Contains the graph structure, the features and the labels.
+    :return: The trained model.
+    """
     epochs = range(1, const.EPOCHS)
     losses = []
     embeddings = []
@@ -69,18 +85,18 @@ def train(model, data):
     return model
 
 
-def evaluate(model, data):
-    sources = []
-    predictions = []
+def evaluate(model, data_set):
+    """
+    Evaluates the model.
+    :param model: The model to evaluate.
+    :param data_set: The data set to evaluate on. Contains the graph structure, the features and the labels.
+    """
     ranks = []
     print("Evaluate Model:")
-    for graph_structure, features, labels in tqdm(data):
+    for graph_structure, features, labels in tqdm(data_set):
+        predictions, _ = model(features, graph_structure.edge_index)
+        ranked_predictions = utils.get_ranked_source_predictions(predictions)
         source = labels.tolist().index([0, 1])
-        ranked_predictions = utils.get_ranked_source_predictions(
-            model, features, graph_structure.edge_index
-        )
-        sources.append(source)
-        predictions.append(predictions)
         ranks.append(ranked_predictions.tolist().index(source))
 
     print("Average rank of predicted source:")
@@ -88,6 +104,12 @@ def evaluate(model, data):
 
 
 def prepare_data(prop_models):
+    """
+    Prepares the data for the training.
+    Extracts the graph structure, the features and the labels from the propagation model.
+    :param prop_models: The propagation models to extract the data from.
+    :return: List of tuples containing the graph structure, the features and the labels.
+    """
     data = []
     print("Prepare Data:")
     for prop_model in tqdm(prop_models):
