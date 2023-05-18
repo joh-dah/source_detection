@@ -7,6 +7,7 @@ import networkx as nx
 from torch_geometric.utils.convert import from_networkx, to_networkx
 import src.utils as utils
 from tqdm import tqdm
+import src.vizualization as viz
 
 
 class GCN(torch.nn.Module):
@@ -125,3 +126,18 @@ def prepare_data(prop_models):
         )
         data.append([graph_structure, features, labels])
     return data
+
+
+def vizualize_results(model, data_set):
+    """
+    Vizualizes the predictions of the model.
+    :param model: The model on which predictions are made.
+    :param data_set: The data set to vizualize on. Contains the graph structure, the features and the labels.
+    """
+    print("Vizualize Results:")
+    prep_data = prepare_data(data_set)
+    for i, raw_data in tqdm(enumerate(data_set)):
+        graph_structure, features, _ = prep_data[i]
+        predictions, _ = model(features, graph_structure.edge_index)
+        ranked_predictions = utils.get_ranked_source_predictions(predictions)
+        viz.plot_predictions(raw_data, ranked_predictions, title=f"gcn_{i}")
