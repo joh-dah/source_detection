@@ -107,10 +107,4 @@ def plot_predictions(
     for i, node in enumerate(ranked_predictions[:colored_nodes]):
         colors[node] = color_gradient[i]
 
-    # color_gradient += ["#0000FF"] * (const.N_NODES - 10)
-    # colors = [
-    #     color_gradient[ranked_predictions.tolist().index(j)]
-    #     for j in range(const.N_NODES)
-    # ]
-
     plot_graph_with_status(g, colors, f"prediction_{title}.png", layout)
