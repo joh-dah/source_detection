@@ -1,6 +1,6 @@
 # Run Parameters
 PROP_MODEL = "SIR"  # "SIR" or "SI"
-GRAPH_TYPE = "watts_strogatz"  # "watts_strogatz" or "barabasi_albert"
+GRAPH_TYPE = "barabasi_albert"  # "watts_strogatz" or "barabasi_albert"
 MODEL = "GCN"  # "GCN"
 
 # General
@@ -17,6 +17,12 @@ LEARNING_RATE = 0.0005
 
 # Graph Constants
 N_NODES = 30
+## Watts-Strogatz
+WS_NEIGHBOURS = 3  # number of neighbors in ring topology to connect to
+WS_PROBABILITY = 0.1  # probability of rewiring an edge
+
+## Barabasi-Albert
+BA_NEIGHBOURS = 3  # number of edges to attach from a new node to existing nodes
 
 # Signal Propagation Constants
 N_SOURCES = 1  # number of infection sources (probably make random later)

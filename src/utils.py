@@ -15,16 +15,15 @@ def load_data(path):
     return data
 
 
-def get_ranked_source_predictions(
-    model, features, edge_index
-):  # TODO move somewhere/generalize more
+def get_ranked_source_predictions(predictions):
     """
     Return nodes ranked by predicted probability of beeing source.
-    :param model: model to make predictions on
-    :param features: features for predicion
+    :param predictions: list of tuple predictions of nodes beeing source.
+    The second value of the tuple is the probability of the node beeing source.
+    :return: list of nodes ranked by predicted probability of beeing source.
     """
-    out, _ = model(features, edge_index)
-    return torch.topk(out[:, 1].flatten(), len(out[:, 1].flatten())).indices
+    source_prob = predictions[:, 1].flatten()
+    return torch.topk(source_prob, len(source_prob)).indices
 
 
 def one_hot_encode(value_list, n_diff_features=-1):

@@ -11,8 +11,9 @@ def main():
     if const.MODEL == "GCN":
         model = gcn.GCN()
         model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
-        val_data = gcn.prepare_data(val_data)
-        gcn.evaluate(model, val_data)
+        prep_val_data = gcn.prepare_data(val_data)
+        gcn.evaluate(model, prep_val_data)
+        gcn.vizualize_results(model, val_data[:5])
 
 
 if __name__ == "__main__":

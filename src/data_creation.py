@@ -73,15 +73,18 @@ def create_data_set(n, path, graph_type="watts_strogatz", model_type="SIR"):
     path = Path(f"{const.DATA_PATH}/{path}")
     Path(path).mkdir(parents=True, exist_ok=True)
 
-    graph_dict = {
-        "watts_strogatz": nx.watts_strogatz_graph(
-            const.N_NODES, 8, 0.2
-        ),  # TODO: parameter in constants
-        "barabasi_albert": nx.barabasi_albert_graph(const.N_NODES, 3, 8),
-    }
-
     for i in tqdm(range(n)):
-        graph = graph_dict[graph_type]
+        if graph_type == "watts_strogatz":
+            graph = (
+                nx.watts_strogatz_graph(
+                    const.N_NODES, const.WS_NEIGHBOURS, const.WS_PROBABILITY
+                ),
+            )
+        elif graph_type == "barabasi_albert":
+            graph = nx.barabasi_albert_graph(const.N_NODES, const.BA_NEIGHBOURS)
+        else:
+            raise AssertionError("Unknown graph type")
+
         if model_type == "SI":
             prop_model = model_SI_signal_propagation(graph)
         elif model_type == "SIR":
@@ -97,9 +100,9 @@ def main():
     Creates a data set of graphs with modeled signal propagation for training and validation.
     """
     print("Create Train Data:")
-    create_data_set(40, "train")  # TODO: add model and graph type
+    create_data_set(40, "train", const.GRAPH_TYPE, const.PROP_MODEL)
     print("Create Validation Data:")
-    create_data_set(40, "validation")
+    create_data_set(40, "validation", const.GRAPH_TYPE, const.PROP_MODEL)
 
 
 if __name__ == "__main__":
