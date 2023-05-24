@@ -6,6 +6,7 @@ import random
 import pickle
 from pathlib import Path
 from tqdm import tqdm
+import os
 
 
 def select_random_sources(graph, n):
@@ -71,6 +72,9 @@ def create_data_set(n, path, graph_type=const.GRAPH_TYPE, model_type=const.PROP_
     """
     path = Path(f"{const.DATA_PATH}/{path}")
     Path(path).mkdir(parents=True, exist_ok=True)
+
+    for f in os.listdir(path):
+        os.remove(os.path.join(path, f))
 
     for i in tqdm(range(n)):
         if graph_type == "watts_strogatz":

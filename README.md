@@ -24,6 +24,9 @@ python -m src.ml_pipeline
 
 ## ToDo
 
+- Random input generation
+- Signal Propagation und Graph erstellung: Parameter abhängig von größe des Graphens
+- output softmax?
 - Multiple Source Nodes --> Wie model ausgabe?
 - Loss anders berechnen?
 - (DVC) Pipeline bauen
