@@ -1,3 +1,4 @@
+"""Global constants for the project."""
 # Run Parameters
 PROP_MODEL = "SIR"  # "SIR" or "SI"
 GRAPH_TYPE = "watts_strogatz"  # "watts_strogatz" or "barabasi_albert"
@@ -10,8 +11,8 @@ DATA_PATH = "data"
 SEED = 123
 
 # Model Constants
-TRAINING_SIZE = 1000
-VALIDATION_SIZE = 100
+TRAINING_SIZE = 30
+VALIDATION_SIZE = 10
 EPOCHS = 20
 LEARNING_RATE = 0.001
 HIDDEN_SIZE = 10
@@ -19,6 +20,7 @@ LAYERS = 5
 N_FEATURES = 3
 N_CLASSES = 2  # is source/ not source
 ## GCNSI
+ALPHA = 0.5  # controls the influence that a node gets from its neighbors in feature creation
 GCNSI_N_FEATURES = 4
 WEIGHT_DECAY = 0.1
 

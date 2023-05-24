@@ -1,9 +1,12 @@
-import torch
-import src.constants as const
-from pathlib import Path
-import pickle
-from tqdm import tqdm
+"""utility functions for data loading and machine learning"""
 from os import listdir
+import pickle
+from pathlib import Path
+import numpy as np
+import torch
+from tqdm import tqdm
+import src.constants as const
+import src.vizualization as viz
 
 
 def load_data(path):
@@ -56,3 +59,37 @@ def load_model(model, path):
     """
     model.load_state_dict(torch.load(path))
     return model
+
+
+def evaluate(model, data_set):
+    """
+    Evaluates the given model.
+    :param model: The model to evaluate.
+    :param data_set: The data set to evaluate on.
+    Contains the graph structure, the features and the labels.
+    """
+    ranks = []
+    print("Evaluate Model:")
+    for graph_structure, features, labels in tqdm(data_set):
+        predictions = model(features, graph_structure.edge_index)
+        ranked_predictions = get_ranked_source_predictions(predictions)
+        source = labels.tolist().index([0, 1])
+        ranks.append(ranked_predictions.tolist().index(source))
+
+    print("Average rank of predicted source:")
+    print(np.mean(ranks))
+
+
+def vizualize_results(model, raw_dataset, prep_dataset):
+    """
+    Vizualizes the predictions of the model.
+    :param model: The model on which predictions are made.
+    :param data_set: The data set to vizualize on.
+    Contains the graph structure, the features and the labels.
+    """
+    print("Vizualize Results:")
+    for i, raw_data in tqdm(enumerate(raw_dataset)):
+        graph_structure, features, _ = prep_dataset[i]
+        predictions = model(features, graph_structure.edge_index)
+        ranked_predictions = get_ranked_source_predictions(predictions)
+        viz.plot_predictions(raw_data, ranked_predictions, title=f"_{i}")

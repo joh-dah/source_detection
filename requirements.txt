@@ -3,3 +3,4 @@ matplotlib
 torch
 ndlib
 torch_geometric
+pylint

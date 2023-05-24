@@ -1,8 +1,10 @@
+""" This file contains the main function for training the model. """
+
+import datetime
 import src.constants as const
 import src.GCN_model as gcn
 import src.GCNSI_model as gcnsi
-import src.utils as utils
-import datetime
+from src import utils
 
 
 def main():

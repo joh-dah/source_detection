@@ -1,13 +1,12 @@
+""" Experimantal Prototype of Graph Convolutional Network model. """
+
 import torch
-from pathlib import Path
 from torch_geometric.nn import GCNConv
 import src.constants as const
-import numpy as np
 import networkx as nx
-from torch_geometric.utils.convert import from_networkx, to_networkx
+from torch_geometric.utils.convert import from_networkx
 import src.utils as utils
 from tqdm import tqdm
-import src.vizualization as viz
 
 
 class GCN(torch.nn.Module):
@@ -40,7 +39,7 @@ class GCN(torch.nn.Module):
         h = h.tanh()
         h = self.conv7(h, edge_index)
         out = self.classifier(h)
-        return out, h
+        return out
 
 
 def train_single_epoch(model, graph, features, labels):
@@ -50,18 +49,18 @@ def train_single_epoch(model, graph, features, labels):
     :param graph: The graph structure.
     :param features: The features of the nodes.
     :param labels: The labels of the nodes.
-    :return: The loss and the embeddings.
+    :return: The loss
     """
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=const.LEARNING_RATE)
 
     optimizer.zero_grad()
-    out, h = model(features, graph.edge_index)
+    out = model(features, graph.edge_index)
     loss = criterion(out, labels)
     loss.backward()
     optimizer.step()
 
-    return loss, h
+    return loss
 
 
 def train(model, data):
@@ -73,35 +72,15 @@ def train(model, data):
     """
     epochs = range(1, const.EPOCHS)
     losses = []
-    embeddings = []
     print("Train Model:")
     for epoch in tqdm(epochs):
         running_loss = 0.0
         for graph_structure, features, labels in data:
-            loss, h = train_single_epoch(model, graph_structure, features, labels)
+            loss = train_single_epoch(model, graph_structure, features, labels)
             running_loss += loss
             losses.append(loss)
-            embeddings.append(h)
         print(f"Epoch: {epoch}\tLoss: {running_loss:.4f}")
     return model
-
-
-def evaluate(model, data_set):
-    """
-    Evaluates the model.
-    :param model: The model to evaluate.
-    :param data_set: The data set to evaluate on. Contains the graph structure, the features and the labels.
-    """
-    ranks = []
-    print("Evaluate Model:")
-    for graph_structure, features, labels in tqdm(data_set):
-        predictions, _ = model(features, graph_structure.edge_index)
-        ranked_predictions = utils.get_ranked_source_predictions(predictions)
-        source = labels.tolist().index([0, 1])
-        ranks.append(ranked_predictions.tolist().index(source))
-
-    print("Average rank of predicted source:")
-    print(np.mean(ranks))
 
 
 def prepare_data(prop_models):
@@ -126,18 +105,3 @@ def prepare_data(prop_models):
         )
         data.append([graph_structure, features, labels])
     return data
-
-
-def vizualize_results(model, data_set):
-    """
-    Vizualizes the predictions of the model.
-    :param model: The model on which predictions are made.
-    :param data_set: The data set to vizualize on. Contains the graph structure, the features and the labels.
-    """
-    print("Vizualize Results:")
-    prep_data = prepare_data(data_set)
-    for i, raw_data in tqdm(enumerate(data_set)):
-        graph_structure, features, _ = prep_data[i]
-        predictions, _ = model(features, graph_structure.edge_index)
-        ranked_predictions = utils.get_ranked_source_predictions(predictions)
-        viz.plot_predictions(raw_data, ranked_predictions, title=f"_{i}")

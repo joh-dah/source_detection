@@ -1,15 +1,19 @@
 import numpy as np
 import networkx as nx
-import src.constants as const
 import torch
 from torch_geometric.nn import GCNConv
-from torch_geometric.utils.convert import from_networkx, to_networkx
-import src.utils as utils
+from torch_geometric.utils.convert import from_networkx
 from tqdm import tqdm
-import src.vizualization as viz
+import src.constants as const
+from src import utils
 
 
 class GCNSI(torch.nn.Module):
+    """
+    Graph Convolutional Network.
+    Based on paper: https://dl.acm.org/doi/abs/10.1145/3357384.3357994
+    """
+
     def __init__(self):
         super(GCNSI, self).__init__()
         torch.manual_seed(42)
@@ -28,6 +32,14 @@ class GCNSI(torch.nn.Module):
 
 
 def train_single_epoch(model, graph, features, labels):
+    """
+    Trains the model for one epoch.
+    :param model: The model to train.
+    :param graph: The graph structure.
+    :param features: The features of the nodes.
+    :param labels: The labels of the nodes.
+    :return: The loss
+    """
     criterion = torch.nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), weight_decay=const.WEIGHT_DECAY)
 
@@ -41,45 +53,39 @@ def train_single_epoch(model, graph, features, labels):
 
 
 def train(model, data):
+    """
+    Trains the model.
+    :param model: The model to train.
+    :param data: The data to train on. Contains the graph structure, the features and the labels.
+    :return: The trained model.
+    """
     epochs = range(1, const.EPOCHS)
-    for epoch in epochs:
+    losses = []
+    print("Train Model:")
+    for epoch in tqdm(epochs):
         running_loss = 0.0
         for graph_structure, features, labels in data:
             loss = train_single_epoch(model, graph_structure, features, labels)
             running_loss += loss
+            losses.append(loss)
         print(f"Epoch: {epoch}\tLoss: {running_loss:.4f}")
     return model
 
 
-def evaluate(model, data):
-    ranks = []
-    for graph_structure, features, labels in data:
-        predictions = model(features, graph_structure.edge_index)
-        ranked_predictions = utils.get_ranked_source_predictions(predictions)
-        source = labels.tolist().index([0, 1])
-        print(f"source: {source} predictions: {ranked_predictions.tolist()[:5]}")
-        ranks.append(ranked_predictions.tolist().index(source))
-
-    print("Average rank of predicted source:")
-    print(np.mean(ranks))
-
-
-def prepare_input_features(graph, model, a):
-    vector = [1]
-    vector[0] = list(model.status.values())
-    Y = np.array(vector).T
+def prepare_input_features(graph, prop_model, a):
+    """
+    Prepares the input features for the GCNSI model according to the paper:
+    https://dl.acm.org/doi/abs/10.1145/3357384.3357994
+    :param graph: The graph structure.
+    :param model: The propagation model.
+    :param a: controls the influence that a node gets from its neighbors
+    :return: The stacked input features for the GCNSI model with shape (const.N_NODES, 4)
+    """
+    Y = np.array(list(prop_model.status.values())).T
     S = nx.normalized_laplacian_matrix(graph)
     V3 = Y.copy()
-    V4 = Y.copy()
-    for i in range(0, len(Y)):
-        if Y[i] == 0:
-            V3[i] = 0
-            V4[i] = -1
-            Y[i] = -1
-        else:
-            V3[i] = 1
-            V4[i] = 0
-            Y[i] = 1
+    Y = [-1 if x == 0 else 1 for x in Y]
+    V4 = [-1 if x == -1 else 0 for x in Y]
     I = np.identity(len(Y))
     d1 = Y
     d2 = (1 - a) * np.linalg.inv(I - a * S).dot(Y)
@@ -103,24 +109,9 @@ def prepare_data(prop_models):
         G.add_nodes_from(prop_model.graph.nodes)
         G.add_edges_from(prop_model.graph.edges)
         graph_structure = from_networkx(G)
-        features = prepare_input_features(G, prop_model, const.LEARNING_RATE)
+        features = prepare_input_features(G, prop_model, const.ALPHA)
         labels = utils.one_hot_encode(
             list(prop_model.initial_status.values()), const.N_CLASSES
         )
         data.append([graph_structure, features, labels])
     return data
-
-
-def vizualize_results(model, data_set):
-    """
-    Vizualizes the predictions of the model.
-    :param model: The model on which predictions are made.
-    :param data_set: The data set to vizualize on. Contains the graph structure, the features and the labels.
-    """
-    print("Vizualize Results:")
-    prep_data = prepare_data(data_set)
-    for i, raw_data in tqdm(enumerate(data_set)):
-        graph_structure, features, _ = prep_data[i]
-        predictions = model(features, graph_structure.edge_index)
-        ranked_predictions = utils.get_ranked_source_predictions(predictions)
-        viz.plot_predictions(raw_data, ranked_predictions, title=f"_{i}")

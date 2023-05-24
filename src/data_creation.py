@@ -1,22 +1,23 @@
-import networkx as nx
-import ndlib.models.epidemics as ep
-import ndlib.models.ModelConfig as mc
-import src.constants as const
+""" Creates a data set of graphs with modeled signal propagation for training and validation."""
+import os
 import random
 import pickle
 from pathlib import Path
+import ndlib.models.epidemics as ep
+import ndlib.models.ModelConfig as mc
+import networkx as nx
 from tqdm import tqdm
-import os
+import src.constants as const
 
 
-def select_random_sources(graph, n):
+def select_random_sources(graph, n_sources):
     """
     Selects n random nodes from the given graph as sources.
     :param graph: graph to select sources from
     :param n: number of sources to select
     :return: list of source nodes
     """
-    return random.choices(list(graph.nodes), k=n)
+    return random.choices(list(graph.nodes), k=n_sources)
 
 
 def model_SIR_signal_propagation(graph, seed=None):
@@ -61,9 +62,12 @@ def model_SI_signal_propagation(graph, seed=None):
     return model
 
 
-def create_data_set(n, path, graph_type=const.GRAPH_TYPE, model_type=const.PROP_MODEL):
+def create_data_set(
+    n_graphs, path, graph_type=const.GRAPH_TYPE, model_type=const.PROP_MODEL
+):
     """
-    Creates n graphs of type graph_type and runs a signal propagation model of type model_type on them.
+    Creates n graphs of type graph_type and runs a
+    signal propagation model of type model_type on them.
     The graphs and the results of the signal propagation are saved to the given path.
     :param n: number of graphs to create
     :param path: path to save the data set to
@@ -73,10 +77,10 @@ def create_data_set(n, path, graph_type=const.GRAPH_TYPE, model_type=const.PROP_
     path = Path(f"{const.DATA_PATH}/{path}")
     Path(path).mkdir(parents=True, exist_ok=True)
 
-    for f in os.listdir(path):
-        os.remove(os.path.join(path, f))
+    for file_name in os.listdir(path):
+        os.remove(os.path.join(path, file_name))
 
-    for i in tqdm(range(n)):
+    for i in tqdm(range(n_graphs)):
         if graph_type == "watts_strogatz":
             graph = nx.watts_strogatz_graph(
                 const.N_NODES, const.WS_NEIGHBOURS, const.WS_PROBABILITY
