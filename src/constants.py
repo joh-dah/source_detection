@@ -11,11 +11,19 @@ DATA_PATH = "data"
 SEED = 123
 
 # Model Constants
+<<<<<<< HEAD
 TRAINING_SIZE = 30
 VALIDATION_SIZE = 10
 EPOCHS = 20
 LEARNING_RATE = 0.001
 HIDDEN_SIZE = 500
+=======
+TRAINING_SIZE = 3000
+VALIDATION_SIZE = 300
+EPOCHS = 15
+LEARNING_RATE = 0.000000001
+HIDDEN_SIZE = 10
+>>>>>>> bebb520 (balance data creation)
 LAYERS = 5
 N_FEATURES = 3
 N_CLASSES = 2  # is source/ not source
@@ -26,19 +34,24 @@ WEIGHT_DECAY = 0.1
 
 
 # Graph Constants
-N_NODES = 50
+MEAN_N_NODES = 50  # mean of number of nodes in the graph
 ## Watts-Strogatz
-WS_NEIGHBOURS = 5  # number of neighbors in ring topology to connect to
-WS_PROBABILITY = 0.2  # probability of rewiring an edge
-
+WS_NEIGHBOURS = 1.8  # control number of neighbours to connect to
+WS_PROBABILITY = 0.4  # probability of rewiring an edge
 ## Barabasi-Albert
-BA_NEIGHBOURS = 3  # number of edges to attach from a new node to existing nodes
+BA_NEIGHBOURS = 0.03  # control number of edges to attach between new and existing nodes
+
 
 # Signal Propagation Constants
+<<<<<<< HEAD
 N_SOURCES = 2  # number of infection sources (probably make random later)
 N_ITERATIONS = 40  # number of iterations for signal propagation
+=======
+MEAN_SOURCES = 2  # mean of number of infection sources
+MEAN_ITERS = 60  # mean of iterations for signal propagation
+>>>>>>> bebb520 (balance data creation)
 ## SIR
-SIR_BETA = 0.02  # probability for neighbor to get infected
+SIR_BETA = 0.01  # probability for neighbor to get infected
 SIR_GAMMA = 0.005  # probability of node to recover
 ## SI
 SI_BETA = 0.01  # probability for neighbor to get infected
