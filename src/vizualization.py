@@ -28,6 +28,24 @@ def plot_graph_with_status(g, colors, title, layout="spring"):
     nx.draw(g, pos=pos, with_labels=True, node_color=colors, node_size=150)
     plt.savefig(f"{const.FIGURES_PATH}/{title}.png")
 
+def plot_matching_graph(g, matching, new_edges, title="matching_graph", layout="spring"):
+    Path(const.FIGURES_PATH).mkdir(parents=True, exist_ok=True)
+
+    seed = const.SEED
+    if layout == "spring":
+        pos = nx.spring_layout(g, seed=seed)
+    elif layout == "circular":
+        pos = nx.circular_layout(g, seed=seed)
+    else:
+        raise AssertionError("Unknown layout")
+
+    plt.figure(figsize=(6, 4))
+    edge_colors = ["green" if edge in matching else "red" if edge in new_edges else "black" for edge in g.edges]
+    colors = ["red" if node[0] == "s" else "blue" for node in g.nodes]
+    nx.draw(g, pos=pos, with_labels=True, node_color=colors, edge_color=edge_colors, node_size=150)
+    nx.draw_networkx_edge_labels(g, pos, edge_labels=nx.get_edge_attributes(g, "weight"))
+    plt.savefig(f"{const.FIGURES_PATH}/{title}.png")
+
 
 def get_colors_for_infection_status(infection_status):
     """
