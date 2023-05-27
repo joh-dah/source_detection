@@ -18,15 +18,18 @@ def load_data(path):
     return data
 
 
-def get_ranked_source_predictions(predictions):
+def get_ranked_source_predictions(predictions, n = None):
     """
-    Return nodes ranked by predicted probability of beeing source.
+    Return nodes ranked by predicted probability of beeing source. Selects the n nodes with the highest probability.
     :param predictions: list of tuple predictions of nodes beeing source.
+    :param n: amount of nodes to return.
     The second value of the tuple is the probability of the node beeing source.
     :return: list of nodes ranked by predicted probability of beeing source.
     """
+    if n is None:
+        n = predictions.shape[0]
     source_prob = predictions[:, 1].flatten()
-    return torch.topk(source_prob, len(source_prob)).indices
+    return torch.topk(source_prob, n).indices
 
 
 def one_hot_encode(value_list, n_diff_features=-1):
@@ -59,25 +62,6 @@ def load_model(model, path):
     """
     model.load_state_dict(torch.load(path))
     return model
-
-
-def evaluate(model, data_set):
-    """
-    Evaluates the given model.
-    :param model: The model to evaluate.
-    :param data_set: The data set to evaluate on.
-    Contains the graph structure, the features and the labels.
-    """
-    ranks = []
-    print("Evaluate Model:")
-    for graph_structure, features, labels in tqdm(data_set):
-        predictions = model(features, graph_structure.edge_index)
-        ranked_predictions = get_ranked_source_predictions(predictions)
-        source = labels.tolist().index([0, 1])
-        ranks.append(ranked_predictions.tolist().index(source))
-
-    print("Average rank of predicted source:")
-    print(np.mean(ranks))
 
 
 def vizualize_results(model, raw_dataset, prep_dataset):
