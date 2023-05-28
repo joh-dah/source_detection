@@ -12,15 +12,35 @@ from torch_geometric.utils import to_networkx
 import networkx as nx
 
 def predict_source_probailities(model, graph_structure, features):
+    """
+    Prediction about the probability that nodes are sources.
+    :param model: The model to evaluate.
+    :param graph_structure: The graph structure.
+    :param features: The features of the nodes.
+    :return: Probabilities that nodes are sources.
+    """
     prediction = model(features, graph_structure.edge_index)
     return torch.softmax(prediction, 1)
 
 def threshold_predicted_sources(model, graph_structure, features, threshold):
+    """
+    Find nodes whose probability of being a source is higher than the threshold.
+    :param model: The model to evaluate.
+    :param graph_structure: The graph structure.
+    :param features: The features of the nodes.
+    :param threshold: Value that tells how high the probability must be to assume that the node is a source.
+    :return: Nodes whose probability of being a source is higher than the threshold.
+    """
     prediction = predict_source_probailities(model, graph_structure, features)
     return torch.where(prediction[:, 1] > threshold)[0]
 
 def find_closest_sources(matching_graph, unmatched_nodes):
-    # find the minimum weight adjacent edge for each unmatched node
+    """
+    Find the minimum weight adjacent edge for each unmatched node.
+    :param matching_graph: The graph with only the sources, the predicted sources and the distances between them.
+    :param unmatched_nodes: Nodes that didn´t match any other node.
+    :return: The minimum weight adjacent edge for each unmatched node.
+    """
     new_edges = []
     for node in unmatched_nodes:
         min_weight = float("inf")
@@ -40,9 +60,9 @@ def min_matching_distance(graph, sources, predicted_sources, title_for_matching_
     This penelizes the prediction of too many or too few sources.
     To compare the results of different amounts of sources, the result gets normalized by the number of sources.
     :param graph: The graph to evaluate on.
-    :sources: The indices of the sources.
-    :predicted_sources: The indices of the predicted sources.
-    :title_for_matching_graph: The title for the visualization of the matching graph. Mostly for debugging purposes.
+    :param sources: The indices of the sources.
+    :param predicted_sources: The indices of the predicted sources.
+    :param title_for_matching_graph: The title for the visualization of the matching graph. Mostly for debugging purposes.
     :return: The avg minimal matching distance between the sources and the predicted sources.
     """
     G = to_networkx(graph)
@@ -79,8 +99,9 @@ def evaluate(model, prep_val_data):
     for i, (graph_structure, features, labels) in enumerate(tqdm(prep_val_data, desc="evaluate model")):
         sources = torch.where(labels[:, 0] == 0)[0]
         predictions = model(features, graph_structure.edge_index)
-        ranked_predictions = utils.get_ranked_source_predictions(predictions)
-        ranks.append(ranked_predictions.tolist().index(sources))
+        ranked_predictions = (utils.get_ranked_source_predictions(predictions)).tolist()
+        for source in sources.tolist():
+            ranks.append(ranked_predictions.index(source))
         top_n_predictions = utils.get_ranked_source_predictions(predictions, len(sources))
         # currently we are fixing the number of predicted sources to the number of sources in the graph
         min_matching_distances.append(min_matching_distance(graph_structure, sources, top_n_predictions))
