@@ -15,7 +15,7 @@ TRAINING_SIZE = 30
 VALIDATION_SIZE = 10
 EPOCHS = 20
 LEARNING_RATE = 0.001
-HIDDEN_SIZE = 10
+HIDDEN_SIZE = 500
 LAYERS = 5
 N_FEATURES = 3
 N_CLASSES = 2  # is source/ not source
@@ -35,7 +35,7 @@ WS_PROBABILITY = 0.2  # probability of rewiring an edge
 BA_NEIGHBOURS = 3  # number of edges to attach from a new node to existing nodes
 
 # Signal Propagation Constants
-N_SOURCES = 1  # number of infection sources (probably make random later)
+N_SOURCES = 2  # number of infection sources (probably make random later)
 N_ITERATIONS = 40  # number of iterations for signal propagation
 ## SIR
 SIR_BETA = 0.02  # probability for neighbor to get infected

@@ -27,6 +27,7 @@ def plot_graph_with_status(g, colors, title, layout="spring"):
     plt.figure(figsize=(6, 4))
     nx.draw(g, pos=pos, with_labels=True, node_color=colors, node_size=150)
     plt.savefig(f"{const.FIGURES_PATH}/{title}.png")
+    plt.close()
 
 def plot_matching_graph(g, matching, new_edges, title="matching_graph", layout="spring"):
     Path(const.FIGURES_PATH).mkdir(parents=True, exist_ok=True)
@@ -45,6 +46,7 @@ def plot_matching_graph(g, matching, new_edges, title="matching_graph", layout="
     nx.draw(g, pos=pos, with_labels=True, node_color=colors, edge_color=edge_colors, node_size=150)
     nx.draw_networkx_edge_labels(g, pos, edge_labels=nx.get_edge_attributes(g, "weight"))
     plt.savefig(f"{const.FIGURES_PATH}/{title}.png")
+    plt.close()
 
 
 def get_colors_for_infection_status(infection_status):
