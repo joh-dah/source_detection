@@ -72,22 +72,20 @@ def model_SI_signal_propagation(graph, iterations, seed=None):
     return model
 
 
-def create_graph(graph_type, n_nodes):
+def create_graph(graph_type):
     """
     Creates a graph of the given type.
     :param graph_type: type of graph to create
     :param n_nodes: number of nodes in the graph
     :return: created graph
     """
-    n = np.random.normal(n_nodes, np.sqrt(n_nodes))
+    n = np.random.normal(const.MEAN_N_NODES, np.sqrt(const.MEAN_N_NODES))
     n = np.maximum(1, n).astype(int)
 
     if graph_type == "watts_strogatz":
-        neighbours = np.clip(np.log(n) * const.WS_NEIGHBOURS, 1, n - 1).astype(int)
-        graph = nx.watts_strogatz_graph(n, neighbours, const.WS_PROBABILITY)
+        graph = nx.watts_strogatz_graph(n, const.WS_NEIGHBOURS, const.WS_PROBABILITY)
     elif graph_type == "barabasi_albert":
-        neighbours = np.clip(np.log(n * const.BA_NEIGHBOURS), 1, n - 1).astype(int)
-        graph = nx.barabasi_albert_graph(n, 4)
+        graph = nx.barabasi_albert_graph(n, const.BA_NEIGHBOURS)
     else:
         raise ValueError("Unknown graph type")
 

@@ -11,19 +11,11 @@ DATA_PATH = "data"
 SEED = 123
 
 # Model Constants
-<<<<<<< HEAD
 TRAINING_SIZE = 30
 VALIDATION_SIZE = 10
 EPOCHS = 20
 LEARNING_RATE = 0.001
 HIDDEN_SIZE = 500
-=======
-TRAINING_SIZE = 3000
-VALIDATION_SIZE = 300
-EPOCHS = 15
-LEARNING_RATE = 0.000000001
-HIDDEN_SIZE = 10
->>>>>>> bebb520 (balance data creation)
 LAYERS = 5
 N_FEATURES = 3
 N_CLASSES = 2  # is source/ not source
@@ -43,13 +35,8 @@ BA_NEIGHBOURS = 0.03  # control number of edges to attach between new and existi
 
 
 # Signal Propagation Constants
-<<<<<<< HEAD
 N_SOURCES = 2  # number of infection sources (probably make random later)
 N_ITERATIONS = 40  # number of iterations for signal propagation
-=======
-MEAN_SOURCES = 2  # mean of number of infection sources
-MEAN_ITERS = 60  # mean of iterations for signal propagation
->>>>>>> bebb520 (balance data creation)
 ## SIR
 SIR_BETA = 0.01  # probability for neighbor to get infected
 SIR_GAMMA = 0.005  # probability of node to recover
