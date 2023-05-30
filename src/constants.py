@@ -28,15 +28,15 @@ WEIGHT_DECAY = 0.1
 # Graph Constants
 MEAN_N_NODES = 50  # mean of number of nodes in the graph
 ## Watts-Strogatz
-WS_NEIGHBOURS = 1.8  # control number of neighbours to connect to
-WS_PROBABILITY = 0.4  # probability of rewiring an edge
+WS_NEIGHBOURS = 10  # control number of neighbours to connect to
+WS_PROBABILITY = 0.2  # probability of rewiring an edge
 ## Barabasi-Albert
-BA_NEIGHBOURS = 0.03  # control number of edges to attach between new and existing nodes
+BA_NEIGHBOURS = 3  # control number of edges to attach between new and existing nodes
 
 
 # Signal Propagation Constants
-N_SOURCES = 2  # number of infection sources (probably make random later)
-N_ITERATIONS = 40  # number of iterations for signal propagation
+MEAN_SOURCES = 2  # number of infection sources (probably make random later)
+MEAN_ITERS = 90  # number of iterations for signal propagation
 ## SIR
 SIR_BETA = 0.01  # probability for neighbor to get infected
 SIR_GAMMA = 0.005  # probability of node to recover
