@@ -19,7 +19,9 @@ pip install -r requirements.txt
 ## Usage
 
 ```
-python -m src.ml_pipeline
+python -m src.data_creation
+python -m src.training
+python -m src.validation
 ```
 
 ## ToDo
