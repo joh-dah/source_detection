@@ -79,7 +79,7 @@ def create_graph(graph_type):
     :param n_nodes: number of nodes in the graph
     :return: created graph
     """
-    n = np.random.normal(const.MEAN_N_NODES, np.sqrt(const.MEAN_N_NODES))
+    n = np.random.normal(const.MEAN_N_NODES, np.sqrt(const.MEAN_N_NODES / 2))
     n = np.maximum(1, n).astype(int)
 
     if graph_type == "watts_strogatz":
@@ -100,7 +100,7 @@ def create_signal_propagation_model(graph, model_type):
     :param iterations: number of iterations to run the model for
     :return: created model
     """
-    iterations = np.random.normal(const.MEAN_ITERS, int(np.sqrt(const.MEAN_ITERS)))
+    iterations = np.random.normal(const.MEAN_ITERS, int(np.sqrt(const.MEAN_ITERS / 2)))
     iterations = np.maximum(1, iterations).astype(int)
 
     if model_type == "SI":
