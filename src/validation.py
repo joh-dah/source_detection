@@ -13,7 +13,6 @@ import networkx as nx
 from sklearn.metrics import roc_auc_score, roc_curve
 
 
-
 def predict_source_probailities(model, graph_structure, features):
     """
     Prediction about the probability that nodes are sources.
@@ -109,15 +108,17 @@ def min_matching_distance(
 
 
 def compute_roc_curve(predictions, labels):
-    '''
+    """
     Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC) from prediction scores, false positive rates and true positive rates.
     :param predictions: Predicted value for a node to be a source.
     :param labels: Actual sources.
     :return: Area under the roc curve, false positive rates and true positive rates.
-    '''
+    """
     soft_max_predictions = torch.softmax(predictions, 1)
     source_prob = soft_max_predictions[:, 1].flatten()
-    false_positive, true_positive, thresholds = roc_curve(labels[:, 1].tolist(), source_prob.tolist())
+    false_positive, true_positive, thresholds = roc_curve(
+        labels[:, 1].tolist(), source_prob.tolist()
+    )
     roc_score = roc_auc_score(labels[:, 1].tolist(), source_prob.tolist())
     return roc_score, false_positive, true_positive
 
@@ -138,7 +139,7 @@ def evaluate(model, prep_val_data):
     for i, (graph_structure, features, labels) in enumerate(
         tqdm(prep_val_data, desc="evaluate model")
     ):
-        sources = torch.where(labels[:, 0] == 0)[0]
+        sources = torch.where(labels[:, 0] == 0)[0].tolist()
         predictions = model(features, graph_structure.edge_index)
         ranked_predictions = (utils.get_ranked_source_predictions(predictions)).tolist()
         for source in sources:
@@ -151,16 +152,19 @@ def evaluate(model, prep_val_data):
             min_matching_distance(graph_structure, sources, top_n_predictions)
         )
 
-        roc_score, false_positive, true_positive = compute_roc_curve(predictions, labels)
+        roc_score, false_positive, true_positive = compute_roc_curve(
+            predictions, labels
+        )
         roc_scores.append(roc_score)
         false_positives.append(false_positive)
         true_positives.append(true_positive)
 
     print(f"Average rank of predicted source: {sum(ranks)/len(ranks)}")
-    print(f"Average min matching distance: {sum(min_matching_distances)/len(min_matching_distances)}")
+    print(
+        f"Average min matching distance: {sum(min_matching_distances)/len(min_matching_distances)}"
+    )
     print(f"Average roc score: {round(sum(roc_scores)/len(roc_scores), 2)}")
     viz.plot_roc_curve(false_positives[:n_plots], true_positives[:n_plots])
-
 
 
 def main():
