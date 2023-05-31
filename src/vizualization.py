@@ -8,11 +8,11 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 
-def plot_graph_with_status(g, colors, title, layout="spring"):
+def plot_graph_with_colors(g, colors, title, layout="spring"):
     """
-    Plots graph and colors nodes based on their infection status.
+    Plots graph and colors the nodes according to the given colors.
     :param g: networkx graph
-    :param status: dict with node as key and infection status as value
+    :param colors: list of colors
     :param title: title of the plot
     :param layout: layout of the plot
     """
@@ -141,14 +141,14 @@ def plot_predictions(
     g.add_edges_from(prop_model.graph.edges)
 
     colors = get_colors_for_infection_status(prop_model.initial_status)
-    plot_graph_with_status(g, colors, f"initial_{title}", layout)
+    plot_graph_with_colors(g, colors, f"initial_{title}", layout)
 
     colors = get_colors_for_infection_status(prop_model.status)
-    plot_graph_with_status(g, colors, f"current_{title}", layout)
+    plot_graph_with_colors(g, colors, f"current_{title}", layout)
 
-    colors = ["#0000FF"] * const.N_NODES
+    colors = ["#0000FF"] * len(g.nodes)
     color_gradient = linear_gradient("#FF0000", "#0000FF", colored_nodes)
     for i, node in enumerate(ranked_predictions[:colored_nodes]):
         colors[node] = color_gradient[i]
 
-    plot_graph_with_status(g, colors, f"prediction_{title}.png", layout)
+    plot_graph_with_colors(g, colors, f"prediction_{title}", layout)
