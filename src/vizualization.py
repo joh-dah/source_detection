@@ -4,6 +4,8 @@ from torch_geometric.utils.convert import from_networkx
 import src.data_creation as dc
 from pathlib import Path
 import src.constants as const
+from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 def plot_graph_with_colors(g, colors, title, layout="spring"):
@@ -29,25 +31,47 @@ def plot_graph_with_colors(g, colors, title, layout="spring"):
     plt.savefig(f"{const.FIGURES_PATH}/{title}.png")
     plt.close()
 
-def plot_matching_graph(g, matching, new_edges, title="matching_graph", layout="spring"):
+def plot_matching_graph(graph, matching, new_edges, title="matching_graph", layout="spring"):
+    '''
+    Plot the matching graph.
+    :param graph: The matching graph.
+    :param matching: Minimum weight matching between sources and predicted sources.
+    :param new_edges: The minimum weight adjacent edge for each unmatched node.
+    :param title: The title of the plot.
+    :param layout: The layout of the plot.
+    '''
     Path(const.FIGURES_PATH).mkdir(parents=True, exist_ok=True)
 
     seed = const.SEED
     if layout == "spring":
-        pos = nx.spring_layout(g, seed=seed)
+        pos = nx.spring_layout(graph, seed=seed)
     elif layout == "circular":
-        pos = nx.circular_layout(g, seed=seed)
+        pos = nx.circular_layout(graph, seed=seed)
     else:
         raise AssertionError("Unknown layout")
 
     plt.figure(figsize=(6, 4))
-    edge_colors = ["green" if edge in matching else "red" if edge in new_edges else "black" for edge in g.edges]
-    colors = ["red" if node[0] == "s" else "blue" for node in g.nodes]
-    nx.draw(g, pos=pos, with_labels=True, node_color=colors, edge_color=edge_colors, node_size=150)
-    nx.draw_networkx_edge_labels(g, pos, edge_labels=nx.get_edge_attributes(g, "weight"))
+    edge_colors = ["green" if edge in matching else "red" if edge in new_edges else "black" for edge in graph.edges]
+    colors = ["red" if node[0] == "s" else "blue" for node in graph.nodes]
+    nx.draw(graph, pos=pos, with_labels=True, node_color=colors, edge_color=edge_colors, node_size=150)
+    nx.draw_networkx_edge_labels(graph, pos, edge_labels=nx.get_edge_attributes(graph, "weight"))
     plt.savefig(f"{const.FIGURES_PATH}/{title}.png")
     plt.close()
 
+
+def plot_roc_curve(false_positives, true_positives):
+    '''
+    Plot ROC curves.
+    :param false_positives: The false positives rates.
+    :param true_positives: The true positives rates.
+    '''
+    print("Visualize ROC curve:")
+    for i, false_positive in tqdm(enumerate(false_positives)):
+        plt.plot(false_positive, true_positives[i])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.savefig(f"{const.FIGURES_PATH}/roc_curve__{i}.png")
+        plt.close()
 
 def get_colors_for_infection_status(infection_status):
     """
