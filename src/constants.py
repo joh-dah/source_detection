@@ -2,7 +2,7 @@
 # Run Parameters
 PROP_MODEL = "SIR"  # "SIR" or "SI"
 GRAPH_TYPE = "barabasi_albert"  # "watts_strogatz" or "barabasi_albert"
-MODEL = "GCNSI"  # "GCN" or "GCNSI"
+MODEL = "GCNR"  # "GCN" or "GCNSI"
 
 # General
 MODEL_PATH = "models"
@@ -22,6 +22,7 @@ N_CLASSES = 2  # is source/ not source
 ## GCNSI
 ALPHA = 0.5  # controls the influence that a node gets from its neighbors in feature creation
 GCNSI_N_FEATURES = 4
+GCNR_N_FEATURES = 4
 WEIGHT_DECAY = 0.1
 
 

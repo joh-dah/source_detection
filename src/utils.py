@@ -7,6 +7,10 @@ import torch
 from tqdm import tqdm
 import src.constants as const
 import src.vizualization as viz
+import networkx as nx
+from ndlib.models.DiffusionModel import DiffusionModel
+from torch_geometric.data import Data
+from torch_geometric.utils import to_networkx
 
 
 def load_data(path):
@@ -18,7 +22,13 @@ def load_data(path):
     return data
 
 
-def get_ranked_source_predictions(predictions, n = None):
+def extract_sources(prob_model) -> np.ndarray:
+    """Extracts sources from propagation model."""
+    initial_values = np.array(list(prob_model.initial_status.values()))
+    return np.where(initial_values == 1)[0]
+
+
+def get_ranked_source_predictions(predictions, n=None):
     """
     Return nodes ranked by predicted probability of beeing source. Selects the n nodes with the highest probability.
     :param predictions: list of tuple predictions of nodes beeing source.
@@ -64,7 +74,11 @@ def load_model(model, path):
     return model
 
 
-def vizualize_results(model, raw_dataset, prep_dataset):
+def vizualize_results(
+    model: torch.nn.Module,
+    propagation_models: list[DiffusionModel],
+    prep_dataset: list[list[Data, torch.Tensor, torch.Tensor]],
+):
     """
     Vizualizes the predictions of the model.
     :param model: The model on which predictions are made.
@@ -72,8 +86,49 @@ def vizualize_results(model, raw_dataset, prep_dataset):
     Contains the graph structure, the features and the labels.
     """
     print("Vizualize Results:")
-    for i, raw_data in tqdm(enumerate(raw_dataset)):
+    for i, propagation_model in tqdm(enumerate(propagation_models)):
         graph_structure, features, _ = prep_dataset[i]
         predictions = model(features, graph_structure.edge_index)
         ranked_predictions = get_ranked_source_predictions(predictions)
-        viz.plot_predictions(raw_data, ranked_predictions, title=f"_{i}")
+        viz.plot_predictions(propagation_model, ranked_predictions, 7, title=f"_{i}")
+
+
+def vizualize_results_gcnr(
+    model: torch.nn.Module,
+    propagation_models: list[DiffusionModel],
+    prep_dataset: list[list[Data, torch.Tensor, torch.Tensor]],
+):
+    """
+    Vizualizes the predictions of the model.
+    :param model: The model on which predictions are made.
+    :param data_set: The data set to vizualize on.
+    Contains the graph structure, the features and the labels.
+    """
+    print("Vizualize Results:")
+    for i, propagation_model in tqdm(enumerate(propagation_models)):
+        graph_structure, features, _ = prep_dataset[i]
+        predictions = model(features, graph_structure.edge_index)
+
+        # convert predictions to np array of rounded integer values
+        predictions = np.round(predictions.detach().numpy().flatten()).astype(int)
+
+        # extract the maximum shortest path length from a source node to any other node -> used for coloring
+        source_nodes = np.where(
+            np.fromiter(propagation_model.initial_status.values(), dtype=int) == 1
+        )[0]
+        g = to_networkx(graph_structure)
+        max_distance_from_source = np.max(
+            [
+                np.max(
+                    np.fromiter(
+                        nx.single_source_shortest_path_length(g, source_node).values(),
+                        dtype=int,
+                    )
+                )
+                for source_node in source_nodes
+            ]
+        )
+
+        viz.plot_predictions(
+            propagation_model, predictions, max_distance_from_source, title=f"_{i}"
+        )

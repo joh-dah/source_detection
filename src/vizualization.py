@@ -87,6 +87,7 @@ def plot_matching_graph(g, matching, new_edges, title="matching_graph"):
 def plot_predictions(
     prop_model: DiffusionModel,
     node_values: np.ndarray,
+    max_colored_value: int,
     title: str,
 ):
     """
@@ -98,22 +99,7 @@ def plot_predictions(
     g = nx.Graph()
     g.add_nodes_from(prop_model.graph.nodes)
     g.add_edges_from(prop_model.graph.edges)
-
-    # extract the maximum shortest path length from a source node to any other node -> used for coloring
-    source_nodes = np.where(
-        np.fromiter(prop_model.initial_status.values(), dtype=int) == 1
-    )[0]
-    max_distance_from_source = np.max(
-        [
-            np.max(
-                np.fromiter(
-                    nx.single_source_shortest_path_length(g, source_node).values(),
-                    dtype=int,
-                )
-            )
-            for source_node in source_nodes
-        ]
-    )
+    print(node_values)
 
     sir_cmap = ListedColormap(["blue", "red", "gray"])
     predictions_cmap = LinearSegmentedColormap.from_list("predictions", ["blue", "red"])
@@ -135,11 +121,10 @@ def plot_predictions(
         cmap=sir_cmap,
     )
     # predicted initial infection graph
-    print(max_distance_from_source)
     plot_graph_with_colors(
         g,
         node_values,
-        max_distance_from_source,
+        max_colored_value,
         f"prediction_{title}",
         cmap=predictions_cmap,
     )

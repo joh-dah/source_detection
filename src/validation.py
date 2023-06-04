@@ -3,6 +3,7 @@
 import src.constants as const
 import src.GCN_model as gcn
 import src.GCNSI_model as gcnsi
+import src.GCNR_model as gcnr
 import src.vizualization as viz
 from src import utils
 
@@ -148,14 +149,22 @@ def main():
         model = gcn.GCN()
         model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
         prep_val_data = gcn.prepare_data(val_data)
+        evaluate(model, prep_val_data)
+        utils.vizualize_results(model, val_data[:n_plots], prep_val_data[:n_plots])
 
     elif const.MODEL == "GCNSI":
         model = gcnsi.GCNSI()
         model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
         prep_val_data = gcnsi.prepare_data(val_data)
+        evaluate(model, prep_val_data)
+        utils.vizualize_results(model, val_data[:n_plots], prep_val_data[:n_plots])
 
-    evaluate(model, prep_val_data)
-    utils.vizualize_results(model, val_data[:n_plots], prep_val_data[:n_plots])
+    elif const.MODEL == "GCNR":
+        model = gcnr.GCNR()
+        model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
+        prep_val_data = gcnr.prepare_data(val_data)
+        gcnr.evaluate(model, prep_val_data)
+        utils.vizualize_results_gcnr(model, val_data[:n_plots], prep_val_data[:n_plots])
 
 
 if __name__ == "__main__":
