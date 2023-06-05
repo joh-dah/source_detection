@@ -2,7 +2,7 @@
 # Run Parameters
 PROP_MODEL = "SIR"  # "SIR" or "SI"
 GRAPH_TYPE = "barabasi_albert"  # "watts_strogatz" or "barabasi_albert"
-MODEL = "GCNR"  # "GCN" or "GCNSI"
+MODEL = "GCNSI"  # "GCN" or "GCNSI"
 
 # General
 MODEL_PATH = "models"

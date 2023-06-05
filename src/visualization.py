@@ -5,11 +5,13 @@ from matplotlib.colors import Colormap
 from pathlib import Path
 import src.constants as const
 import numpy as np
+import torch
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from tqdm import tqdm
 from src import utils
 from architectures.GCNR import GCNR
 from architectures.GCNSI import GCNSI
+from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
 
 
 def plot_graph_with_colors(
@@ -90,17 +92,25 @@ def main():
 
     n_graphs = 5
 
-    val_data = utils.load_data(const.PROCESSED_DATA_PATH, n_graphs)
-    raw_data = utils.load_data(const.RAW_DATA_PATH, n_graphs)
-
     if const.MODEL == "GCNSI":
         model = GCNSI()
+        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
+            const.TRAINING_SIZE : const.TRAINING_SIZE + n_graphs
+        ]
     elif const.MODEL == "GCNR":
         model = GCNR()
+        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
+            const.TRAINING_SIZE : const.TRAINING_SIZE + n_graphs
+        ]
+
+    raw_data_paths = val_data.raw_paths[
+        const.TRAINING_SIZE : const.TRAINING_SIZE + n_graphs
+    ]
 
     model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
 
-    for i, data in tqdm(enumerate(raw_data)):
+    for i, path in tqdm(enumerate(raw_data_paths)):
+        data = torch.load(path)
         initial_status = data.y
         status = data.x
         edge_index = data.edge_index
@@ -132,7 +142,6 @@ def main():
             cmap=sir_cmap,
         )
 
-        print(val_data[i].x.shape, val_data[i].edge_index.shape)
         pred = model(val_data[i].x, val_data[i].edge_index)
 
         if const.MODEL == "GCNSI":

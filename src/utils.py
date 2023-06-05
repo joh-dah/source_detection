@@ -19,7 +19,9 @@ def load_data(path, n_files=None):
     print("Load Data:")
     if n_files is None:
         n_files = len(listdir(path))
+    print(listdir(path))
     for file in tqdm(listdir(path)[:n_files]):
+        print(file)
         data.append(torch.load(f"{path}/{file}"))
     return data
 

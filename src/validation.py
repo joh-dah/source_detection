@@ -167,7 +167,7 @@ def main():
     if const.MODEL == "GCNSI":
         model = GCNSI()
         model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
-        val_data = SDDataset(const.DATA_PATH, transform=process_gcnr_data)[
+        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
             const.TRAINING_SIZE :
         ]
         evaluate_source_predictions(model, val_data)
@@ -175,7 +175,7 @@ def main():
     elif const.MODEL == "GCNR":
         model = GCNR()
         model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
-        val_data = SDDataset(const.DATA_PATH, transform=process_gcnsi_data)[
+        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
             const.TRAINING_SIZE :
         ]
         evaluate_source_distance(model, val_data)
