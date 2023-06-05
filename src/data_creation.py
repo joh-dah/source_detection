@@ -120,9 +120,7 @@ def create_signal_propagation_model(graph: nx.Graph, model_type: str) -> Diffusi
     return prop_model
 
 
-def create_data_set(
-    n_graphs, path, graph_type=const.GRAPH_TYPE, model_type=const.PROP_MODEL
-):
+def create_data_set(n_graphs, graph_type=const.GRAPH_TYPE, model_type=const.PROP_MODEL):
     """
     Creates n graphs of type graph_type and runs a
     signal propagation model of type model_type on them.
@@ -133,7 +131,7 @@ def create_data_set(
     :param model_type: type of model to use for signal propagation
     """
 
-    path = Path(f"{const.RAW_DATA_PATH}/{path}")
+    path = Path(const.RAW_DATA_PATH)
     Path(path).mkdir(parents=True, exist_ok=True)
     for file_name in os.listdir(path):
         os.remove(os.path.join(path, file_name))
@@ -157,10 +155,8 @@ def main():
     """
     Creates a data set of graphs with modeled signal propagation for training and validation.
     """
-    print("Create Train Data:")
-    create_data_set(const.TRAINING_SIZE, "train")
-    print("Create Validation Data:")
-    create_data_set(const.VALIDATION_SIZE, "validation")
+    print("Create Data:")
+    create_data_set(const.TRAINING_SIZE + const.VALIDATION_SIZE)
 
 
 if __name__ == "__main__":
