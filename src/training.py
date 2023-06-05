@@ -1,6 +1,7 @@
 import datetime
 from architectures.GCNR import GCNR
 from architectures.GCNSI import GCNSI
+from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
 import torch
 from tqdm import tqdm
 import src.constants as const
@@ -39,14 +40,18 @@ def train(model, dataset, criterion):
 def main():
     """Initiates the training of the classifier specified in the constants file."""
 
-    train_data = utils.load_data(const.PROCESSED_DATA_PATH + "/train")
-
     if const.MODEL == "GCNSI":
         model = GCNSI()
+        train_data = SDDataset(const.DATA_PATH, transform=process_gcnsi_data)[
+            : const.TRAINING_SIZE
+        ]
         criterion = torch.nn.BCEWithLogitsLoss()
 
     elif const.MODEL == "GCNR":
         model = GCNR()
+        train_data = SDDataset(const.DATA_PATH, transform=process_gcnr_data)[
+            : const.TRAINING_SIZE
+        ]
         criterion = torch.nn.MSELoss()
 
     train(model, train_data, criterion)

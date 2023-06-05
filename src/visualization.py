@@ -90,8 +90,8 @@ def main():
 
     n_graphs = 5
 
-    val_data = utils.load_data(const.PROCESSED_DATA_PATH + "/validation", n_graphs)
-    raw_data = utils.load_data(const.RAW_DATA_PATH + "/validation", n_graphs)
+    val_data = utils.load_data(const.PROCESSED_DATA_PATH, n_graphs)
+    raw_data = utils.load_data(const.RAW_DATA_PATH, n_graphs)
 
     if const.MODEL == "GCNSI":
         model = GCNSI()
@@ -132,6 +132,7 @@ def main():
             cmap=sir_cmap,
         )
 
+        print(val_data[i].x.shape, val_data[i].edge_index.shape)
         pred = model(val_data[i].x, val_data[i].edge_index)
 
         if const.MODEL == "GCNSI":

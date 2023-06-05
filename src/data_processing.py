@@ -3,6 +3,7 @@ from src import utils
 import networkx as nx
 import numpy as np
 import os
+import shutil
 import pickle
 from tqdm import tqdm
 from pathlib import Path
@@ -26,7 +27,6 @@ class SDDataset(Dataset):
 
     def process(self):
         for idx, raw_path in enumerate(self.raw_paths):
-            print(raw_path)
             # load raw data
             data = torch.load(raw_path)
             # process data
@@ -76,7 +76,7 @@ def create_distance_labels(
     """
     distances = []
     # extract all sources from prob_model
-    sources = torch.where(initial_values == 1)[0]
+    sources = torch.where(initial_values == 1)[0].tolist()
     for source in sources:
         distances.append(nx.single_source_shortest_path_length(graph, source))
     # get min distance for each node
@@ -102,11 +102,7 @@ def process_gcnr_data(data: Data) -> Data:
 
 
 def main():
-    GCNSI_dataset = SDDataset(root=const.DATA_PATH, pre_transform=process_gcnsi_data)
-    GCNR_dataset = SDDataset(root=const.DATA_PATH, pre_transform=process_gcnr_data)
-    Train_dataset = GCNR_dataset[: const.TRAINING_SIZE]
-    Val_dataset = GCNR_dataset[const.TRAINING_SIZE :]
-    print(Train_dataset[0])
+    shutil.rmtree(os.path.join(const.DATA_PATH, "processed"), ignore_errors=True)
 
 
 if __name__ == "__main__":

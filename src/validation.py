@@ -7,6 +7,7 @@ from tqdm import tqdm
 import networkx as nx
 from src import visualization as vis
 from src import utils
+from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
 
 
 def predict_source_probailities(model, graph_structure, features):
@@ -145,7 +146,7 @@ def evaluate_source_distance(model, val_data):
     """
     pred_source_distances = []
     pred_distances = []
-    for i, data in enumerate(tqdm(val_data, desc="evaluate model")):
+    for data in tqdm(val_data, desc="evaluate model"):
         labels = data.y
         features = data.x
         edge_index = data.edge_index
@@ -163,16 +164,20 @@ def evaluate_source_distance(model, val_data):
 def main():
     """Initiates the validation of the classifier specified in the constants file."""
 
-    val_data = utils.load_data(const.PROCESSED_DATA_PATH + "/validation")
-
     if const.MODEL == "GCNSI":
         model = GCNSI()
         model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
+        val_data = SDDataset(const.DATA_PATH, transform=process_gcnr_data)[
+            const.TRAINING_SIZE :
+        ]
         evaluate_source_predictions(model, val_data)
 
     elif const.MODEL == "GCNR":
         model = GCNR()
         model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
+        val_data = SDDataset(const.DATA_PATH, transform=process_gcnsi_data)[
+            const.TRAINING_SIZE :
+        ]
         evaluate_source_distance(model, val_data)
 
 
