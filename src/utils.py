@@ -6,19 +6,21 @@ import numpy as np
 import torch
 from tqdm import tqdm
 import src.constants as const
-import src.vizualization as viz
+import src.visualization as vis
 import networkx as nx
 from ndlib.models.DiffusionModel import DiffusionModel
 from torch_geometric.data import Data
 from torch_geometric.utils import to_networkx
 
 
-def load_data(path):
+def load_data(path, n_files=None):
     """Loads data from path."""
     data = []
     print("Load Data:")
-    for file in tqdm(listdir(path)):
-        data.append(pickle.load(open(path + "/" + file, "rb")))
+    if n_files is None:
+        n_files = len(listdir(path))
+    for file in tqdm(listdir(path)[:n_files]):
+        data.append(torch.load(f"{path}/{file}"))
     return data
 
 
@@ -63,37 +65,37 @@ def load_model(model, path):
     return model
 
 
-def vizualize_results(
+def visualize_results(
     model: torch.nn.Module,
     propagation_models: list[DiffusionModel],
     prep_dataset: list[list[Data, torch.Tensor, torch.Tensor]],
 ):
     """
-    Vizualizes the predictions of the model.
+    visualizes the predictions of the model.
     :param model: The model on which predictions are made.
-    :param data_set: The data set to vizualize on.
+    :param data_set: The data set to visualize on.
     Contains the graph structure, the features and the labels.
     """
-    print("Vizualize Results:")
+    print("visualize Results:")
     for i, propagation_model in tqdm(enumerate(propagation_models)):
         graph_structure, features, _ = prep_dataset[i]
         predictions = model(features, graph_structure.edge_index)
         ranked_predictions = get_ranked_source_predictions(predictions)
-        viz.plot_predictions(propagation_model, ranked_predictions, 7, title=f"_{i}")
+        vis.plot_predictions(propagation_model, ranked_predictions, 7, title=f"_{i}")
 
 
-def vizualize_results_gcnr(
+def visualize_results_gcnr(
     model: torch.nn.Module,
     propagation_models: list[DiffusionModel],
     prep_dataset: list[list[Data, torch.Tensor, torch.Tensor]],
 ):
     """
-    Vizualizes the predictions of the model.
+    visualizes the predictions of the model.
     :param model: The model on which predictions are made.
-    :param data_set: The data set to vizualize on.
+    :param data_set: The data set to visualize on.
     Contains the graph structure, the features and the labels.
     """
-    print("Vizualize Results:")
+    print("visualize Results:")
     for i, propagation_model in tqdm(enumerate(propagation_models)):
         graph_structure, features, _ = prep_dataset[i]
         predictions = model(features, graph_structure.edge_index)
@@ -118,6 +120,6 @@ def vizualize_results_gcnr(
             ]
         )
 
-        viz.plot_predictions(
+        vis.plot_predictions(
             propagation_model, predictions, max_distance_from_source, title=f"_{i}"
         )

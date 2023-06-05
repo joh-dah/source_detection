@@ -1,11 +1,6 @@
-import numpy as np
-import networkx as nx
 import torch
 from torch_geometric.nn import GCNConv
-from torch_geometric.utils.convert import from_networkx
-from tqdm import tqdm
 import src.constants as const
-from src import utils
 
 
 class GCNSI(torch.nn.Module):
