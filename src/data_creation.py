@@ -9,9 +9,12 @@ import ndlib.models.ModelConfig as mc
 import networkx as nx
 from tqdm import tqdm
 import src.constants as const
+from ndlib.models.DiffusionModel import DiffusionModel
+from torch_geometric.data import Data
+import torch
 
 
-def select_random_sources(graph):
+def select_random_sources(graph: nx.Graph) -> list:
     """
     Selects nodes from the given graph as sources.
     The amount of nodes is randoly selected from a
@@ -27,7 +30,9 @@ def select_random_sources(graph):
     return random.choices(list(graph.nodes), k=n_sources)
 
 
-def model_SIR_signal_propagation(graph, iterations, seed=None):
+def model_SIR_signal_propagation(
+    graph: nx.Graph, iterations: int, seed: int = None
+) -> ep.SIRModel:
     """
     Creates a SIR model and runs it on the given graph.
     :param graph: graph to run the model on
@@ -50,7 +55,9 @@ def model_SIR_signal_propagation(graph, iterations, seed=None):
     return model
 
 
-def model_SI_signal_propagation(graph, iterations, seed=None):
+def model_SI_signal_propagation(
+    graph: nx.Graph, iterations: int, seed: int = None
+) -> ep.SIModel:
     """
     Creates a SI model and runs it on the given graph.
     :param graph: graph to run the model on
@@ -72,7 +79,7 @@ def model_SI_signal_propagation(graph, iterations, seed=None):
     return model
 
 
-def create_graph(graph_type):
+def create_graph(graph_type: str) -> nx.Graph:
     """
     Creates a graph of the given type.
     :param graph_type: type of graph to create
@@ -92,7 +99,7 @@ def create_graph(graph_type):
     return graph
 
 
-def create_signal_propagation_model(graph, model_type):
+def create_signal_propagation_model(graph: nx.Graph, model_type: str) -> DiffusionModel:
     """
     Creates a signal propagation model of the given type for the given graph.
     :param graph: graph to create the model for
@@ -126,7 +133,7 @@ def create_data_set(
     :param model_type: type of model to use for signal propagation
     """
 
-    path = Path(f"{const.DATA_PATH}/{path}")
+    path = Path(f"{const.RAW_DATA_PATH}/{path}")
     Path(path).mkdir(parents=True, exist_ok=True)
     for file_name in os.listdir(path):
         os.remove(os.path.join(path, file_name))
@@ -134,7 +141,16 @@ def create_data_set(
     for i in tqdm(range(n_graphs)):
         graph = create_graph(graph_type)
         prop_model = create_signal_propagation_model(graph, model_type)
-        pickle.dump(prop_model, open(path / f"{i}.pkl", "wb"))
+        X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)
+        y = torch.tensor(list(prop_model.initial_status.values()), dtype=torch.float)
+        edge_index = (
+            torch.tensor(list(graph.to_directed().edges), dtype=torch.long)
+            .t()
+            .contiguous()
+        )
+        data = Data(x=X, y=y, edge_index=edge_index)
+        data.validate()
+        torch.save(data, path / f"{i}.pt")
 
 
 def main():

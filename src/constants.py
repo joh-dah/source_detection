@@ -7,7 +7,8 @@ MODEL = "GCNR"  # "GCN" or "GCNSI"
 # General
 MODEL_PATH = "models"
 FIGURES_PATH = "figures"
-DATA_PATH = "data"
+RAW_DATA_PATH = "data/raw"
+PROCESSED_DATA_PATH = "data/processed"
 SEED = 123
 
 # Model Constants

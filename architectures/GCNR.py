@@ -91,6 +91,9 @@ def prepare_input_features(graph, prop_model, a):
 
 
 def create_distance_labels(graph: nx.Graph, prob_model):
+    """
+    Creates the labels for the GCNR model. Each label is the distance of the node to the nearest source.
+    """
     distances = []
     # extract all sources from prob_model
     sources = utils.extract_sources(prob_model)
@@ -101,7 +104,7 @@ def create_distance_labels(graph: nx.Graph, prob_model):
     for node in graph.nodes:
         min_distances.append(min([distance[node] for distance in distances]))
 
-    return torch.tensor(min_distances).float()
+    return torch.tensor(np.expand_dims(min_distances, axis=1)).float()
 
 
 def prepare_data(prop_models):
@@ -130,7 +133,6 @@ def evaluate(model, prep_val_data):
     :param model: The model to evaluate.
     :param prep_val_data: The validation data.
     """
-    min_matching_distances = []
     predictions_for_sources = []
     all_predictions = []
     for i, (graph_structure, features, labels) in enumerate(

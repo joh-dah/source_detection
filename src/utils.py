@@ -42,17 +42,6 @@ def get_ranked_source_predictions(predictions, n=None):
     return torch.topk(source_prob, n).indices
 
 
-def one_hot_encode(value_list, n_diff_features=-1):
-    """
-    One-Hot-Encode list of values.
-    :param value_list: list of values
-    :param n_diff_fearures: amount of different features in list
-    :return list of one-hot-encoded values
-    """
-    label_tensor = torch.tensor(value_list)
-    return torch.nn.functional.one_hot(label_tensor, n_diff_features).float()
-
-
 def save_model(model, name):
     """
     Saves model state to path.
