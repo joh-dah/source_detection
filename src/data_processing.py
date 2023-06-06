@@ -97,7 +97,15 @@ def process_gcnr_data(data: Data) -> Data:
 
 
 def main():
+    print("Removing old processed data...")
     shutil.rmtree(const.PROCESSED_DATA_PATH, ignore_errors=True)
+
+    print("Creating new processed data...")
+    if const.MODEL == "GCNSI":
+        SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)
+
+    elif const.MODEL == "GCNR":
+        SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)
 
 
 if __name__ == "__main__":
