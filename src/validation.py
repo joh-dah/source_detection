@@ -8,6 +8,7 @@ import networkx as nx
 from src import visualization as vis
 from src import utils
 from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
+from sklearn.metrics import roc_auc_score, roc_curve
 
 
 def predict_source_probailities(model, graph_structure, features):
@@ -75,7 +76,7 @@ def min_matching_distance(
 
     # creating a graph with only the sources, the predicted sources and the distances between them
     matching_graph = nx.Graph()
-    for source in sources.tolist():
+    for source in sources:
         distances = nx.single_source_shortest_path_length(G, source)
         new_edges = [
             ("s" + str(source), str(k), v)
@@ -106,6 +107,22 @@ def min_matching_distance(
     return min_matching_distance / len(sources)
 
 
+def compute_roc_curve(predictions, labels):
+    """
+    Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC) from prediction scores, false positive rates and true positive rates.
+    :param predictions: Predicted value for a node to be a source.
+    :param labels: Actual sources.
+    :return: Area under the roc curve, false positive rates and true positive rates.
+    """
+    soft_max_predictions = torch.softmax(predictions, 1)
+    source_prob = soft_max_predictions[:, 1].flatten()
+    false_positive, true_positive, thresholds = roc_curve(
+        labels[:, 1].tolist(), source_prob.tolist()
+    )
+    roc_score = roc_auc_score(labels[:, 1].tolist(), source_prob.tolist())
+    return roc_score, false_positive, true_positive
+
+
 def evaluate_source_predictions(model, val_data):
     """
     Evaluation for models, that predict for every node if it is a source or not.
@@ -115,6 +132,10 @@ def evaluate_source_predictions(model, val_data):
     """
     min_matching_distances = []
     ranks = []
+    roc_scores = []
+    false_positives = []
+    true_positives = []
+    n_plots = 5
     for i, data in enumerate(tqdm(val_data, desc="evaluate model")):
         labels = data.y
         features = data.x
@@ -122,7 +143,7 @@ def evaluate_source_predictions(model, val_data):
         sources = torch.where(labels[:, 0] == 0)[0]
         predictions = model(features, edge_index)
         ranked_predictions = (utils.get_ranked_source_predictions(predictions)).tolist()
-        for source in sources.tolist():
+        for source in sources:
             ranks.append(ranked_predictions.index(source))
         top_n_predictions = utils.get_ranked_source_predictions(
             predictions, len(sources)
@@ -132,10 +153,19 @@ def evaluate_source_predictions(model, val_data):
             min_matching_distance(edge_index, sources, top_n_predictions)
         )
 
+        roc_score, false_positive, true_positive = compute_roc_curve(
+            predictions, labels
+        )
+        roc_scores.append(roc_score)
+        false_positives.append(false_positive)
+        true_positives.append(true_positive)
+
     print(f"Average predicted rank of source: {np.mean(ranks)}")
     print(
         f"Average min matching distance of predicted source: {np.mean(min_matching_distances)}"
     )
+    print(f"Average roc score: {round(sum(roc_scores)/len(roc_scores), 2)}")
+    vis.plot_roc_curve(false_positives[:n_plots], true_positives[:n_plots])
 
 
 def evaluate_source_distance(model, val_data):
