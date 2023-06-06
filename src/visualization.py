@@ -87,6 +87,21 @@ def plot_matching_graph(g, matching, new_edges, title="matching_graph"):
     plt.close()
 
 
+def plot_roc_curve(false_positives, true_positives):
+    """
+    Plot ROC curves.
+    :param false_positives: The false positives rates.
+    :param true_positives: The true positives rates.
+    """
+    print("Visualize ROC curve:")
+    for i, false_positive in tqdm(enumerate(false_positives)):
+        plt.plot(false_positive, true_positives[i])
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.savefig(f"{const.FIGURES_PATH}/roc_curve__{i}.png")
+        plt.close()
+
+
 def main():
     """Visualize some graphs with the associated predictions"""
 

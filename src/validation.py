@@ -56,7 +56,10 @@ def find_closest_sources(matching_graph, unmatched_nodes):
 
 
 def min_matching_distance(
-    edge_index, sources, predicted_sources, title_for_matching_graph="matching_graph"
+    edge_index,
+    sources: torch.tensor,
+    predicted_sources,
+    title_for_matching_graph="matching_graph",
 ):
     """
     Calculates the average minimal matching distance between the sources and the predicted sources.
@@ -76,7 +79,7 @@ def min_matching_distance(
 
     # creating a graph with only the sources, the predicted sources and the distances between them
     matching_graph = nx.Graph()
-    for source in sources:
+    for source in sources.tolist():
         distances = nx.single_source_shortest_path_length(G, source)
         new_edges = [
             ("s" + str(source), str(k), v)
