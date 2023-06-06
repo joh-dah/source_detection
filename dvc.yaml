@@ -1,0 +1,61 @@
+stages:
+
+  data-creation:
+    cmd: python -m src.data_creation
+    deps:
+    - src/data_creation.py
+    params:
+    - params.json:
+      - data_creation
+    outs:
+    - data/raw
+
+  data-processing:
+  cmd: python -m src.data_processing
+  deps:
+  - data/raw
+  params:
+  - params.json:
+    - model
+    - data_creation
+  outs:
+  - data/processed
+
+  training:
+    cmd: python -m src.training
+    deps:
+    - src/training.py
+    - data/processed
+    params:
+    - params.json:
+      - training
+      - model
+    outs:
+    - models
+
+  validation:
+    cmd: python -m src.validation
+    deps:
+    - src/validation.py
+    - data/processed
+    params:
+    - params.json:
+      - model
+    outs:
+    - figures
+    metrics:
+      - report/:
+          cache: true
+
+  visualisation:
+    cmd: python -m src.visualization
+    deps:
+    - src/visualization.py
+    - data/processed
+    params:
+    - params.json:
+      - model
+      - visualization
+    outs:
+    - figures
+  

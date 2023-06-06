@@ -1,0 +1,31 @@
+{
+    "model": "GCNSI",
+    "data_creation": {
+        "graph_type": "barabasi_albert",
+        "prop_model": "SIR",
+        "training_size": 100,
+        "validation_size": 20,
+        "mean_nodes": 30,
+        "ws_neighbours": 10,
+        "ws_probability": 0.2,
+        "ba_neighbours": 2,
+        "mean_sources": 2,
+        "mean_iters": 65,
+        "sir_beta": 0.01,
+        "sir_gamma": 0.005,
+        "si_beta": 0.01
+    },
+    "training": {
+        "epochs": 20,
+        "learning_rate": 0.000001,
+        "hidden_size": 512,
+        "layers": 5,
+        "gcnsi_n_features": 4,
+        "gcnr_n_features": 4,
+        "weight_decay": 0.1,
+        "alpha": 0.5
+    },
+    "visualization": {
+        "seed": 123
+    }
+}
