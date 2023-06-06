@@ -13,7 +13,6 @@ stages:
     cmd: python -m src.data_processing
     deps:
     - src/data_processing.py
-    - data/raw
     params:
     - params.json:
       - model
@@ -24,6 +23,7 @@ stages:
     deps:
     - src/training.py
     - src/data_processing.py
+    - data/raw
     params:
     - params.json:
       - training
