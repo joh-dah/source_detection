@@ -47,7 +47,7 @@ def main():
         train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
             : const.TRAINING_SIZE
         ]
-        criterion = torch.nn.BCEWithLogitsLoss()
+        criterion = torch.nn.BCELoss()
 
     elif const.MODEL == "GCNR":
         model = GCNR()

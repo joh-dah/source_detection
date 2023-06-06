@@ -1,5 +1,5 @@
 {
-    "model": "GCNR",
+    "model": "GCNSI",
     "data_creation": {
         "graph_type": "barabasi_albert",
         "prop_model": "SIR",

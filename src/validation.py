@@ -117,12 +117,12 @@ def compute_roc_curve(predictions, labels):
     :param labels: Actual sources.
     :return: Area under the roc curve, false positive rates and true positive rates.
     """
-    soft_max_predictions = torch.softmax(predictions, 1)
-    source_prob = soft_max_predictions[:, 1].flatten()
+    print(predictions)
+    source_prob = predictions.flatten()
     false_positive, true_positive, thresholds = roc_curve(
-        labels[:, 1].tolist(), source_prob.tolist()
+        labels.tolist(), source_prob.tolist()
     )
-    roc_score = roc_auc_score(labels[:, 1].tolist(), source_prob.tolist())
+    roc_score = roc_auc_score(labels.tolist(), source_prob.tolist())
     return roc_score, false_positive, true_positive
 
 
@@ -143,7 +143,7 @@ def evaluate_source_predictions(model, val_data):
         labels = data.y
         features = data.x
         edge_index = data.edge_index
-        sources = torch.where(labels[:, 0] == 0)[0]
+        sources = torch.where(labels == 1)[0]
         predictions = model(features, edge_index)
         ranked_predictions = (utils.get_ranked_source_predictions(predictions)).tolist()
         for source in sources:
