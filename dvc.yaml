@@ -35,6 +35,7 @@ stages:
 
   validation:
     cmd: python -m src.validation
+    always_changed: true
     deps:
     - src/validation.py
     - data/processed
