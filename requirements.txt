@@ -4,3 +4,4 @@ torch
 ndlib
 torch_geometric
 pylint
+dvc
