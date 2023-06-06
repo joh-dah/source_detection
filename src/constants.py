@@ -7,6 +7,8 @@ MODEL = "GCNSI"  # "GCN" or "GCNSI"
 # General
 MODEL_PATH = "models"
 FIGURES_PATH = "figures"
+RAW_DATA_PATH = "data/raw"
+PROCESSED_DATA_PATH = "data/processed"
 DATA_PATH = "data"
 SEED = 123
 
@@ -22,6 +24,7 @@ N_CLASSES = 2  # is source/ not source
 ## GCNSI
 ALPHA = 0.5  # controls the influence that a node gets from its neighbors in feature creation
 GCNSI_N_FEATURES = 4
+GCNR_N_FEATURES = 4
 WEIGHT_DECAY = 0.1
 
 

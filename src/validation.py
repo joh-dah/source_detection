@@ -1,15 +1,13 @@
-""" This file contains the code for validating the model. """
-
 import src.constants as const
-import src.GCN_model as gcn
-import src.GCNSI_model as gcnsi
-import src.vizualization as viz
-from src import utils
-
+from architectures.GCNR import GCNR
+from architectures.GCNSI import GCNSI
+import numpy as np
 import torch
 from tqdm import tqdm
-from torch_geometric.utils import to_networkx
 import networkx as nx
+from src import visualization as vis
+from src import utils
+from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
 from sklearn.metrics import roc_auc_score, roc_curve
 
 
@@ -58,7 +56,10 @@ def find_closest_sources(matching_graph, unmatched_nodes):
 
 
 def min_matching_distance(
-    graph, sources, predicted_sources, title_for_matching_graph="matching_graph"
+    edge_index,
+    sources: torch.tensor,
+    predicted_sources,
+    title_for_matching_graph="matching_graph",
 ):
     """
     Calculates the average minimal matching distance between the sources and the predicted sources.
@@ -72,11 +73,13 @@ def min_matching_distance(
     :param title_for_matching_graph: The title for the visualization of the matching graph. Mostly for debugging purposes.
     :return: The avg minimal matching distance between the sources and the predicted sources.
     """
-    G = to_networkx(graph)
+    G = nx.Graph()
+    G.add_nodes_from(range(len(edge_index[0])))
+    G.add_edges_from(edge_index.t().tolist())
 
     # creating a graph with only the sources, the predicted sources and the distances between them
     matching_graph = nx.Graph()
-    for source in sources:
+    for source in sources.tolist():
         distances = nx.single_source_shortest_path_length(G, source)
         new_edges = [
             ("s" + str(source), str(k), v)
@@ -94,9 +97,9 @@ def min_matching_distance(
     # finding the unmatched nodes and adding the closest source to the matching
     unmatched_nodes = [v for v in matching_graph.nodes if v not in matching]
     new_edges = find_closest_sources(matching_graph, unmatched_nodes)
-    viz.plot_matching_graph(
-        matching_graph, matching_list, new_edges, title_for_matching_graph
-    )
+    # vis.plot_matching_graph(
+    #     matching_graph, matching_list, new_edges, title_for_matching_graph
+    # )
     matching_list += new_edges
 
     # calculating the sum of the weights of the matching
@@ -123,9 +126,10 @@ def compute_roc_curve(predictions, labels):
     return roc_score, false_positive, true_positive
 
 
-def evaluate(model, prep_val_data):
+def evaluate_source_predictions(model, val_data):
     """
-    Evaluates the model on the validation data.
+    Evaluation for models, that predict for every node if it is a source or not.
+    Prints the average predicted rank of the real source and the average min matching distance for the predicted sources.
     :param model: The model to evaluate.
     :param prep_val_data: The validation data.
     """
@@ -135,12 +139,12 @@ def evaluate(model, prep_val_data):
     false_positives = []
     true_positives = []
     n_plots = 5
-
-    for i, (graph_structure, features, labels) in enumerate(
-        tqdm(prep_val_data, desc="evaluate model")
-    ):
-        sources = torch.where(labels[:, 0] == 0)[0].tolist()
-        predictions = model(features, graph_structure.edge_index)
+    for i, data in enumerate(tqdm(val_data, desc="evaluate model")):
+        labels = data.y
+        features = data.x
+        edge_index = data.edge_index
+        sources = torch.where(labels[:, 0] == 0)[0]
+        predictions = model(features, edge_index)
         ranked_predictions = (utils.get_ranked_source_predictions(predictions)).tolist()
         for source in sources:
             ranks.append(ranked_predictions.index(source))
@@ -149,7 +153,7 @@ def evaluate(model, prep_val_data):
         )
         # currently we are fixing the number of predicted sources to the number of sources in the graph
         min_matching_distances.append(
-            min_matching_distance(graph_structure, sources, top_n_predictions)
+            min_matching_distance(edge_index, sources, top_n_predictions)
         )
 
         roc_score, false_positive, true_positive = compute_roc_curve(
@@ -159,34 +163,55 @@ def evaluate(model, prep_val_data):
         false_positives.append(false_positive)
         true_positives.append(true_positive)
 
-    print(f"Average rank of predicted source: {sum(ranks)/len(ranks)}")
+    print(f"Average predicted rank of source: {np.mean(ranks)}")
     print(
-        f"Average min matching distance: {sum(min_matching_distances)/len(min_matching_distances)}"
+        f"Average min matching distance of predicted source: {np.mean(min_matching_distances)}"
     )
     print(f"Average roc score: {round(sum(roc_scores)/len(roc_scores), 2)}")
-    viz.plot_roc_curve(false_positives[:n_plots], true_positives[:n_plots])
+    vis.plot_roc_curve(false_positives[:n_plots], true_positives[:n_plots])
+
+
+def evaluate_source_distance(model, val_data):
+    """
+    Evaluates the model on the validation data.
+    :param model: The model to evaluate.
+    :param prep_val_data: The validation data.
+    """
+    pred_source_distances = []
+    pred_distances = []
+    for data in tqdm(val_data, desc="evaluate model"):
+        labels = data.y
+        features = data.x
+        edge_index = data.edge_index
+        sources = torch.where(labels == 0)[0]
+        predictions = model(features, edge_index)
+        pred_distances += predictions.tolist()
+        pred_source_distances += predictions[sources].tolist()
+
+    print(
+        f"Average predicted source_distance for the sources: {np.mean(pred_source_distances)}"
+    )
+    print(f"Average predicted distance: {np.mean(pred_distances)}")
 
 
 def main():
     """Initiates the validation of the classifier specified in the constants file."""
 
-    val_data = utils.load_data(const.DATA_PATH + "/validation")
-
-    n_plots = 5
-    prep_val_data = None
-
-    if const.MODEL == "GCN":
-        model = gcn.GCN()
+    if const.MODEL == "GCNSI":
+        model = GCNSI()
         model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
-        prep_val_data = gcn.prepare_data(val_data)
+        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
+            const.TRAINING_SIZE :
+        ]
+        evaluate_source_predictions(model, val_data)
 
-    elif const.MODEL == "GCNSI":
-        model = gcnsi.GCNSI()
+    elif const.MODEL == "GCNR":
+        model = GCNR()
         model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
-        prep_val_data = gcnsi.prepare_data(val_data)
-
-    evaluate(model, prep_val_data)
-    utils.vizualize_results(model, val_data[:n_plots], prep_val_data[:n_plots])
+        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
+            const.TRAINING_SIZE :
+        ]
+        evaluate_source_distance(model, val_data)
 
 
 if __name__ == "__main__":
