@@ -30,13 +30,9 @@ stages:
   data-processing:
     cmd: python -m src.data_processing
     deps:
-    - path: data/raw
-      md5: 135bc62652ee282eef3bd0f6e6e224d3.dir
-      size: 412066
-      nfiles: 120
     - path: src/data_processing.py
-      md5: a16d5e12c500aef43f4e9f1ba793c7fe
-      size: 3479
+      md5: 0f86614a5a6220fbd4dd6465eb97f182
+      size: 3495
     params:
       params.json:
         data_creation:
@@ -57,9 +53,13 @@ stages:
   training:
     cmd: python -m src.training
     deps:
+    - path: data/raw
+      md5: 135bc62652ee282eef3bd0f6e6e224d3.dir
+      size: 412066
+      nfiles: 120
     - path: src/data_processing.py
-      md5: a16d5e12c500aef43f4e9f1ba793c7fe
-      size: 3479
+      md5: 0f86614a5a6220fbd4dd6465eb97f182
+      size: 3495
     - path: src/training.py
       md5: c4971d860364f22b44d9b6e83f164c6f
       size: 1986
@@ -81,7 +81,7 @@ stages:
       size: 456850
       nfiles: 122
     - path: models
-      md5: 51c136b7a27197dc38c43e685bc6297d.dir
+      md5: 549c415f7c5b15a85c320f24575b98ba.dir
       size: 2130598
       nfiles: 2
   visualisation:
