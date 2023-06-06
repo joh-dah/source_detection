@@ -85,7 +85,7 @@ def create_distance_labels(
 def process_gcnsi_data(data: Data) -> Data:
     """Features and Labels for the GCNSI model."""
     X = paper_input(data.x, data.edge_index)
-    y = torch.nn.functional.one_hot(data.y.to(torch.int64), const.N_CLASSES).float()
+    y = torch.nn.functional.one_hot(data.y.to(torch.int64), 2).float()
     return Data(x=X, y=y, edge_index=data.edge_index)
 
 
@@ -97,7 +97,7 @@ def process_gcnr_data(data: Data) -> Data:
 
 
 def main():
-    shutil.rmtree(os.path.join(const.DATA_PATH, "processed"), ignore_errors=True)
+    shutil.rmtree(const.PROCESSED_DATA_PATH, ignore_errors=True)
 
 
 if __name__ == "__main__":

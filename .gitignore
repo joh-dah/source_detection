@@ -6,3 +6,6 @@ figures/
 models/
 src/__pycache__/
 .idea/
+/models
+/figures
+/roc
