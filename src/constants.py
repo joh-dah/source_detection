@@ -1,47 +1,43 @@
 """Global constants for the project."""
-# Run Parameters
-PROP_MODEL = "SIR"  # "SIR" or "SI"
-GRAPH_TYPE = "barabasi_albert"  # "watts_strogatz" or "barabasi_albert"
-MODEL = "GCNSI"  # "GCN" or "GCNSI"
+import json
+
+params = json.load(open("params.json", "r"))
 
 # General
-MODEL_PATH = "models"
-FIGURES_PATH = "figures"
+MODEL = params["model"]  # "GCNR" or "GCNSI"
+DATA_PATH = "data"
 RAW_DATA_PATH = "data/raw"
 PROCESSED_DATA_PATH = "data/processed"
-DATA_PATH = "data"
-SEED = 123
+MODEL_PATH = "models"
+FIGURES_PATH = "figures"
+ROC_PATH = "roc"
 
-# Model Constants
-TRAINING_SIZE = 100
-VALIDATION_SIZE = 20
-EPOCHS = 20
-LEARNING_RATE = 0.000001
-HIDDEN_SIZE = 512
-LAYERS = 5
-N_FEATURES = 3
-N_CLASSES = 2  # is source/ not source
-## GCNSI
-ALPHA = 0.5  # controls the influence that a node gets from its neighbors in feature creation
-GCNSI_N_FEATURES = 4
-GCNR_N_FEATURES = 4
-WEIGHT_DECAY = 0.1
+# Data Creation
+dc = params["data_creation"]
+GRAPH_TYPE = dc["graph_type"]  # "watts_strogatz" or "barabasi_albert"
+PROP_MODEL = dc["prop_model"]  # "SIR" or "SI"
+TRAINING_SIZE = dc["training_size"]
+VALIDATION_SIZE = dc["validation_size"]
+MEAN_N_NODES = dc["mean_nodes"]
+WS_NEIGHBOURS = dc["ws_neighbours"]
+WS_PROBABILITY = dc["ws_probability"]
+BA_NEIGHBOURS = dc["ba_neighbours"]
+MEAN_SOURCES = dc["mean_sources"]
+MEAN_ITERS = dc["mean_iters"]
+SIR_BETA = dc["sir_beta"]
+SIR_GAMMA = dc["sir_gamma"]
+SI_BETA = dc["si_beta"]
 
+# Training
+training = params["training"]
+EPOCHS = training["epochs"]
+LEARNING_RATE = training["learning_rate"]
+HIDDEN_SIZE = training["hidden_size"]
+LAYERS = training["layers"]
+GCNR_N_FEATURES = training["gcnr_n_features"]
+GCNSI_N_FEATURES = training["gcnsi_n_features"]
+ALPHA = training["alpha"]
+WEIGHT_DECAY = training["weight_decay"]
 
-# Graph Constants
-MEAN_N_NODES = 30  # mean of number of nodes in the graph
-## Watts-Strogatz
-WS_NEIGHBOURS = 10  # control number of neighbours to connect to
-WS_PROBABILITY = 0.2  # probability of rewiring an edge
-## Barabasi-Albert
-BA_NEIGHBOURS = 2  # control number of edges to attach between new and existing nodes
-
-
-# Signal Propagation Constants
-MEAN_SOURCES = 2  # number of infection sources (probably make random later)
-MEAN_ITERS = 65  # number of iterations for signal propagation
-## SIR
-SIR_BETA = 0.01  # probability for neighbor to get infected
-SIR_GAMMA = 0.005  # probability of node to recover
-## SI
-SI_BETA = 0.01  # probability for neighbor to get infected
+# Visualization
+SEED = params["visualization"]["seed"]

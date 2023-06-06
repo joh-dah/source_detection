@@ -94,11 +94,12 @@ def plot_roc_curve(false_positives, true_positives):
     :param true_positives: The true positives rates.
     """
     print("Visualize ROC curve:")
+    Path(const.ROC_PATH).mkdir(parents=True, exist_ok=True)
     for i, false_positive in tqdm(enumerate(false_positives)):
         plt.plot(false_positive, true_positives[i])
         plt.xlabel("False Positive Rate")
         plt.ylabel("True Positive Rate")
-        plt.savefig(f"{const.FIGURES_PATH}/roc_curve__{i}.png")
+        plt.savefig(f"{const.ROC_PATH}/roc_curve__{i}.png")
         plt.close()
 
 
@@ -124,6 +125,7 @@ def main():
 
     model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
 
+    print("Visualize example predictions:")
     for i, path in tqdm(enumerate(raw_data_paths)):
         data = torch.load(path)
         initial_status = data.y

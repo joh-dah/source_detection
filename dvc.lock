@@ -1,0 +1,119 @@
+schema: '2.0'
+stages:
+  data-creation:
+    cmd: python -m src.data_creation
+    deps:
+    - path: src/data_creation.py
+      md5: fad8846a2ab0ee932cecbe2f98fe10e2
+      size: 5593
+    params:
+      params.json:
+        data_creation:
+          graph_type: barabasi_albert
+          prop_model: SIR
+          training_size: 100
+          validation_size: 20
+          mean_nodes: 30
+          ws_neighbours: 10
+          ws_probability: 0.2
+          ba_neighbours: 2
+          mean_sources: 2
+          mean_iters: 65
+          sir_beta: 0.01
+          sir_gamma: 0.005
+          si_beta: 0.01
+    outs:
+    - path: data/raw
+      md5: 135bc62652ee282eef3bd0f6e6e224d3.dir
+      size: 412066
+      nfiles: 120
+  data-processing:
+    cmd: python -m src.data_processing
+    deps:
+    - path: data/raw
+      md5: 135bc62652ee282eef3bd0f6e6e224d3.dir
+      size: 412066
+      nfiles: 120
+    - path: src/data_processing.py
+      md5: 47a7a5fe1635e1bfed085df8752b47c7
+      size: 3481
+    params:
+      params.json:
+        data_creation:
+          graph_type: barabasi_albert
+          prop_model: SIR
+          training_size: 100
+          validation_size: 20
+          mean_nodes: 30
+          ws_neighbours: 10
+          ws_probability: 0.2
+          ba_neighbours: 2
+          mean_sources: 2
+          mean_iters: 65
+          sir_beta: 0.01
+          sir_gamma: 0.005
+          si_beta: 0.01
+        model: GCNR
+  training:
+    cmd: python -m src.training
+    deps:
+    - path: src/data_processing.py
+      md5: 47a7a5fe1635e1bfed085df8752b47c7
+      size: 3481
+    - path: src/training.py
+      md5: 27b80784d10a3d6111b9c69c7e84bd82
+      size: 1996
+    params:
+      params.json:
+        model: GCNR
+        training:
+          epochs: 20
+          learning_rate: 1e-06
+          hidden_size: 512
+          layers: 5
+          gcnsi_n_features: 4
+          gcnr_n_features: 4
+          weight_decay: 0.1
+          alpha: 0.5
+    outs:
+    - path: data/processed
+      md5: e4143f86d854124dc7c1a6a58af85d26.dir
+      size: 456850
+      nfiles: 122
+    - path: models
+      md5: 2a550ff213123691788ee50ef9386d36.dir
+      size: 2130582
+      nfiles: 2
+  visualisation:
+    cmd: python -m src.visualization
+    deps:
+    - path: data/processed
+      md5: e4143f86d854124dc7c1a6a58af85d26.dir
+      size: 456850
+      nfiles: 122
+    - path: src/visualization.py
+      md5: 7cb74fab9331bbc611cc70c0af14395d
+      size: 5498
+    params:
+      params.json:
+        model: GCNR
+        visualization:
+          seed: 123
+    outs:
+    - path: figures
+      md5: 0eb74be776f0a63b51e2990a79abbdb9.dir
+      size: 903832
+      nfiles: 15
+  validation:
+    cmd: python -m src.validation
+    deps:
+    - path: data/processed
+      md5: e4143f86d854124dc7c1a6a58af85d26.dir
+      size: 456850
+      nfiles: 122
+    - path: src/validation.py
+      md5: 35253f877df512a6f8ec0f518ce39569
+      size: 8974
+    params:
+      params.json:
+        model: GCNR

@@ -40,7 +40,7 @@ def train(model, dataset, criterion):
 def main():
     """Initiates the training of the classifier specified in the constants file."""
 
-    print("Prepare data ...")
+    print("Prepare Data ...")
 
     if const.MODEL == "GCNSI":
         model = GCNSI()
