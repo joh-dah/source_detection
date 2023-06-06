@@ -151,7 +151,7 @@ def main():
 
         elif const.MODEL == "GCNR":
             # for every node, colorcode the distance to the source. If distance is bigger than 5, color is blue
-            n_colors = 5
+            n_colors = 4
 
         # predicted graph
         plot_graph_with_colors(

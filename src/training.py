@@ -40,6 +40,8 @@ def train(model, dataset, criterion):
 def main():
     """Initiates the training of the classifier specified in the constants file."""
 
+    print("Prepare data ...")
+
     if const.MODEL == "GCNSI":
         model = GCNSI()
         train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
