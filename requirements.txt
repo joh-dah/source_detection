@@ -4,4 +4,17 @@ torch
 ndlib
 torch_geometric
 pylint
+isort==5.9.3
+ndlib==5.1.1
+PyQt5==5.15.5
+PyQt5-stubs==5.15.2.0
+typing-extensions==3.10.0.2
+PyInstaller==4.5.1
+numpy
+dataclasses-json==0.5.5
+cdlib
+fire==0.4.0
+sphinx==4.1.2
+sphinx_rtd_theme==0.4.3
+myst-parser==0.15.2
 dvc
