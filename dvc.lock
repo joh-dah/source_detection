@@ -11,29 +11,29 @@ stages:
         data_creation:
           graph_type: watts_strogatz
           prop_model: SI
-          training_size: 200
-          validation_size: 40
+          training_size: 300
+          validation_size: 60
           mean_nodes: 50
           ws_neighbours: 6
           ws_probability: 0.2
           ba_neighbours: 2
           mean_sources: 1
-          mean_iters: 10
+          mean_iters: 35
           sir_beta: 0.01
           sir_gamma: 0.005
           si_beta: 0.01
     outs:
     - path: data/raw
-      md5: fd0d925ccc24aa330dda69e58ee4cb8e.dir
-      size: 1560938
-      nfiles: 240
+      md5: 63e298777df26a8bf19d214e5b7a4eb6.dir
+      size: 2357170
+      nfiles: 360
   data-processing:
     cmd: python -W ignore -m src.data_processing
     deps:
     - path: data/raw
-      md5: fd0d925ccc24aa330dda69e58ee4cb8e.dir
-      size: 1560938
-      nfiles: 240
+      md5: 63e298777df26a8bf19d214e5b7a4eb6.dir
+      size: 2357170
+      nfiles: 360
     - path: src/data_processing.py
       md5: ca5a40b75736b128339dae89ee627b94
       size: 3769
@@ -42,39 +42,39 @@ stages:
         data_creation:
           graph_type: watts_strogatz
           prop_model: SI
-          training_size: 200
-          validation_size: 40
+          training_size: 300
+          validation_size: 60
           mean_nodes: 50
           ws_neighbours: 6
           ws_probability: 0.2
           ba_neighbours: 2
           mean_sources: 1
-          mean_iters: 10
+          mean_iters: 35
           sir_beta: 0.01
           sir_gamma: 0.005
           si_beta: 0.01
         model: GCNSI
     outs:
     - path: data/processed
-      md5: 8871aef9afc4aaec671db2306a250ee3.dir
-      size: 1702298
-      nfiles: 242
+      md5: 91177a01d16abb8889efb6851120c03e.dir
+      size: 2570082
+      nfiles: 362
   training:
     cmd: python -W ignore -m src.training
     deps:
     - path: data/processed
-      md5: 8871aef9afc4aaec671db2306a250ee3.dir
-      size: 1702298
-      nfiles: 242
+      md5: 91177a01d16abb8889efb6851120c03e.dir
+      size: 2570082
+      nfiles: 362
     - path: src/training.py
-      md5: 84036c43d606014859670c06e2bef651
-      size: 2034
+      md5: 4613bc6978b7f1da49b57dba9aa71be8
+      size: 2041
     params:
       params.json:
         model: GCNSI
         training:
-          epochs: 15
-          learning_rate: 0.0001
+          epochs: 1
+          learning_rate: 0.001
           hidden_size: 512
           layers: 10
           gcnsi_n_features: 4
@@ -82,21 +82,19 @@ stages:
           weight_decay: 1e-08
           alpha: 0.5
     outs:
-    - path: models
-      md5: 287bcb35ac61b07c17acca8bae1d61a2.dir
-      size: 1065319
-      nfiles: 1
+    - path: models/latest.pth
+      md5: d8894f3ce6983136bcfdd52d57bced8b
+      size: 1064911
   visualisation:
     cmd: python -W ignore -m src.visualization
     deps:
     - path: data/processed
-      md5: 8871aef9afc4aaec671db2306a250ee3.dir
-      size: 1702298
-      nfiles: 242
-    - path: models
-      md5: 287bcb35ac61b07c17acca8bae1d61a2.dir
-      size: 1065319
-      nfiles: 1
+      md5: 91177a01d16abb8889efb6851120c03e.dir
+      size: 2570082
+      nfiles: 362
+    - path: models/latest.pth
+      md5: d8894f3ce6983136bcfdd52d57bced8b
+      size: 1064911
     - path: src/visualization.py
       md5: bc26f9a253fbdb3d5f50f0818cd98d5e
       size: 5655
@@ -107,28 +105,26 @@ stages:
           seed: 123
     outs:
     - path: figures
-      md5: c2021e794429d47394ec27410d86de93.dir
-      size: 1569072
+      md5: e412f29312819b8e1515db4a100805c2.dir
+      size: 1561456
       nfiles: 15
   validation:
     cmd: python -W ignore -m src.validation
     deps:
     - path: data/processed
-      md5: 8871aef9afc4aaec671db2306a250ee3.dir
-      size: 1702298
-      nfiles: 242
-    - path: models
-      md5: 287bcb35ac61b07c17acca8bae1d61a2.dir
-      size: 1065319
-      nfiles: 1
+      md5: 91177a01d16abb8889efb6851120c03e.dir
+      size: 2570082
+      nfiles: 362
+    - path: models/latest.pth
+      md5: d8894f3ce6983136bcfdd52d57bced8b
+      size: 1064911
     - path: src/validation.py
-      md5: fb24c9f8b854c691b724742e4d4b3fdc
-      size: 9465
+      md5: c00322a9a6afe060dc19bd2d6e5aaece
+      size: 9586
     params:
       params.json:
         model: GCNSI
     outs:
-    - path: reports/
-      md5: f8e8fb8e45866a2d06fa919d6b672fce.dir
-      size: 130
-      nfiles: 1
+    - path: reports/latest.json
+      md5: 839a2b0f9108efe956d028ccabc4346c
+      size: 143

@@ -207,7 +207,7 @@ def evaluate_source_distance(model, val_data):
 def main():
     """Initiates the validation of the classifier specified in the constants file."""
 
-    model_files = glob.glob(const.MODEL_PATH + r"/*.pth")
+    model_files = glob.glob(const.MODEL_PATH + r"/*[0-9].pth")
     last_model_file = max(model_files, key=os.path.getctime)
     model_name = last_model_file.split("/")[-1].split(".")[0]
     print(f"loading model: {last_model_file}")
@@ -235,6 +235,11 @@ def main():
     json.dump(
         metrics_dict,
         open(f"{const.REPORT_PATH}/{model_name}.json", "w"),
+        indent=4,
+    )
+    json.dump(
+        metrics_dict,
+        open(f"{const.REPORT_PATH}/latest.json", "w"),
         indent=4,
     )
 

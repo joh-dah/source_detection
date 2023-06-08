@@ -61,6 +61,7 @@ def main():
         criterion = torch.nn.MSELoss()
 
     train(model, train_data, criterion)
+    utils.save_model(model, "latest")
     utils.save_model(model, model_name)
 
 

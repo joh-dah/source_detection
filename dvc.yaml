@@ -31,27 +31,26 @@ stages:
       - training
       - model
     outs:
-    - models
+    - models/latest.pth
 
   validation:
     cmd: python -W ignore -m src.validation
-    always_changed: true
     deps:
     - src/validation.py
     - data/processed
-    - models
+    - models/latest.pth
     params:
     - params.json:
       - model
     metrics:
-    - reports/
+    - reports/latest.json
 
   visualisation:
     cmd: python -W ignore -m src.visualization
     deps:
     - src/visualization.py
     - data/processed
-    - models
+    - models/latest.pth
     params:
     - params.json:
       - model
