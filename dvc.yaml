@@ -13,30 +13,33 @@ stages:
     cmd: python -m src.data_processing
     deps:
     - src/data_processing.py
+    - data/raw
     params:
     - params.json:
       - model
       - data_creation
+    outs:
+    - data/processed
 
   training:
     cmd: python -m src.training
     deps:
     - src/training.py
-    - src/data_processing.py
-    - data/raw
+    - data/processed
     params:
     - params.json:
       - training
       - model
     outs:
-    - data/processed
     - models
 
   validation:
     cmd: python -m src.validation
+    always_changed: true
     deps:
     - src/validation.py
     - data/processed
+    - models
     params:
     - params.json:
       - model
@@ -46,6 +49,7 @@ stages:
     deps:
     - src/visualization.py
     - data/processed
+    - models
     params:
     - params.json:
       - model

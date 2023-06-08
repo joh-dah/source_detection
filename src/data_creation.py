@@ -14,7 +14,7 @@ from torch_geometric.data import Data
 import torch
 
 
-def select_random_sources(graph: nx.Graph) -> list:
+def select_random_sources(graph: nx.Graph, select_random=True) -> list:
     """
     Selects nodes from the given graph as sources.
     The amount of nodes is randoly selected from a
@@ -22,11 +22,14 @@ def select_random_sources(graph: nx.Graph) -> list:
     :param graph: graph to select sources from
     :return: list of source nodes
     """
-    mu = const.MEAN_SOURCES
-    sigma = int(np.sqrt(mu))
-    n_sources = np.random.normal(mu, sigma)
-    # make sure there are no sources smaller than 1 or larger than 1/4 of the graph
-    n_sources = np.clip(n_sources, 1, len(graph.nodes) / 4).astype(int)
+    if select_random:
+        mu = const.MEAN_SOURCES
+        sigma = int(np.sqrt(mu))
+        n_sources = np.random.normal(mu, sigma)
+        # make sure there are no sources smaller than 1 or larger than 1/4 of the graph
+        n_sources = np.clip(n_sources, 1, len(graph.nodes) / 4).astype(int)
+    else:
+        n_sources = const.MEAN_SOURCES
     return random.choices(list(graph.nodes), k=n_sources)
 
 
@@ -41,7 +44,7 @@ def model_SIR_signal_propagation(
     :return: propagation model
     """
     model = ep.SIRModel(graph, seed=seed)
-    source_nodes = select_random_sources(graph)
+    source_nodes = select_random_sources(graph, select_random=False)
 
     config = mc.Configuration()
     config.add_model_parameter("beta", const.SIR_BETA)
@@ -66,7 +69,7 @@ def model_SI_signal_propagation(
     :return: propagation model
     """
     model = ep.SIModel(graph, seed=seed)
-    source_nodes = select_random_sources(graph)
+    source_nodes = select_random_sources(graph, select_random=False)
 
     config = mc.Configuration()
     config.add_model_parameter("beta", const.SI_BETA)

@@ -4,29 +4,29 @@ stages:
     cmd: python -m src.data_creation
     deps:
     - path: src/data_creation.py
-      md5: fad8846a2ab0ee932cecbe2f98fe10e2
-      size: 5593
+      md5: 76ec9fe9de2a59dccfca9c2f14ea1a4b
+      size: 5746
     params:
       params.json:
         data_creation:
           graph_type: barabasi_albert
-          prop_model: SIR
-          training_size: 100
+          prop_model: SI
+          training_size: 1000
           validation_size: 20
-          mean_nodes: 30
+          mean_nodes: 60
           ws_neighbours: 10
           ws_probability: 0.2
           ba_neighbours: 2
-          mean_sources: 2
+          mean_sources: 1
           mean_iters: 65
           sir_beta: 0.01
           sir_gamma: 0.005
           si_beta: 0.01
     outs:
     - path: data/raw
-      md5: 135bc62652ee282eef3bd0f6e6e224d3.dir
-      size: 412066
-      nfiles: 120
+      md5: 1cc2102cfe2572737ff9c09a01b174dd.dir
+      size: 5662210
+      nfiles: 1020
   data-processing:
     cmd: python -m src.data_processing
     deps:
@@ -37,14 +37,14 @@ stages:
       params.json:
         data_creation:
           graph_type: barabasi_albert
-          prop_model: SIR
-          training_size: 100
+          prop_model: SI
+          training_size: 1000
           validation_size: 20
-          mean_nodes: 30
+          mean_nodes: 60
           ws_neighbours: 10
           ws_probability: 0.2
           ba_neighbours: 2
-          mean_sources: 2
+          mean_sources: 1
           mean_iters: 65
           sir_beta: 0.01
           sir_gamma: 0.005
