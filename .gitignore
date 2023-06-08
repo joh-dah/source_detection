@@ -9,4 +9,3 @@ src/__pycache__/
 /models
 /figures
 /roc
-dvc.lock
