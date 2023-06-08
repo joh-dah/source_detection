@@ -42,8 +42,7 @@ def get_ranked_source_predictions(predictions, n=None):
     """
     if n is None:
         n = predictions.shape[0]
-    source_prob = predictions[:, 1].flatten()
-    return torch.topk(source_prob, n).indices
+    return torch.topk(predictions.flatten(), n).indices
 
 
 def save_model(model, name):

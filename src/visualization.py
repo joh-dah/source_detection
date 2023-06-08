@@ -1,4 +1,6 @@
 from typing import Union
+import glob
+import os
 import networkx as nx
 from matplotlib import pyplot as plt
 from matplotlib.colors import Colormap
@@ -123,7 +125,10 @@ def main():
         const.TRAINING_SIZE : const.TRAINING_SIZE + n_graphs
     ]
 
-    model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
+    model_files = glob.glob(const.MODEL_PATH + r"/*.pth")
+    last_model_file = max(model_files, key=os.path.getctime)
+    print(f"loading model: {last_model_file}")
+    model = utils.load_model(model, last_model_file)
 
     print("Visualize example predictions:")
     for i, path in tqdm(enumerate(raw_data_paths)):
