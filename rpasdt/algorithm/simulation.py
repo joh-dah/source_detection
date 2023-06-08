@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Dict, List
 
+from torch_geometric.utils.convert import to_networkx
+
 import networkx as nx
 from ndlib.models import DiffusionModel
 
@@ -89,24 +91,23 @@ def perform_source_detection_simulation(
     result = SourceDetectionSimulationResult(
         source_detection_config=source_detection_config
     )
-    for simulation in _simulate_diffusion(source_detection_config):
-        infected_nodes = get_nodes_by_diffusion_status(
-            simulation.diffusion_model, NodeStatusEnum.INFECTED
-        )
-        IG = simulation.graph.subgraph(infected_nodes)
-        number_of_sources = len(simulation.source_nodes)
+    for data in source_detection_config.simulated_graphs:
+        G = to_networkx(data, to_undirected=True)
+        infected_nodes = data.x.nonzero().flatten().tolist()
+        IG = G.subgraph(infected_nodes)
+        source_nodes = data.y.nonzero().tolist()
         for (
             name,
             source_detector_config,
         ) in source_detection_config.source_detectors.items():
             source_detector = get_source_detector(
                 algorithm=source_detector_config.alg,
-                G=simulation.graph,
+                G=G,
                 IG=IG,
                 config=source_detector_config.config,
-                number_of_sources=number_of_sources,
+                number_of_sources=len(source_nodes),
             )
-            sd_evaluation = source_detector.evaluate_sources(simulation.source_nodes)
+            sd_evaluation = source_detector.evaluate_sources(source_nodes)
             result.add_result(name, source_detector_config, sd_evaluation)
     return result
 
