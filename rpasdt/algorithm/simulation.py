@@ -86,12 +86,12 @@ def perform_diffusion_simulation(
 
 
 def perform_source_detection_simulation(
-    source_detection_config: SourceDetectionSimulationConfig,
+    source_detection_config: SourceDetectionSimulationConfig, data_set
 ) -> SourceDetectionSimulationResult:
     result = SourceDetectionSimulationResult(
         source_detection_config=source_detection_config
     )
-    for data in source_detection_config.simulated_graphs:
+    for data in data_set:
         G = to_networkx(data, to_undirected=True)
         infected_nodes = data.x.nonzero().flatten().tolist()
         IG = G.subgraph(infected_nodes)
