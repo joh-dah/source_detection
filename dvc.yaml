@@ -1,6 +1,6 @@
 stages:
   data-creation:
-    cmd: python -m src.data_creation
+    cmd: python -W ignore -m src.data_creation
     deps:
     - src/data_creation.py
     params:
@@ -10,7 +10,7 @@ stages:
     - data/raw
 
   data-processing:
-    cmd: python -m src.data_processing
+    cmd: python -W ignore -m src.data_processing
     deps:
     - src/data_processing.py
     - data/raw
@@ -22,7 +22,7 @@ stages:
     - data/processed
 
   training:
-    cmd: python -m src.training
+    cmd: python -W ignore -m src.training
     deps:
     - src/training.py
     - data/processed
@@ -34,7 +34,7 @@ stages:
     - models
 
   validation:
-    cmd: python -m src.validation
+    cmd: python -W ignore -m src.validation
     always_changed: true
     deps:
     - src/validation.py
@@ -43,9 +43,11 @@ stages:
     params:
     - params.json:
       - model
+    metrics:
+    - reports/
 
   visualisation:
-    cmd: python -m src.visualization
+    cmd: python -W ignore -m src.visualization
     deps:
     - src/visualization.py
     - data/processed

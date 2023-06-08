@@ -11,6 +11,7 @@ PROCESSED_DATA_PATH = "data/processed"
 MODEL_PATH = "models"
 FIGURES_PATH = "figures"
 ROC_PATH = "roc"
+REPORT_PATH = "reports"
 
 # Data Creation
 dc = params["data_creation"]
