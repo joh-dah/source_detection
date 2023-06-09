@@ -3,13 +3,14 @@ from typing import List, Set, Union
 
 import networkx as nx
 from networkx import Graph
+from torch_geometric.utils.convert import from_networkx
 
 from rpasdt.algorithm.models import (
     ExperimentSourceDetectionEvaluation,
     SingleSourceDetectionEvaluation,
 )
 from rpasdt.common.utils import multi_sum
-
+from src.validation import min_matching_distance
 
 def compute_error_distance(
     G: Graph, not_detected_sources: Set[int], invalid_detected_sources: Set[int]
@@ -48,17 +49,20 @@ def compute_source_detection_evaluation(
     FN = len(real_sources) - TP
     TN = N - FN
 
-    error_distance = compute_error_distance(
+    '''error_distance = compute_error_distance(
         G=G,
         not_detected_sources=not_detected_sources,
         invalid_detected_sources=invalid_detected_sources,
-    )
+    )'''
+    data = from_networkx(G)
+    min_matching_dist = min_matching_distance(data.edge_index, real_sources, detected_sources)
 
     return SingleSourceDetectionEvaluation(
         G=G,
         real_sources=real_sources,
         detected_sources=detected_sources,
-        error_distance=error_distance,
+        #error_distance=error_distance,
+        min_matching_distance=min_matching_dist,
         TP=TP,
         FP=FP,
         TN=TN,
@@ -72,18 +76,19 @@ def compute_source_detection_experiment_evaluation(
     evaluations: List[SingleSourceDetectionEvaluation],
 ) -> ExperimentSourceDetectionEvaluation:
     aggregated = multi_sum(
-        evaluations, "TP", "TN", "FP", "FN", "P", "N", "error_distance"
+        evaluations, "TP", "TN", "FP", "FN", "P", "N", "min_matching_distance"
     )
-    TP, TN, FP, FN, P, N, error_distance = (
+    TP, TN, FP, FN, P, N, min_matching_distance = (
         aggregated["TP"],
         aggregated["TN"],
         aggregated["FP"],
         aggregated["FN"],
         aggregated["P"],
         aggregated["N"],
-        aggregated["error_distance"],
+        aggregated["min_matching_distance"],
     )
-    avg_error_distance = error_distance / len(evaluations)
+    #avg_error_distance = error_distance / len(evaluations)
+    avg_min_matching_distance = min_matching_distance / len(evaluations)
     return ExperimentSourceDetectionEvaluation(
-        avg_error_distance=avg_error_distance, TP=TP, TN=TN, FP=FP, FN=FN, P=P, N=N
+        avg_min_matching_distance=avg_min_matching_distance, TP=TP, TN=TN, FP=FP, FN=FN, P=P, N=N
     )

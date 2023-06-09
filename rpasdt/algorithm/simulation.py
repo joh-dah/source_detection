@@ -95,7 +95,7 @@ def perform_source_detection_simulation(
         G = to_networkx(data, to_undirected=True)
         infected_nodes = data.x.nonzero().flatten().tolist()
         IG = G.subgraph(infected_nodes)
-        source_nodes = data.y.nonzero().tolist()
+        source_nodes = data.y.nonzero().flatten().tolist()
         for (
             name,
             source_detector_config,

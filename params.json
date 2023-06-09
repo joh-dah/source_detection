@@ -9,7 +9,7 @@
         "ws_neighbours": 6,
         "ws_probability": 0.2,
         "ba_neighbours": 2,
-        "mean_sources": 1,
+        "mean_sources": 3,
         "mean_iters": 35,
         "sir_beta": 0.01,
         "sir_gamma": 0.005,

@@ -2,9 +2,10 @@ import rpasdt.algorithm.models as rpasdt_models
 from rpasdt.algorithm.simulation import perform_source_detection_simulation
 from rpasdt.algorithm.taxonomies import DiffusionTypeEnum, SourceDetectionAlgorithm
 from src.data_processing import SDDataset, process_gcnr_data
-import src.utils as utils
+from src.validation import min_matching_distance
 import src.constants as const
 import torch
+import numpy as np
 
 
 def create_simulation_config():
@@ -23,11 +24,7 @@ def create_simulation_config():
             "NETLSEUTH": rpasdt_models.SourceDetectorSimulationConfig(
                 alg=SourceDetectionAlgorithm.NET_SLEUTH,
                 config=rpasdt_models.CommunitiesBasedSourceDetectionConfig(),
-            ),
-            "RUMOR_CENTER": rpasdt_models.SourceDetectorSimulationConfig(
-                alg=SourceDetectionAlgorithm.RUMOR_CENTER,
-                config=rpasdt_models.CommunitiesBasedSourceDetectionConfig(),
-            ),
+            )
         },
     )
 
@@ -47,9 +44,7 @@ def main():
     print(result.aggregated_results)
     for name, results in result.raw_results.items():
         for mm_r in results:
-            print(
-                f"{name}-{mm_r.real_sources}-{mm_r.detected_sources}-{mm_r.TP}:{mm_r.FN}:{mm_r.FP}"
-            )
+            print(f"{name}-{mm_r.real_sources}-{mm_r.detected_sources}-{mm_r.TP}:{mm_r.FN}:{mm_r.FP}")
 
 
 if __name__ == "__main__":

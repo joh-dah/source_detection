@@ -61,7 +61,7 @@ def find_closest_sources(matching_graph, unmatched_nodes):
 
 def min_matching_distance(
     edge_index,
-    sources: torch.tensor,
+    sources,
     predicted_sources,
     title_for_matching_graph="matching_graph",
 ):
@@ -83,12 +83,12 @@ def min_matching_distance(
 
     # creating a graph with only the sources, the predicted sources and the distances between them
     matching_graph = nx.Graph()
-    for source in sources.tolist():
+    for source in sources:
         distances = nx.single_source_shortest_path_length(G, source)
         new_edges = [
             ("s" + str(source), str(k), v)
             for k, v in distances.items()
-            if k in predicted_sources.tolist()
+            if k in predicted_sources
         ]
         matching_graph.add_weighted_edges_from(new_edges)
 
@@ -156,7 +156,7 @@ def evaluate_source_predictions(model, val_data):
         )
         # currently we are fixing the number of predicted sources to the number of sources in the graph
         min_matching_distances.append(
-            min_matching_distance(edge_index, sources, top_n_predictions)
+            min_matching_distance(edge_index, sources.tolist(), top_n_predictions.tolist())
         )
 
         roc_score, false_positive, true_positive = compute_roc_curve(

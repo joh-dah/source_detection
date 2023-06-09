@@ -5,7 +5,7 @@ stages:
     deps:
     - path: src/data_creation.py
       md5: 76ec9fe9de2a59dccfca9c2f14ea1a4b
-      size: 5746
+      size: 5912
     params:
       params.json:
         data_creation:
@@ -17,26 +17,26 @@ stages:
           ws_neighbours: 6
           ws_probability: 0.2
           ba_neighbours: 2
-          mean_sources: 1
+          mean_sources: 3
           mean_iters: 35
           sir_beta: 0.01
           sir_gamma: 0.005
           si_beta: 0.01
     outs:
     - path: data/raw
-      md5: 63e298777df26a8bf19d214e5b7a4eb6.dir
-      size: 2357170
+      md5: 4cd4b792fdc97a9398e1a2a87fb7abfb.dir
+      size: 2353778
       nfiles: 360
   data-processing:
     cmd: python -W ignore -m src.data_processing
     deps:
     - path: data/raw
-      md5: 63e298777df26a8bf19d214e5b7a4eb6.dir
-      size: 2357170
+      md5: 4cd4b792fdc97a9398e1a2a87fb7abfb.dir
+      size: 2353778
       nfiles: 360
     - path: src/data_processing.py
-      md5: ca5a40b75736b128339dae89ee627b94
-      size: 3769
+      md5: 21be8add94c429a69bbc644480e7194c
+      size: 4022
     params:
       params.json:
         data_creation:
@@ -48,7 +48,7 @@ stages:
           ws_neighbours: 6
           ws_probability: 0.2
           ba_neighbours: 2
-          mean_sources: 1
+          mean_sources: 3
           mean_iters: 35
           sir_beta: 0.01
           sir_gamma: 0.005
@@ -56,19 +56,19 @@ stages:
         model: GCNSI
     outs:
     - path: data/processed
-      md5: 91177a01d16abb8889efb6851120c03e.dir
-      size: 2570082
+      md5: 58eb18f97a0545453142a6ec8e0abeac.dir
+      size: 2566306
       nfiles: 362
   training:
     cmd: python -W ignore -m src.training
     deps:
     - path: data/processed
-      md5: 91177a01d16abb8889efb6851120c03e.dir
-      size: 2570082
+      md5: 58eb18f97a0545453142a6ec8e0abeac.dir
+      size: 2566306
       nfiles: 362
     - path: src/training.py
       md5: 4613bc6978b7f1da49b57dba9aa71be8
-      size: 2041
+      size: 2110
     params:
       params.json:
         model: GCNSI
@@ -83,7 +83,7 @@ stages:
           alpha: 0.5
     outs:
     - path: models/latest.pth
-      md5: d8894f3ce6983136bcfdd52d57bced8b
+      md5: b6ef4a9563a80f3b895426f0c6729e2e
       size: 1064911
   visualisation:
     cmd: python -W ignore -m src.visualization
