@@ -56,7 +56,7 @@ class SourceDetector(ABC):
         self, real_sources: List[int]
     ) -> SingleSourceDetectionEvaluation:
         return compute_source_detection_evaluation(
-            G=self.IG, real_sources=real_sources, detected_sources=self.detected_sources
+            G=self.G, IG=self.IG, real_sources=real_sources, detected_sources=self.detected_sources
         )
 
     def __str__(self) -> str:

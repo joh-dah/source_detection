@@ -32,7 +32,7 @@ def compute_error_distance(
 
 
 def compute_source_detection_evaluation(
-    G: Graph, real_sources: List[int], detected_sources: Union[int, List[int]]
+    G: Graph, IG: Graph, real_sources: List[int], detected_sources: Union[int, List[int]]
 ) -> SingleSourceDetectionEvaluation:
     detected_sources = (
         detected_sources if isinstance(detected_sources, list) else [detected_sources]
@@ -43,26 +43,23 @@ def compute_source_detection_evaluation(
     )
     not_detected_sources = set(real_sources).difference(correctly_detected_sources)
     P = len(real_sources)
-    N = len(G.nodes) - P
+    N = len(IG.nodes) - P
     FP = len(invalid_detected_sources)
     TP = len(correctly_detected_sources)
     FN = len(real_sources) - TP
     TN = N - FN
 
     '''error_distance = compute_error_distance(
-        G=G,
+        G=IG,
         not_detected_sources=not_detected_sources,
         invalid_detected_sources=invalid_detected_sources,
     )'''
-    data = from_networkx(G)
-    min_matching_dist = min_matching_distance(data.edge_index, real_sources, detected_sources)
 
     return SingleSourceDetectionEvaluation(
         G=G,
         real_sources=real_sources,
         detected_sources=detected_sources,
-        #error_distance=error_distance,
-        min_matching_distance=min_matching_dist,
+        error_distance=0,
         TP=TP,
         FP=FP,
         TN=TN,
@@ -76,19 +73,18 @@ def compute_source_detection_experiment_evaluation(
     evaluations: List[SingleSourceDetectionEvaluation],
 ) -> ExperimentSourceDetectionEvaluation:
     aggregated = multi_sum(
-        evaluations, "TP", "TN", "FP", "FN", "P", "N", "min_matching_distance"
+        evaluations, "TP", "TN", "FP", "FN", "P", "N", "error_distance"
     )
-    TP, TN, FP, FN, P, N, min_matching_distance = (
+    TP, TN, FP, FN, P, N, error_distance = (
         aggregated["TP"],
         aggregated["TN"],
         aggregated["FP"],
         aggregated["FN"],
         aggregated["P"],
         aggregated["N"],
-        aggregated["min_matching_distance"],
+        aggregated["error_distance"],
     )
-    #avg_error_distance = error_distance / len(evaluations)
-    avg_min_matching_distance = min_matching_distance / len(evaluations)
+    avg_error_distance = error_distance / len(evaluations)
     return ExperimentSourceDetectionEvaluation(
-        avg_min_matching_distance=avg_min_matching_distance, TP=TP, TN=TN, FP=FP, FN=FN, P=P, N=N
+        avg_error_distance=avg_error_distance, TP=TP, TN=TN, FP=FP, FN=FN, P=P, N=N
     )

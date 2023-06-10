@@ -197,12 +197,12 @@ class SingleSourceDetectionEvaluation(ClassificationMetrics):
     G: Graph
     real_sources: List[int]
     detected_sources: List[int]
-    error_distance: int
+    error_distance: float
 
 
 @dataclass
 class ExperimentSourceDetectionEvaluation(ClassificationMetrics):
-    avg_error_distance: int
+    avg_error_distance: float
 
 
 @dataclass
