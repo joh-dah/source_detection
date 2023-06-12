@@ -9,15 +9,20 @@ import numpy as np
 from torch_geometric.utils.convert import from_networkx
 
 
-def validate_min_matching_distance_netsleuth(result):
+def get_min_matching_distance_netsleuth(result):
     sum_min_matching_distance = 0
     for name, results in result.raw_results.items():
         if name == "NETSLEUTH":
             for mm_r in results:
                 data = from_networkx(mm_r.G)
-                sum_min_matching_distance += min_matching_distance(data.edge_index, mm_r.real_sources, mm_r.detected_sources)
+                sum_min_matching_distance += min_matching_distance(
+                    data.edge_index, mm_r.real_sources, mm_r.detected_sources
+                )
             avg_min_matching_distance = sum_min_matching_distance / len(results)
-            print(f"NETSLEUTH - avg min matching distance of predicted source: {avg_min_matching_distance}")
+
+    return avg_min_matching_distance
+
+
 def create_simulation_config():
     return rpasdt_models.SourceDetectionSimulationConfig(
         diffusion_models=[
@@ -39,7 +44,7 @@ def create_simulation_config():
     )
 
 
-def main():
+def get_unsupervised_metrics():
     val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)
     raw_data_paths = val_data.raw_paths[const.TRAINING_SIZE :]
 
@@ -52,10 +57,31 @@ def main():
     result = perform_source_detection_simulation(simulation_config, val_data)
     print(result)
     print(result.aggregated_results)
-    validate_min_matching_distance_netsleuth(result)
+    avg_mm_distance = get_min_matching_distance_netsleuth(result)
+    TPs = []
+    FNs = []
+    FPs = []
     for name, results in result.raw_results.items():
         for mm_r in results:
-            print(f"{name}-{mm_r.real_sources}-{mm_r.detected_sources}-{mm_r.TP}:{mm_r.FN}:{mm_r.FP}")
+            # print(
+            #     f"{name}-{mm_r.real_sources}-{mm_r.detected_sources}-{mm_r.TP}:{mm_r.FN}:{mm_r.FP}"
+            # )
+            TPs.append(mm_r.TP)
+            FNs.append(mm_r.FN)
+            FPs.append(mm_r.FP)
+
+    metrics_dict = {
+        "avg min matching distance of predicted source": avg_mm_distance,
+        "TP": sum(TPs),
+        "FN": sum(FNs),
+        "FP": sum(FPs),
+    }
+
+    return metrics_dict
+
+
+def main():
+    get_unsupervised_metrics()
 
 
 if __name__ == "__main__":

@@ -1,18 +1,24 @@
 import json
-import numpy as np
 import glob
+from pathlib import Path
 import os.path
+import numpy as np
 import torch
 from tqdm import tqdm
 import networkx as nx
-from pathlib import Path
 from sklearn.metrics import roc_auc_score, roc_curve
+import rpasdt.algorithm.models as rpasdt_models
+from rpasdt.algorithm.simulation import perform_source_detection_simulation
+from rpasdt.algorithm.taxonomies import DiffusionTypeEnum, SourceDetectionAlgorithm
+from torch_geometric.utils.convert import from_networkx
+
+from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
+import src.constants as const
 from architectures.GCNR import GCNR
 from architectures.GCNSI import GCNSI
 import src.constants as const
 from src import visualization as vis
 from src import utils
-from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
 
 
 def predict_source_probailities(model, graph_structure, features):
@@ -83,8 +89,10 @@ def min_matching_distance(
 
     # creating a graph with only the sources, the predicted sources and the distances between them
     matching_graph = nx.Graph()
+    avg_dists = []
     for source in sources:
         distances = nx.single_source_shortest_path_length(G, source)
+        avg_dists.append(np.mean(list(distances.values())))
         new_edges = [
             ("s" + str(source), str(k), v)
             for k, v in distances.items()
@@ -111,7 +119,7 @@ def min_matching_distance(
         sum([matching_graph.get_edge_data(k, v)["weight"] for k, v in matching_list])
         / 2
     )  # counting each edge twice
-    return min_matching_distance / len(sources)
+    return min_matching_distance / len(sources), avg_dists
 
 
 def compute_roc_curve(predictions, labels):
@@ -142,6 +150,7 @@ def evaluate_source_predictions(model, val_data):
     false_positives = []
     true_positives = []
     n_plots = 5
+    source_dists = []
     for i, data in enumerate(tqdm(val_data, desc="evaluate model")):
         labels = data.y
         features = data.x
@@ -155,11 +164,11 @@ def evaluate_source_predictions(model, val_data):
             predictions, len(sources)
         )
         # currently we are fixing the number of predicted sources to the number of sources in the graph
-        min_matching_distances.append(
-            min_matching_distance(
-                edge_index, sources.tolist(), top_n_predictions.tolist()
-            )
+        matching_dist, avg_dist = min_matching_distance(
+            edge_index, sources.tolist(), top_n_predictions.tolist()
         )
+        min_matching_distances.append(matching_dist)
+        source_dists.append(avg_dist)
 
         roc_score, false_positive, true_positive = compute_roc_curve(
             predictions, labels
@@ -173,10 +182,80 @@ def evaluate_source_predictions(model, val_data):
         "avg min matching distance of predicted source": np.mean(
             min_matching_distances
         ),
+        "avg_dist_to_source": np.mean(source_dists),
         "avg roc score": round(sum(roc_scores) / len(roc_scores), 2),
     }
 
     vis.plot_roc_curve(false_positives[:n_plots], true_positives[:n_plots])
+
+    return metrics_dict
+
+
+def get_min_matching_distance_netsleuth(result):
+    sum_min_matching_distance = 0
+    for name, results in result.raw_results.items():
+        if name == "NETSLEUTH":
+            for mm_r in results:
+                data = from_networkx(mm_r.G)
+                sum_min_matching_distance += min_matching_distance(
+                    data.edge_index, mm_r.real_sources, mm_r.detected_sources
+                )[0]
+            avg_min_matching_distance = sum_min_matching_distance / len(results)
+
+    return avg_min_matching_distance
+
+
+def create_simulation_config():
+    return rpasdt_models.SourceDetectionSimulationConfig(
+        diffusion_models=[
+            rpasdt_models.DiffusionModelSimulationConfig(
+                diffusion_model_type=DiffusionTypeEnum.SI,
+                diffusion_model_params={"beta": 0.08784399402913001},
+            )
+        ],
+        iteration_bunch=20,
+        source_selection_config=rpasdt_models.NetworkSourceSelectionConfig(
+            number_of_sources=5,
+        ),
+        source_detectors={
+            "NETSLEUTH": rpasdt_models.SourceDetectorSimulationConfig(
+                alg=SourceDetectionAlgorithm.NET_SLEUTH,
+                config=rpasdt_models.CommunitiesBasedSourceDetectionConfig(),
+            )
+        },
+    )
+
+
+def get_unsupervised_metrics():
+    val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)
+    raw_data_paths = val_data.raw_paths[const.TRAINING_SIZE :]
+
+    val_data = []
+    for path in raw_data_paths:
+        val_data.append(torch.load(path))
+
+    simulation_config = create_simulation_config()
+
+    result = perform_source_detection_simulation(simulation_config, val_data)
+    avg_mm_distance = get_min_matching_distance_netsleuth(result)
+    TPs = []
+    FNs = []
+    FPs = []
+    for name, results in result.raw_results.items():
+        for mm_r in results:
+            # print(
+            #     f"{name}-{mm_r.real_sources}-{mm_r.detected_sources}-{mm_r.TP}:{mm_r.FN}:{mm_r.FP}"
+            # )
+            TPs.append(mm_r.TP)
+            FNs.append(mm_r.FN)
+            FPs.append(mm_r.FP)
+
+    metrics_dict = {
+        "avg min matching distance of predicted source": avg_mm_distance,
+        "TP": sum(TPs),
+        "FN": sum(FNs),
+        "FP": sum(FPs),
+    }
 
     return metrics_dict
 
@@ -206,33 +285,14 @@ def evaluate_source_distance(model, val_data):
     return metrics_dict
 
 
-def main():
-    """Initiates the validation of the classifier specified in the constants file."""
-
+def get_latest_model_name():
     model_files = glob.glob(const.MODEL_PATH + r"/*[0-9].pth")
     last_model_file = max(model_files, key=os.path.getctime)
     model_name = os.path.split(last_model_file)[1].split(".")[0]
-    print(f"loading model: {last_model_file}")
+    return model_name
 
-    if const.MODEL == "GCNSI":
-        model = GCNSI()
-        model = utils.load_model(model, last_model_file)
-        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
-            const.TRAINING_SIZE :
-        ]
-        metrics_dict = evaluate_source_predictions(model, val_data)
 
-    elif const.MODEL == "GCNR":
-        model = GCNR()
-        model = utils.load_model(model, last_model_file)
-        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
-            const.TRAINING_SIZE :
-        ]
-        metrics_dict = evaluate_source_distance(model, val_data)
-
-    for key, value in metrics_dict.items():
-        print(f"{key}: {value}")
-
+def save_metrics(metrics_dict, model_name):
     Path(const.REPORT_PATH).mkdir(parents=True, exist_ok=True)
     json.dump(
         metrics_dict,
@@ -244,6 +304,39 @@ def main():
         open(os.path.join(const.REPORT_PATH, "latest.json"), "w"),
         indent=4,
     )
+
+
+def main():
+    """Initiates the validation of the classifier specified in the constants file."""
+
+    model_name = get_latest_model_name()
+    print(f"loading model: {model_name}")
+
+    if const.MODEL == "GCNSI":
+        model = GCNSI()
+        model = utils.load_model(
+            model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
+        )
+        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
+            const.TRAINING_SIZE :
+        ]
+        metrics_dict = evaluate_source_predictions(model, val_data)
+
+    elif const.MODEL == "GCNR":
+        model = GCNR()
+        model = utils.load_model(
+            model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
+        )
+        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
+            const.TRAINING_SIZE :
+        ]
+        metrics_dict = evaluate_source_distance(model, val_data)
+
+    for key, value in metrics_dict.items():
+        print(f"{key}: {value}")
+    metrics_dict["unsupervised"] = get_unsupervised_metrics()
+
+    save_metrics(metrics_dict, model_name)
 
 
 if __name__ == "__main__":

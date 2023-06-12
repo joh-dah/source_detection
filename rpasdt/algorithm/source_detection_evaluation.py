@@ -10,7 +10,7 @@ from rpasdt.algorithm.models import (
     SingleSourceDetectionEvaluation,
 )
 from rpasdt.common.utils import multi_sum
-from src.validation import min_matching_distance
+
 
 def compute_error_distance(
     G: Graph, not_detected_sources: Set[int], invalid_detected_sources: Set[int]
@@ -32,7 +32,10 @@ def compute_error_distance(
 
 
 def compute_source_detection_evaluation(
-    G: Graph, IG: Graph, real_sources: List[int], detected_sources: Union[int, List[int]]
+    G: Graph,
+    IG: Graph,
+    real_sources: List[int],
+    detected_sources: Union[int, List[int]],
 ) -> SingleSourceDetectionEvaluation:
     detected_sources = (
         detected_sources if isinstance(detected_sources, list) else [detected_sources]
@@ -49,11 +52,11 @@ def compute_source_detection_evaluation(
     FN = len(real_sources) - TP
     TN = N - FN
 
-    '''error_distance = compute_error_distance(
+    """error_distance = compute_error_distance(
         G=IG,
         not_detected_sources=not_detected_sources,
         invalid_detected_sources=invalid_detected_sources,
-    )'''
+    )"""
 
     return SingleSourceDetectionEvaluation(
         G=G,
