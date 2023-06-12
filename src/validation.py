@@ -156,7 +156,9 @@ def evaluate_source_predictions(model, val_data):
         )
         # currently we are fixing the number of predicted sources to the number of sources in the graph
         min_matching_distances.append(
-            min_matching_distance(edge_index, sources.tolist(), top_n_predictions.tolist())
+            min_matching_distance(
+                edge_index, sources.tolist(), top_n_predictions.tolist()
+            )
         )
 
         roc_score, false_positive, true_positive = compute_roc_curve(
@@ -209,7 +211,7 @@ def main():
 
     model_files = glob.glob(const.MODEL_PATH + r"/*[0-9].pth")
     last_model_file = max(model_files, key=os.path.getctime)
-    model_name = last_model_file.split("/")[-1].split(".")[0]
+    model_name = os.path.split(last_model_file)[1].split(".")[0]
     print(f"loading model: {last_model_file}")
 
     if const.MODEL == "GCNSI":
@@ -234,12 +236,12 @@ def main():
     Path(const.REPORT_PATH).mkdir(parents=True, exist_ok=True)
     json.dump(
         metrics_dict,
-        open(f"{const.REPORT_PATH}/{model_name}.json", "w"),
+        open(os.path.join(const.REPORT_PATH, f"{model_name}.json"), "w"),
         indent=4,
     )
     json.dump(
         metrics_dict,
-        open(f"{const.REPORT_PATH}/latest.json", "w"),
+        open(os.path.join(const.REPORT_PATH, "latest.json"), "w"),
         indent=4,
     )
 
