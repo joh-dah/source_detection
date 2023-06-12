@@ -14,7 +14,7 @@ class GCNSI(torch.nn.Module):
         torch.manual_seed(42)
         self.conv_first = GCNConv(const.GCNSI_N_FEATURES, const.HIDDEN_SIZE)
         self.conv = GCNConv(const.HIDDEN_SIZE, const.HIDDEN_SIZE)
-        self.classifier = torch.nn.Linear(const.HIDDEN_SIZE, 2)
+        self.classifier = torch.nn.Linear(const.HIDDEN_SIZE, 1)
 
     def forward(self, x, edge_index):
         h = self.conv_first(x, edge_index)

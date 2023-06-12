@@ -1,14 +1,18 @@
-import src.constants as const
-from architectures.GCNR import GCNR
-from architectures.GCNSI import GCNSI
+import json
 import numpy as np
+import glob
+import os.path
 import torch
 from tqdm import tqdm
 import networkx as nx
+from pathlib import Path
+from sklearn.metrics import roc_auc_score, roc_curve
+from architectures.GCNR import GCNR
+from architectures.GCNSI import GCNSI
+import src.constants as const
 from src import visualization as vis
 from src import utils
 from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
-from sklearn.metrics import roc_auc_score, roc_curve
 
 
 def predict_source_probailities(model, graph_structure, features):
@@ -117,12 +121,11 @@ def compute_roc_curve(predictions, labels):
     :param labels: Actual sources.
     :return: Area under the roc curve, false positive rates and true positive rates.
     """
-    soft_max_predictions = torch.softmax(predictions, 1)
-    source_prob = soft_max_predictions[:, 1].flatten()
+    source_prob = predictions.flatten()
     false_positive, true_positive, thresholds = roc_curve(
-        labels[:, 1].tolist(), source_prob.tolist()
+        labels.tolist(), source_prob.tolist()
     )
-    roc_score = roc_auc_score(labels[:, 1].tolist(), source_prob.tolist())
+    roc_score = roc_auc_score(labels.tolist(), source_prob.tolist())
     return roc_score, false_positive, true_positive
 
 
@@ -143,7 +146,7 @@ def evaluate_source_predictions(model, val_data):
         labels = data.y
         features = data.x
         edge_index = data.edge_index
-        sources = torch.where(labels[:, 0] == 0)[0]
+        sources = torch.where(labels == 1)[0]
         predictions = model(features, edge_index)
         ranked_predictions = (utils.get_ranked_source_predictions(predictions)).tolist()
         for source in sources:
@@ -163,12 +166,17 @@ def evaluate_source_predictions(model, val_data):
         false_positives.append(false_positive)
         true_positives.append(true_positive)
 
-    print(f"Average predicted rank of source: {np.mean(ranks)}")
-    print(
-        f"Average min matching distance of predicted source: {np.mean(min_matching_distances)}"
-    )
-    print(f"Average roc score: {round(sum(roc_scores)/len(roc_scores), 2)}")
+    metrics_dict = {
+        "avg predicted rank of source": np.mean(ranks),
+        "avg min matching distance of predicted source": np.mean(
+            min_matching_distances
+        ),
+        "avg roc score": round(sum(roc_scores) / len(roc_scores), 2),
+    }
+
     vis.plot_roc_curve(false_positives[:n_plots], true_positives[:n_plots])
+
+    return metrics_dict
 
 
 def evaluate_source_distance(model, val_data):
@@ -188,30 +196,52 @@ def evaluate_source_distance(model, val_data):
         pred_distances += predictions.tolist()
         pred_source_distances += predictions[sources].tolist()
 
-    print(
-        f"Average predicted source_distance for the sources: {np.mean(pred_source_distances)}"
-    )
-    print(f"Average predicted distance: {np.mean(pred_distances)}")
+    metrics_dict = {
+        "predicted source_distance of sources:": np.mean(pred_source_distances),
+        "avg predicted source_distances": np.mean(pred_distances),
+    }
+
+    return metrics_dict
 
 
 def main():
     """Initiates the validation of the classifier specified in the constants file."""
 
+    model_files = glob.glob(const.MODEL_PATH + r"/*[0-9].pth")
+    last_model_file = max(model_files, key=os.path.getctime)
+    model_name = last_model_file.split("/")[-1].split(".")[0]
+    print(f"loading model: {last_model_file}")
+
     if const.MODEL == "GCNSI":
         model = GCNSI()
-        model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
+        model = utils.load_model(model, last_model_file)
         val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
             const.TRAINING_SIZE :
         ]
-        evaluate_source_predictions(model, val_data)
+        metrics_dict = evaluate_source_predictions(model, val_data)
 
     elif const.MODEL == "GCNR":
         model = GCNR()
-        model = utils.load_model(model, f"{const.MODEL_PATH}/{const.MODEL}_latest.pth")
+        model = utils.load_model(model, last_model_file)
         val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
             const.TRAINING_SIZE :
         ]
-        evaluate_source_distance(model, val_data)
+        metrics_dict = evaluate_source_distance(model, val_data)
+
+    for key, value in metrics_dict.items():
+        print(f"{key}: {value}")
+
+    Path(const.REPORT_PATH).mkdir(parents=True, exist_ok=True)
+    json.dump(
+        metrics_dict,
+        open(f"{const.REPORT_PATH}/{model_name}.json", "w"),
+        indent=4,
+    )
+    json.dump(
+        metrics_dict,
+        open(f"{const.REPORT_PATH}/latest.json", "w"),
+        indent=4,
+    )
 
 
 if __name__ == "__main__":

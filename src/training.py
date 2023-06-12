@@ -45,8 +45,12 @@ def main():
 
     print("Prepare Data ...")
 
+    current_time = datetime.datetime.now().strftime("%m-%d_%H-%M")
+    model_name = f"{const.MODEL}_{current_time}"
+
     if const.MODEL == "GCNSI":
         model = GCNSI().to(device)
+        model.name = model_name
         train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
             : const.TRAINING_SIZE
         ]
@@ -60,10 +64,8 @@ def main():
         criterion = torch.nn.MSELoss()
 
     train(model, train_data, criterion)
-
-    current_time = datetime.datetime.now().strftime("%m-%d_%H-%M")
-    utils.save_model(model, f"{const.MODEL}_{current_time}")
-    utils.save_model(model, f"{const.MODEL}_latest")
+    utils.save_model(model, "latest")
+    utils.save_model(model, model_name)
 
 
 if __name__ == "__main__":

@@ -85,7 +85,8 @@ def create_distance_labels(
 def process_gcnsi_data(data: Data) -> Data:
     """Features and Labels for the GCNSI model."""
     X = paper_input(data.x, data.edge_index)
-    y = torch.nn.functional.one_hot(data.y.to(torch.int64), 2).float()
+    # expand labels to 2D tensor
+    y = data.y.unsqueeze(1).float()
     return Data(x=X, y=y, edge_index=data.edge_index)
 
 
