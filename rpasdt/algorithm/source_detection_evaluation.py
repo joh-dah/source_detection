@@ -62,7 +62,7 @@ def compute_source_detection_evaluation(
         G=G,
         real_sources=real_sources,
         detected_sources=detected_sources,
-        error_distance=0,
+        error_distance=-1,
         TP=TP,
         FP=FP,
         TN=TN,

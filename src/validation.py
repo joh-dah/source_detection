@@ -147,8 +147,10 @@ def evaluate_source_predictions(model, val_data):
     min_matching_distances = []
     ranks = []
     roc_scores = []
-    false_positives = []
-    true_positives = []
+    TPs = []
+    FPs = []
+    TPs_by_threshold = []
+    FPs_by_threshold = []
     n_plots = 5
     source_dists = []
     for i, data in enumerate(tqdm(val_data, desc="evaluate model")):
@@ -174,19 +176,24 @@ def evaluate_source_predictions(model, val_data):
             predictions, labels
         )
         roc_scores.append(roc_score)
-        false_positives.append(false_positive)
-        true_positives.append(true_positive)
+        TPs_by_threshold.append(true_positive)
+        FPs_by_threshold.append(false_positive)
+        # TODO: select a fixed threshold
+        TPs.append(true_positive[len(true_positive) // 2])
+        FPs.append(false_positive[len(false_positive) // 2])
 
     metrics_dict = {
         "avg predicted rank of source": np.mean(ranks),
         "avg min matching distance of predicted source": np.mean(
             min_matching_distances
         ),
-        "avg_dist_to_source": np.mean(source_dists),
+        "avg distance to source": np.mean(source_dists),
+        "true positive rate": np.mean(TPs),
+        "false positive rate": np.mean(FPs),
         "avg roc score": round(sum(roc_scores) / len(roc_scores), 2),
     }
 
-    vis.plot_roc_curve(false_positives[:n_plots], true_positives[:n_plots])
+    vis.plot_roc_curve(TPs_by_threshold[:n_plots], FPs_by_threshold[:n_plots])
 
     return metrics_dict
 
@@ -238,23 +245,11 @@ def get_unsupervised_metrics():
 
     result = perform_source_detection_simulation(simulation_config, val_data)
     avg_mm_distance = get_min_matching_distance_netsleuth(result)
-    TPs = []
-    FNs = []
-    FPs = []
-    for name, results in result.raw_results.items():
-        for mm_r in results:
-            # print(
-            #     f"{name}-{mm_r.real_sources}-{mm_r.detected_sources}-{mm_r.TP}:{mm_r.FN}:{mm_r.FP}"
-            # )
-            TPs.append(mm_r.TP)
-            FNs.append(mm_r.FN)
-            FPs.append(mm_r.FP)
 
     metrics_dict = {
         "avg min matching distance of predicted source": avg_mm_distance,
-        "TP": sum(TPs),
-        "FN": sum(FNs),
-        "FP": sum(FPs),
+        "True positive rate": result.aggregated_results["NETSLEUTH"].TPR,
+        "False positive rate": result.aggregated_results["NETSLEUTH"].FPR,
     }
 
     return metrics_dict
@@ -268,18 +263,28 @@ def evaluate_source_distance(model, val_data):
     """
     pred_source_distances = []
     pred_distances = []
+    TPs = []
+    FPs = []
     for data in tqdm(val_data, desc="evaluate model"):
         labels = data.y
         features = data.x
         edge_index = data.edge_index
-        sources = torch.where(labels == 0)[0]
         predictions = model(features, edge_index)
+        sources = torch.where(labels == 0)[0]
+        pred_sources = np.array(torch.where(predictions == 0)[0])
         pred_distances += predictions.tolist()
         pred_source_distances += predictions[sources].tolist()
+        TPs.append(len(np.intersect1d(sources, pred_sources)))
+        FPs.append(len(pred_sources) - len(np.intersect1d(sources, pred_sources)))
 
     metrics_dict = {
         "predicted source_distance of sources:": np.mean(pred_source_distances),
         "avg predicted source_distances": np.mean(pred_distances),
+        "std predicted source_distances": np.std(pred_distances),
+        "min predicted source_distances": np.min(pred_distances),
+        "max predicted source_distances": np.max(pred_distances),
+        "True positive rate": np.mean(TPs),
+        "False positive rate": np.mean(FPs),
     }
 
     return metrics_dict
@@ -333,8 +338,14 @@ def main():
         metrics_dict = evaluate_source_distance(model, val_data)
 
     for key, value in metrics_dict.items():
-        print(f"{key}: {value}")
+        metrics_dict[key] = round(value, 3)
+        print(f"{key}: {metrics_dict[key]}")
+
     metrics_dict["unsupervised"] = get_unsupervised_metrics()
+
+    for key, value in metrics_dict["unsupervised"].items():
+        metrics_dict["unsupervised"][key] = round(value, 3)
+        print(f"unsupervised - {key}: {metrics_dict['unsupervised'][key]}")
 
     save_metrics(metrics_dict, model_name)
 
