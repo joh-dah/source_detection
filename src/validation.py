@@ -1,18 +1,24 @@
 import json
-import numpy as np
 import glob
+from pathlib import Path
 import os.path
+import numpy as np
 import torch
 from tqdm import tqdm
 import networkx as nx
-from pathlib import Path
 from sklearn.metrics import roc_auc_score, roc_curve
+import rpasdt.algorithm.models as rpasdt_models
+from rpasdt.algorithm.simulation import perform_source_detection_simulation
+from rpasdt.algorithm.taxonomies import DiffusionTypeEnum, SourceDetectionAlgorithm
+from torch_geometric.utils.convert import from_networkx
+
+from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
+import src.constants as const
 from architectures.GCNR import GCNR
 from architectures.GCNSI import GCNSI
 import src.constants as const
 from src import visualization as vis
 from src import utils
-from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
 
 
 def predict_source_probailities(model, graph_structure, features):
@@ -61,7 +67,7 @@ def find_closest_sources(matching_graph, unmatched_nodes):
 
 def min_matching_distance(
     edge_index,
-    sources: torch.tensor,
+    sources,
     predicted_sources,
     title_for_matching_graph="matching_graph",
 ):
@@ -83,12 +89,14 @@ def min_matching_distance(
 
     # creating a graph with only the sources, the predicted sources and the distances between them
     matching_graph = nx.Graph()
-    for source in sources.tolist():
+    avg_dists = []
+    for source in sources:
         distances = nx.single_source_shortest_path_length(G, source)
+        avg_dists.append(np.mean(list(distances.values())))
         new_edges = [
             ("s" + str(source), str(k), v)
             for k, v in distances.items()
-            if k in predicted_sources.tolist()
+            if k in predicted_sources
         ]
         matching_graph.add_weighted_edges_from(new_edges)
 
@@ -111,7 +119,7 @@ def min_matching_distance(
         sum([matching_graph.get_edge_data(k, v)["weight"] for k, v in matching_list])
         / 2
     )  # counting each edge twice
-    return min_matching_distance / len(sources)
+    return min_matching_distance / len(sources), avg_dists
 
 
 def compute_roc_curve(predictions, labels):
@@ -139,9 +147,12 @@ def evaluate_source_predictions(model, val_data):
     min_matching_distances = []
     ranks = []
     roc_scores = []
-    false_positives = []
-    true_positives = []
+    TPs = []
+    FPs = []
+    TPs_by_threshold = []
+    FPs_by_threshold = []
     n_plots = 5
+    source_dists = []
     for i, data in enumerate(tqdm(val_data, desc="evaluate model")):
         labels = data.y
         features = data.x
@@ -155,26 +166,91 @@ def evaluate_source_predictions(model, val_data):
             predictions, len(sources)
         )
         # currently we are fixing the number of predicted sources to the number of sources in the graph
-        min_matching_distances.append(
-            min_matching_distance(edge_index, sources, top_n_predictions)
+        matching_dist, avg_dist = min_matching_distance(
+            edge_index, sources.tolist(), top_n_predictions.tolist()
         )
+        min_matching_distances.append(matching_dist)
+        source_dists.append(avg_dist)
 
         roc_score, false_positive, true_positive = compute_roc_curve(
             predictions, labels
         )
         roc_scores.append(roc_score)
-        false_positives.append(false_positive)
-        true_positives.append(true_positive)
+        TPs_by_threshold.append(true_positive)
+        FPs_by_threshold.append(false_positive)
+        # TODO: select a fixed threshold
+        TPs.append(true_positive[len(true_positive) // 2])
+        FPs.append(false_positive[len(false_positive) // 2])
 
     metrics_dict = {
         "avg predicted rank of source": np.mean(ranks),
         "avg min matching distance of predicted source": np.mean(
             min_matching_distances
         ),
+        "avg distance to source": np.mean(source_dists),
+        "true positive rate": np.mean(TPs),
+        "false positive rate": np.mean(FPs),
         "avg roc score": round(sum(roc_scores) / len(roc_scores), 2),
     }
 
-    vis.plot_roc_curve(false_positives[:n_plots], true_positives[:n_plots])
+    vis.plot_roc_curve(TPs_by_threshold[:n_plots], FPs_by_threshold[:n_plots])
+
+    return metrics_dict
+
+
+def get_min_matching_distance_netsleuth(result):
+    sum_min_matching_distance = 0
+    for name, results in result.raw_results.items():
+        if name == "NETSLEUTH":
+            for mm_r in results:
+                data = from_networkx(mm_r.G)
+                sum_min_matching_distance += min_matching_distance(
+                    data.edge_index, mm_r.real_sources, mm_r.detected_sources
+                )[0]
+            avg_min_matching_distance = sum_min_matching_distance / len(results)
+
+    return avg_min_matching_distance
+
+
+def create_simulation_config():
+    return rpasdt_models.SourceDetectionSimulationConfig(
+        diffusion_models=[
+            rpasdt_models.DiffusionModelSimulationConfig(
+                diffusion_model_type=DiffusionTypeEnum.SI,
+                diffusion_model_params={"beta": 0.08784399402913001},
+            )
+        ],
+        iteration_bunch=20,
+        source_selection_config=rpasdt_models.NetworkSourceSelectionConfig(
+            number_of_sources=5,
+        ),
+        source_detectors={
+            "NETSLEUTH": rpasdt_models.SourceDetectorSimulationConfig(
+                alg=SourceDetectionAlgorithm.NET_SLEUTH,
+                config=rpasdt_models.CommunitiesBasedSourceDetectionConfig(),
+            )
+        },
+    )
+
+
+def get_unsupervised_metrics():
+    val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)
+    raw_data_paths = val_data.raw_paths[const.TRAINING_SIZE :]
+
+    val_data = []
+    for path in raw_data_paths:
+        val_data.append(torch.load(path))
+
+    simulation_config = create_simulation_config()
+
+    result = perform_source_detection_simulation(simulation_config, val_data)
+    avg_mm_distance = get_min_matching_distance_netsleuth(result)
+
+    metrics_dict = {
+        "avg min matching distance of predicted source": avg_mm_distance,
+        "True positive rate": result.aggregated_results["NETSLEUTH"].TPR,
+        "False positive rate": result.aggregated_results["NETSLEUTH"].FPR,
+    }
 
     return metrics_dict
 
@@ -187,34 +263,65 @@ def evaluate_source_distance(model, val_data):
     """
     pred_source_distances = []
     pred_distances = []
+    TPs = []
+    FPs = []
     for data in tqdm(val_data, desc="evaluate model"):
         labels = data.y
         features = data.x
         edge_index = data.edge_index
-        sources = torch.where(labels == 0)[0]
         predictions = model(features, edge_index)
+        sources = torch.where(labels == 0)[0]
+        pred_sources = np.array(torch.where(predictions == 0)[0])
         pred_distances += predictions.tolist()
         pred_source_distances += predictions[sources].tolist()
+        TPs.append(len(np.intersect1d(sources, pred_sources)))
+        FPs.append(len(pred_sources) - len(np.intersect1d(sources, pred_sources)))
 
     metrics_dict = {
         "predicted source_distance of sources:": np.mean(pred_source_distances),
         "avg predicted source_distances": np.mean(pred_distances),
+        "std predicted source_distances": np.std(pred_distances),
+        "min predicted source_distances": np.min(pred_distances),
+        "max predicted source_distances": np.max(pred_distances),
+        "True positive rate": np.mean(TPs),
+        "False positive rate": np.mean(FPs),
     }
 
     return metrics_dict
 
 
+def get_latest_model_name():
+    model_files = glob.glob(const.MODEL_PATH + r"/*[0-9].pth")
+    last_model_file = max(model_files, key=os.path.getctime)
+    model_name = os.path.split(last_model_file)[1].split(".")[0]
+    return model_name
+
+
+def save_metrics(metrics_dict, model_name):
+    Path(const.REPORT_PATH).mkdir(parents=True, exist_ok=True)
+    json.dump(
+        metrics_dict,
+        open(os.path.join(const.REPORT_PATH, f"{model_name}.json"), "w"),
+        indent=4,
+    )
+    json.dump(
+        metrics_dict,
+        open(os.path.join(const.REPORT_PATH, "latest.json"), "w"),
+        indent=4,
+    )
+
+
 def main():
     """Initiates the validation of the classifier specified in the constants file."""
 
-    model_files = glob.glob(const.MODEL_PATH + r"/*[0-9].pth")
-    last_model_file = max(model_files, key=os.path.getctime)
-    model_name = last_model_file.split("/")[-1].split(".")[0]
-    print(f"loading model: {last_model_file}")
+    model_name = get_latest_model_name()
+    print(f"loading model: {model_name}")
 
     if const.MODEL == "GCNSI":
         model = GCNSI()
-        model = utils.load_model(model, last_model_file)
+        model = utils.load_model(
+            model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
+        )
         val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
             const.TRAINING_SIZE :
         ]
@@ -222,26 +329,25 @@ def main():
 
     elif const.MODEL == "GCNR":
         model = GCNR()
-        model = utils.load_model(model, last_model_file)
+        model = utils.load_model(
+            model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
+        )
         val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
             const.TRAINING_SIZE :
         ]
         metrics_dict = evaluate_source_distance(model, val_data)
 
     for key, value in metrics_dict.items():
-        print(f"{key}: {value}")
+        metrics_dict[key] = round(value, 3)
+        print(f"{key}: {metrics_dict[key]}")
 
-    Path(const.REPORT_PATH).mkdir(parents=True, exist_ok=True)
-    json.dump(
-        metrics_dict,
-        open(f"{const.REPORT_PATH}/{model_name}.json", "w"),
-        indent=4,
-    )
-    json.dump(
-        metrics_dict,
-        open(f"{const.REPORT_PATH}/latest.json", "w"),
-        indent=4,
-    )
+    metrics_dict["unsupervised"] = get_unsupervised_metrics()
+
+    for key, value in metrics_dict["unsupervised"].items():
+        metrics_dict["unsupervised"][key] = round(value, 3)
+        print(f"unsupervised - {key}: {metrics_dict['unsupervised'][key]}")
+
+    save_metrics(metrics_dict, model_name)
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ import src.constants as const
 from src import utils
 
 
-def train(model, dataset, criterion):
+def train(model, model_name, dataset, criterion):
     """
     Trains the model.
     :param model: The model to train.
@@ -19,6 +19,7 @@ def train(model, dataset, criterion):
     optimizer = torch.optim.Adam(model.parameters(), weight_decay=const.WEIGHT_DECAY)
     epochs = range(1, const.EPOCHS)
     losses = []
+    min_loss = float("inf")
     print("Train Model:")
     for epoch in tqdm(epochs):
         running_loss = 0.0
@@ -34,6 +35,11 @@ def train(model, dataset, criterion):
             running_loss += loss
             losses.append(loss)
         print(f"Epoch: {epoch}\tLoss: {running_loss:.4f}")
+        if running_loss < min_loss:
+            print("Saving new best model ...")
+            min_loss = running_loss
+            utils.save_model(model, "latest")
+            utils.save_model(model, model_name)
     return model
 
 
@@ -60,9 +66,9 @@ def main():
         ]
         criterion = torch.nn.MSELoss()
 
-    train(model, train_data, criterion)
-    utils.save_model(model, "latest")
-    utils.save_model(model, model_name)
+    train(model, model_name, train_data, criterion)
+    # utils.save_model(model, "latest")
+    # utils.save_model(model, model_name)
 
 
 if __name__ == "__main__":
