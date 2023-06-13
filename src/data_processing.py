@@ -56,9 +56,10 @@ def paper_input(current_status: torch.tensor, edge_index: torch.tensor):
     I = np.identity(len(Y))
     a = const.ALPHA
     d1 = Y
-    d2 = (1 - a) * np.linalg.inv(I - a * S).dot(Y)
-    d3 = (1 - a) * np.linalg.inv(I - a * S).dot(V3)
-    d4 = (1 - a) * np.linalg.inv(I - a * S).dot(V4)
+    temp = (1 - a) * np.linalg.inv(I - a * S)
+    d2 = np.squeeze(np.asarray(temp.dot(Y)))
+    d3 = np.squeeze(np.asarray(temp.dot(V3)))
+    d4 = np.squeeze(np.asarray(temp.dot(V4)))
     X = torch.from_numpy(np.column_stack((d1, d2, d3, d4))).float()
     return X
 
