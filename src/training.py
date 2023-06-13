@@ -21,7 +21,7 @@ def train(model, dataset, criterion):
     optimizer = torch.optim.Adam(model.parameters(), weight_decay=const.WEIGHT_DECAY)
     epochs = range(1, const.EPOCHS)
     losses = []
-    print("Train Model:")
+    print(f"Train Model on device:{device} :")
     for epoch in tqdm(epochs):
         running_loss = 0.0
         for data in dataset:
