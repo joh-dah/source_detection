@@ -89,15 +89,16 @@ def plot_matching_graph(g, matching, new_edges, title="matching_graph"):
     plt.close()
 
 
-def plot_roc_curve(false_positives, true_positives):
+def plot_roc_curve(false_positives, true_positives, n_plots=5):
     """
     Plot ROC curves.
     :param false_positives: The false positives rates.
     :param true_positives: The true positives rates.
+    :param n_plots: The number of plots to create.
     """
     print("Visualize ROC curve:")
     Path(const.ROC_PATH).mkdir(parents=True, exist_ok=True)
-    for i, false_positive in tqdm(enumerate(false_positives)):
+    for i, false_positive in tqdm(enumerate(false_positives[:n_plots])):
         plt.plot(false_positive, true_positives[i])
         plt.xlabel("False Positive Rate")
         plt.ylabel("True Positive Rate")

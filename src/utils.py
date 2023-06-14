@@ -1,7 +1,10 @@
 """utility functions for data loading and machine learning"""
 from pathlib import Path
+import json
+import os
 import torch
 import src.constants as const
+import src.data_processing as dp
 
 
 def save_model(model, name):
@@ -21,17 +24,87 @@ def load_model(model, path):
     :param path: path to model
     :return: model with loaded state
     """
+    print(f"loading model: {path}")
     model.load_state_dict(torch.load(path))
     return model
 
 
-def get_ranked_source_predictions(predictions, n=None):
+def get_ranked_source_predictions(predictions, n_nodes=None):
     """
-    Return nodes ranked by predicted probability of beeing source. Selects the n nodes with the highest probability.
+    Return nodes ranked by predicted probability of beeing source.
+    Selects the n nodes with the highest probability.
     :param predictions: list of predictions of nodes beeing source.
-    :param n: amount of nodes to return.
+    :param n_nodes: amount of nodes to return.
     :return: list of nodes ranked by predicted probability of beeing source.
     """
-    if n is None:
-        n = predictions.shape[0]
-    return torch.topk(predictions.flatten(), n).indices
+    if n_nodes is None:
+        n_nodes = predictions.shape[0]
+    if const.MODEL == "GCNSI":
+        top_nodes = torch.topk(predictions.flatten(), n_nodes).indices
+    elif const.MODEL == "GCNR":
+        top_nodes = torch.topk(predictions.flatten(), n_nodes, largest=False).indices
+    return top_nodes
+
+
+def save_metrics(metrics: dict, model_name: str):
+    """
+    Save dictionary with metrics as json in reports folder.
+    One "latest.json" is created and on file named after the corresponding model.
+    :params metrics: dictionary containing metrics
+    :params model_name: name of the corresponding model
+    """
+    Path(const.REPORT_PATH).mkdir(parents=True, exist_ok=True)
+    with open(os.path.join(const.REPORT_PATH, f"{model_name}.json"), "w") as file:
+        json.dump(metrics, file, indent=4)
+    with open(os.path.join(const.REPORT_PATH, "latest.json"), "w") as file:
+        json.dump(metrics, file, indent=4)
+
+
+def load_processed_data(data_set: str):
+    """
+    Load processed data.
+    :param data: either train or validation
+    :return: processed data
+    """
+    print("Load processed data...")
+
+    if const.MODEL == "GCNSI":
+        pre_transform = dp.process_gcnsi_data
+    elif const.MODEL == "GCNR":
+        pre_transform = dp.process_gcnr_data
+
+    if data_set == "train":
+        data = dp.SDDataset(const.DATA_PATH, pre_transform=pre_transform)[
+            : const.TRAINING_SIZE
+        ]
+    elif data_set == "validation":
+        data = dp.SDDataset(const.DATA_PATH, pre_transform=pre_transform)[
+            const.TRAINING_SIZE :
+        ]
+    else:
+        print("unknown dataset")
+
+    return data
+
+
+def load_raw_data(data_set: str):
+    """
+    Load raw data.
+    :param data: either train or validation
+    :return: raw data
+    """
+    print("Load raw data...")
+    val_data = dp.SDDataset(const.DATA_PATH, pre_transform=dp.process_gcnr_data)
+
+    if data_set == "train":
+        raw_data_paths = val_data.raw_paths[: const.TRAINING_SIZE]
+    elif data_set == "validation":
+        raw_data_paths = val_data.raw_paths[const.TRAINING_SIZE :]
+    else:
+        print("unknown dataset")
+
+    raw_data = []
+    for path in raw_data_paths:
+        raw_data.append(torch.load(path))
+
+    return raw_data
