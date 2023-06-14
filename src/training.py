@@ -7,6 +7,8 @@ from tqdm import tqdm
 import src.constants as const
 from src import utils
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 def train(model, model_name, dataset, criterion):
     """
@@ -19,11 +21,12 @@ def train(model, model_name, dataset, criterion):
     optimizer = torch.optim.Adam(model.parameters(), weight_decay=const.WEIGHT_DECAY)
     epochs = range(1, const.EPOCHS)
     losses = []
+    print(f"Train Model on device:{device} :")
     min_loss = float("inf")
-    print("Train Model:")
     for epoch in tqdm(epochs):
         running_loss = 0.0
         for data in dataset:
+            data.to(device)
             x = data.x
             y = data.y
             edge_index = data.edge_index
@@ -52,7 +55,7 @@ def main():
     model_name = f"{const.MODEL}_{current_time}"
 
     if const.MODEL == "GCNSI":
-        model = GCNSI()
+        model = GCNSI().to(device)
         model.name = model_name
         train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
             : const.TRAINING_SIZE
@@ -60,7 +63,7 @@ def main():
         criterion = torch.nn.BCEWithLogitsLoss()
 
     elif const.MODEL == "GCNR":
-        model = GCNR()
+        model = GCNR().to(device)
         train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
             : const.TRAINING_SIZE
         ]

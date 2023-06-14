@@ -1,22 +1,22 @@
 {
-    "model": "GCNSI",
+    "model": "GCNR",
     "data_creation": {
         "graph_type": "watts_strogatz",
         "prop_model": "SI",
-        "training_size": 700,
-        "validation_size": 200,
+        "training_size": 1000,
+        "validation_size": 100,
         "mean_nodes": 1000,
         "ws_neighbours": 10,
         "ws_probability": 0.2,
         "ba_neighbours": 3,
-        "mean_sources": 1,
+        "mean_sources": 3,
         "mean_iters": 35,
         "sir_beta": 0.01,
         "sir_gamma": 0.005,
         "si_beta": 0.01
     },
     "training": {
-        "epochs": 17,
+        "epochs": 30,
         "learning_rate": 0.0008,
         "hidden_size": 512,
         "layers": 10,

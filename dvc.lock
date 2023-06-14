@@ -93,14 +93,14 @@ stages:
       size: 158612
       nfiles: 17
     - path: models/latest.pth
-      md5: d8894f3ce6983136bcfdd52d57bced8b
-      size: 1064911
+      md5: 0d684ee5e135e3ba357c2124f985f7bd
+      size: 1064975
     - path: src/visualization.py
       md5: bc26f9a253fbdb3d5f50f0818cd98d5e
       size: 5655
     params:
       params.json:
-        model: GCNSI
+        model: GCNR
         visualization:
           seed: 123
     outs:
