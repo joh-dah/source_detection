@@ -285,13 +285,12 @@ def main():
     processed_val_data = utils.load_processed_data("validation")
     raw_val_data = utils.load_raw_data("validation")
     pred_labels = get_predictions(model, processed_val_data)
-    params = json.load(open('params.json'))
 
     metrics_dict = {}
     metrics_dict["validation"] = {}
     metrics_dict["validation"]["supervised"] = evaluate_predictions(pred_labels, raw_val_data)
     metrics_dict["validation"]["unsupervised"] = get_unsupervised_metrics(raw_val_data)
-    metrics_dict["parameters"] = params
+    metrics_dict["parameters"] = json.load(open('params.json'))
     utils.save_metrics(metrics_dict, model_name)
 
 
