@@ -6,6 +6,7 @@ import torch
 from tqdm import tqdm
 import src.constants as const
 from src import utils
+from torch_geometric.loader import DataLoader
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -20,12 +21,12 @@ def train(model, model_name, dataset, criterion):
 
     optimizer = torch.optim.Adam(model.parameters(), weight_decay=const.WEIGHT_DECAY)
     epochs = range(1, const.EPOCHS)
-    losses = []
     print(f"Train Model on device:{device} :")
     min_loss = float("inf")
+    loader = DataLoader(dataset, batch_size=const.BATCH_SIZE)
     for epoch in tqdm(epochs):
-        running_loss = 0.0
-        for data in dataset:
+        agg_loss = 0
+        for data in loader:
             data.to(device)
             x = data.x
             y = data.y
@@ -35,12 +36,11 @@ def train(model, model_name, dataset, criterion):
             loss = criterion(out, y)
             loss.backward()
             optimizer.step()
-            running_loss += loss
-            losses.append(loss)
-        print(f"Epoch: {epoch}\tLoss: {running_loss:.4f}")
-        if running_loss < min_loss:
+            agg_loss += loss.item()
+        if agg_loss < min_loss:
+            print(f"Epoch: {epoch}\tLoss: {agg_loss:.4f}")
             print("Saving new best model ...")
-            min_loss = running_loss
+            min_loss = agg_loss
             utils.save_model(model, "latest")
             utils.save_model(model, model_name)
     return model

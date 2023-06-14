@@ -39,6 +39,7 @@ GCNR_N_FEATURES = training["gcnr_n_features"]
 GCNSI_N_FEATURES = training["gcnsi_n_features"]
 ALPHA = training["alpha"]
 WEIGHT_DECAY = training["weight_decay"]
+BATCH_SIZE = training["batch_size"]
 
 # Visualization
 SEED = params["visualization"]["seed"]
