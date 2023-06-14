@@ -1,7 +1,7 @@
 import datetime
 from architectures.GCNR import GCNR
 from architectures.GCNSI import GCNSI
-from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
+from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data, process_simplified_gcnsi_data
 import torch
 from tqdm import tqdm
 import src.constants as const
@@ -57,9 +57,12 @@ def main():
     if const.MODEL == "GCNSI":
         model = GCNSI().to(device)
         model.name = model_name
-        train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
-            : const.TRAINING_SIZE
-        ]
+        if const.GCNSI_N_FEATURES == 4:
+            train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
+                : const.TRAINING_SIZE]
+        else:
+            train_data = SDDataset(const.DATA_PATH, pre_transform=process_simplified_gcnsi_data)[
+                : const.TRAINING_SIZE]
         criterion = torch.nn.BCEWithLogitsLoss()
 
     elif const.MODEL == "GCNR":

@@ -12,7 +12,7 @@ from rpasdt.algorithm.simulation import perform_source_detection_simulation
 from rpasdt.algorithm.taxonomies import DiffusionTypeEnum, SourceDetectionAlgorithm
 from torch_geometric.utils.convert import from_networkx
 
-from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
+from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data, process_simplified_gcnsi_data
 import src.constants as const
 from architectures.GCNR import GCNR
 from architectures.GCNSI import GCNSI
@@ -322,9 +322,12 @@ def main():
         model = utils.load_model(
             model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
         )
-        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
-            const.TRAINING_SIZE :
-        ]
+        if const.GCNSI_N_FEATURES == 4:
+            val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
+                const.TRAINING_SIZE:]
+        else:
+            val_data = SDDataset(const.DATA_PATH, pre_transform=process_simplified_gcnsi_data)[
+                const.TRAINING_SIZE:]
         metrics_dict = evaluate_source_predictions(model, val_data)
 
     elif const.MODEL == "GCNR":

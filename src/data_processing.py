@@ -91,6 +91,15 @@ def process_gcnsi_data(data: Data) -> Data:
     return Data(x=X, y=y, edge_index=data.edge_index)
 
 
+def process_simplified_gcnsi_data(data: Data) -> Data:
+    """Simplified features and Labels for the GCNSI model."""
+    # expand features to 2D tensor
+    X = data.x.unsqueeze(1).float()
+    # expand labels to 2D tensor
+    y = data.y.unsqueeze(1).float()
+    return Data(x=X, y=y, edge_index=data.edge_index)
+
+
 def process_gcnr_data(data: Data) -> Data:
     """Features and Labels for the GCNR model."""
     X = paper_input(data.x, data.edge_index)
@@ -104,7 +113,10 @@ def main():
 
     print("Creating new processed data...")
     if const.MODEL == "GCNSI":
-        SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)
+        if const.GCNSI_N_FEATURES == 4:
+            SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)
+        else:
+            SDDataset(const.DATA_PATH, pre_transform=process_simplified_gcnsi_data)
 
     elif const.MODEL == "GCNR":
         SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)
