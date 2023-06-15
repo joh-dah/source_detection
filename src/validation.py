@@ -118,7 +118,7 @@ def calculate_roc_score(pred_label_set, data_set, plot_curve=True):
         roc_scores.append(roc_auc_score(true_labels, pred_labels))
 
     if plot_curve:
-        vis.plot_roc_curve(TPs_by_threshold, FPs_by_threshold, n_plots=5)
+        vis.plot_roc_curve(FPs_by_threshold, TPs_by_threshold, n_plots=5)
 
     return {"avg roc score": np.mean(roc_scores)}
 
