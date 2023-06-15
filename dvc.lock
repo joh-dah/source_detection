@@ -5,7 +5,7 @@ stages:
     deps:
     - path: src/data_creation.py
       md5: 76ec9fe9de2a59dccfca9c2f14ea1a4b
-      size: 5746
+      size: 5912
     params:
       params.json:
         data_creation:
