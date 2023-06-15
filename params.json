@@ -16,8 +16,8 @@
         "si_beta": 0.01
     },
     "training": {
-        "epochs": 20,
-        "learning_rate": 0.0008,
+        "epochs": 15,
+        "learning_rate": 0.002,
         "hidden_size": 512,
         "layers": 10,
         "gcnsi_n_features": 4,

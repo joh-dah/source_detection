@@ -183,7 +183,7 @@ def get_prediction_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset)
     }
 
 
-def evaluate_predictions(pred_label_set, data_set):
+def get_supervised_metrics(pred_label_set, data_set):
     """
     Evaluation for models, that predict for every node if it is a source or not.
     Prints the average predicted rank of the real source and the average min matching distance for the predicted sources.
@@ -195,7 +195,7 @@ def evaluate_predictions(pred_label_set, data_set):
     print("Evaluating Model ...")
     metrics |= get_prediction_metrics(pred_label_set, data_set)
     metrics |= get_distance_metrics(pred_label_set, data_set)
-    metrics |= calculate_roc_score(pred_label_set, data_set, plot_curve=True)
+    metrics |= calculate_roc_score(pred_label_set, data_set)
 
     for key, value in metrics.items():
         metrics[key] = round(value, 3)
@@ -287,10 +287,9 @@ def main():
     pred_labels = get_predictions(model, processed_val_data)
 
     metrics_dict = {}
-    metrics_dict["validation"] = {}
-    metrics_dict["validation"]["supervised"] = evaluate_predictions(pred_labels, raw_val_data)
-    metrics_dict["validation"]["unsupervised"] = get_unsupervised_metrics(raw_val_data)
-    metrics_dict["parameters"] = json.load(open('params.json'))
+    metrics_dict["supervised"] = get_supervised_metrics(pred_labels, raw_val_data)
+    metrics_dict["unsupervised"] = get_unsupervised_metrics(raw_val_data)
+    metrics_dict["parameters"] = json.load(open("params.json"))
     utils.save_metrics(metrics_dict, model_name)
 
 
