@@ -304,6 +304,24 @@ def main():
 
     if const.MODEL == "GCNSI":
         model = GCNSI()
+    #     model = utils.load_model(
+    #         model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
+    #     )
+    #     val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
+    #         const.TRAINING_SIZE :
+    #     ]
+    #     metrics_dict = evaluate_source_predictions(model, val_data)
+
+    # elif const.MODEL == "SMALL_INPUT_GCNSI":
+    #     model = GCNSI()
+    #     model = utils.load_model(
+    #         model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
+    #     )
+    #     val_data = SDDataset(
+    #         const.DATA_PATH, pre_transform=process_simplified_gcnsi_data
+    #     )[const.TRAINING_SIZE :]
+    #     metrics_dict = evaluate_source_predictions(model, val_data)
+
     elif const.MODEL == "GCNR":
         model = GCNR()
 
