@@ -108,30 +108,19 @@ def main():
     """Visualize some graphs with the associated predictions"""
 
     n_graphs = 5
+    model_name = utils.get_latest_model_name()
 
-    if const.MODEL == "GCNSI":
-        model = GCNSI()
-        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
-            const.TRAINING_SIZE : const.TRAINING_SIZE + n_graphs
-        ]
-    elif const.MODEL == "GCNR":
+    if const.MODEL == "GCNR":
         model = GCNR()
-        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
-            const.TRAINING_SIZE : const.TRAINING_SIZE + n_graphs
-        ]
+    elif const.MODEL == "GCNSI":
+        model = GCNSI()
 
-    raw_data_paths = val_data.raw_paths[
-        const.TRAINING_SIZE : const.TRAINING_SIZE + n_graphs
-    ]
-
-    model_files = glob.glob(const.MODEL_PATH + r"/*.pth")
-    last_model_file = max(model_files, key=os.path.getctime)
-    print(f"loading model: {last_model_file}")
-    model = utils.load_model(model, last_model_file)
+    model = utils.load_model(model, os.path.join(const.MODEL_PATH, f"{model_name}.pth"))
+    processed_val_data = utils.load_processed_data("validation")[:n_graphs]
+    raw_val_data = utils.load_raw_data("validation")[:n_graphs]
 
     print("Visualize example predictions:")
-    for i, path in tqdm(enumerate(raw_data_paths)):
-        data = torch.load(path)
+    for i, data in tqdm(enumerate(raw_val_data)):
         initial_status = data.y
         status = data.x
         edge_index = data.edge_index
@@ -163,7 +152,7 @@ def main():
             cmap=sir_cmap,
         )
 
-        pred = model(val_data[i].x, val_data[i].edge_index)
+        pred = model(processed_val_data[i].x, processed_val_data[i].edge_index)
 
         if const.MODEL == "GCNSI":
             # color the 5 highest predictions

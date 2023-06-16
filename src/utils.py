@@ -5,6 +5,19 @@ import os
 import torch
 import src.constants as const
 import src.data_processing as dp
+import glob
+
+
+def get_latest_model_name():
+    """
+    Extracts the name of the latest trained model.
+    Gets the name of the newest file in the model folder,
+    that is not the "latest.pth" file and splits the path to extract the name.
+    """
+    model_files = glob.glob(const.MODEL_PATH + r"/*[0-9].pth")
+    last_model_file = max(model_files, key=os.path.getctime)
+    model_name = os.path.split(last_model_file)[1].split(".")[0]
+    return model_name
 
 
 def save_model(model, name):
@@ -68,7 +81,9 @@ def load_processed_data(data_set: str):
     """
     print("Load processed data...")
 
-    if const.MODEL == "GCNSI":
+    if const.MODEL == "GCNSI" and const.SMALL_INPUT:
+        pre_transform = dp.process_simplified_gcnsi_data
+    elif const.MODEL == "GCNSI":
         pre_transform = dp.process_gcnsi_data
     elif const.MODEL == "GCNR":
         pre_transform = dp.process_gcnr_data

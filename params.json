@@ -1,5 +1,5 @@
 {
-    "model": "GCNSI",
+    "model": "GCNR",
     "data_creation": {
         "graph_type": "watts_strogatz",
         "prop_model": "SI",
@@ -13,7 +13,8 @@
         "mean_iters": 35,
         "sir_beta": 0.01,
         "sir_gamma": 0.005,
-        "si_beta": 0.01
+        "si_beta": 0.01,
+        "small_input": false
     },
     "training": {
         "epochs": 5,

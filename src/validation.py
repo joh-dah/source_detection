@@ -285,45 +285,15 @@ def get_predictions(model, data_set):
     return predictions
 
 
-def get_latest_model_name():
-    """
-    Extracts the name of the latest trained model.
-    Gets the name of the newest file in the model folder,
-    that is not the "latest.pth" file and splits the path to extract the name.
-    """
-    model_files = glob.glob(const.MODEL_PATH + r"/*[0-9].pth")
-    last_model_file = max(model_files, key=os.path.getctime)
-    model_name = os.path.split(last_model_file)[1].split(".")[0]
-    return model_name
-
-
 def main():
     """Initiates the validation of the classifier specified in the constants file."""
 
-    model_name = get_latest_model_name()
+    model_name = utils.get_latest_model_name()
 
-    if const.MODEL == "GCNSI":
-        model = GCNSI()
-    #     model = utils.load_model(
-    #         model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
-    #     )
-    #     val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
-    #         const.TRAINING_SIZE :
-    #     ]
-    #     metrics_dict = evaluate_source_predictions(model, val_data)
-
-    # elif const.MODEL == "SMALL_INPUT_GCNSI":
-    #     model = GCNSI()
-    #     model = utils.load_model(
-    #         model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
-    #     )
-    #     val_data = SDDataset(
-    #         const.DATA_PATH, pre_transform=process_simplified_gcnsi_data
-    #     )[const.TRAINING_SIZE :]
-    #     metrics_dict = evaluate_source_predictions(model, val_data)
-
-    elif const.MODEL == "GCNR":
+    if const.MODEL == "GCNR":
         model = GCNR()
+    elif const.MODEL == "GCNSI":
+        model = GCNSI()
 
     model = utils.load_model(model, os.path.join(const.MODEL_PATH, f"{model_name}.pth"))
     processed_val_data = utils.load_processed_data("validation")

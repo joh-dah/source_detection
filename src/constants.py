@@ -28,6 +28,7 @@ MEAN_ITERS = dc["mean_iters"]
 SIR_BETA = dc["sir_beta"]
 SIR_GAMMA = dc["sir_gamma"]
 SI_BETA = dc["si_beta"]
+SMALL_INPUT = dc["small_input"]
 
 # Training
 training = params["training"]
@@ -38,10 +39,10 @@ LAYERS = training["layers"]
 ALPHA = training["alpha"]
 WEIGHT_DECAY = training["weight_decay"]
 GCNR_N_FEATURES = 4
-if MODEL == "GCNSI":
-    GCNSI_N_FEATURES = 4
-elif MODEL == "SMALL_INPUT_GCNSI":
+if SMALL_INPUT:
     GCNSI_N_FEATURES = 1
+else:
+    GCNSI_N_FEATURES = 4
 
 # Visualization
 SEED = params["visualization"]["seed"]
