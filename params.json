@@ -5,7 +5,7 @@
         "prop_model": "SI",
         "training_size": 100,
         "validation_size": 30,
-        "mean_nodes": 100,
+        "mean_nodes": 50,
         "ws_neighbours": 6,
         "ws_probability": 0.2,
         "ba_neighbours": 3,
@@ -16,10 +16,10 @@
         "si_beta": 0.01
     },
     "training": {
-        "epochs": 15,
+        "epochs": 10,
         "learning_rate": 0.002,
         "hidden_size": 512,
-        "layers": 10,
+        "layers": 9,
         "gcnsi_n_features": 4,
         "gcnr_n_features": 4,
         "weight_decay": 0.00000001,

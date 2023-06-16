@@ -148,6 +148,28 @@ def get_distance_metrics(pred_label_set, data_set):
     }
 
 
+def get_TP_FP_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
+    """ """
+    TPs = 0
+    FPs = 0
+    n_positives = 0
+    n_negatives = 0
+    for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
+        true_sources = torch.where(data_set[i].y == 1)[0].tolist()
+        pos_label = 0 if const.MODEL == "GCNR" else 1
+        pred_sources = torch.where(torch.round(pred_labels) == pos_label)[0].tolist()
+        n_TP = len(np.intersect1d(true_sources, pred_sources))
+        TPs += n_TP
+        FPs += len(pred_sources) - n_TP
+        n_positives += len(true_sources)
+        n_negatives += len(pred_labels) - len(true_sources)
+
+    return {
+        "True positive rate": TPs / n_positives,
+        "False positive rate": FPs / n_negatives,
+    }
+
+
 def get_prediction_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
     """
     Get the average rank of the source, the average prediction for the source
@@ -195,6 +217,7 @@ def get_supervised_metrics(pred_label_set, data_set, model_name):
 
     metrics |= get_prediction_metrics(pred_label_set, data_set)
     metrics |= get_distance_metrics(pred_label_set, data_set)
+    metrics |= get_TP_FP_metrics(pred_label_set, data_set)
     metrics |= {"roc score": roc_score}
 
     for key, value in metrics.items():

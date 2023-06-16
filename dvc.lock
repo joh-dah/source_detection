@@ -5,7 +5,7 @@ stages:
     deps:
     - path: src/data_creation.py
       md5: 76ec9fe9de2a59dccfca9c2f14ea1a4b
-      size: 5912
+      size: 5746
     params:
       params.json:
         data_creation:
@@ -13,7 +13,7 @@ stages:
           prop_model: SI
           training_size: 100
           validation_size: 30
-          mean_nodes: 100
+          mean_nodes: 50
           ws_neighbours: 6
           ws_probability: 0.2
           ba_neighbours: 3
@@ -24,19 +24,19 @@ stages:
           si_beta: 0.01
     outs:
     - path: data/raw
-      md5: 8b60974ab456a4610a378de6ab5fac01.dir
-      size: 1535160
+      md5: 4ef4688146b526abdc2e5b647d9e0cfc.dir
+      size: 854776
       nfiles: 130
   data-processing:
     cmd: python -W ignore -m src.data_processing
     deps:
     - path: data/raw
-      md5: 8b60974ab456a4610a378de6ab5fac01.dir
-      size: 1535160
+      md5: 4ef4688146b526abdc2e5b647d9e0cfc.dir
+      size: 854776
       nfiles: 130
     - path: src/data_processing.py
       md5: cbf6c7de151fcce58172a30728a42265
-      size: 3911
+      size: 3797
     params:
       params.json:
         data_creation:
@@ -44,7 +44,7 @@ stages:
           prop_model: SI
           training_size: 100
           validation_size: 30
-          mean_nodes: 100
+          mean_nodes: 50
           ws_neighbours: 6
           ws_probability: 0.2
           ba_neighbours: 3
@@ -56,48 +56,48 @@ stages:
         model: GCNSI
     outs:
     - path: data/processed
-      md5: 8aef7c3ea8409b4107a14841c681ab37.dir
-      size: 1691944
+      md5: 5c09d3c03c57229326f79f499cefb05e.dir
+      size: 932840
       nfiles: 132
   training:
     cmd: python -W ignore -m src.training
     deps:
     - path: data/processed
-      md5: 8aef7c3ea8409b4107a14841c681ab37.dir
-      size: 1691944
+      md5: 5c09d3c03c57229326f79f499cefb05e.dir
+      size: 932840
       nfiles: 132
     - path: src/training.py
       md5: 182f3fd7a7e125837d1bd8b4a73e8630
-      size: 2530
+      size: 2452
     params:
       params.json:
         model: GCNSI
         training:
-          epochs: 15
+          epochs: 10
           learning_rate: 0.002
           hidden_size: 512
-          layers: 10
+          layers: 9
           gcnsi_n_features: 4
           gcnr_n_features: 4
           weight_decay: 1e-08
           alpha: 0.5
     outs:
     - path: models/latest.pth
-      md5: b9ff33b87da3d6111bddd8b4dc45e545
+      md5: 5b9180ca4025cb9597e09df61e708902
       size: 1064911
   visualisation:
     cmd: python -W ignore -m src.visualization
     deps:
     - path: data/processed
-      md5: 8aef7c3ea8409b4107a14841c681ab37.dir
-      size: 1691944
+      md5: 5c09d3c03c57229326f79f499cefb05e.dir
+      size: 932840
       nfiles: 132
     - path: models/latest.pth
-      md5: b9ff33b87da3d6111bddd8b4dc45e545
+      md5: 5b9180ca4025cb9597e09df61e708902
       size: 1064911
     - path: src/visualization.py
-      md5: 82563a0a9ca525ea3feab03d87934748
-      size: 5917
+      md5: 395e469c4ade7dc1acbf4083a019bfe0
+      size: 5597
     params:
       params.json:
         model: GCNSI
@@ -105,26 +105,26 @@ stages:
           seed: 123
     outs:
     - path: figures
-      md5: a69f1bf39d10c64c462c0ed02ded34c4.dir
-      size: 2084672
+      md5: 52c9727aee70cb26d3fbcc7aaf59a2ca.dir
+      size: 1512455
       nfiles: 15
   validation:
     cmd: python -W ignore -m src.validation
     deps:
     - path: data/processed
-      md5: 8aef7c3ea8409b4107a14841c681ab37.dir
-      size: 1691944
+      md5: 5c09d3c03c57229326f79f499cefb05e.dir
+      size: 932840
       nfiles: 132
     - path: models/latest.pth
-      md5: b9ff33b87da3d6111bddd8b4dc45e545
+      md5: 5b9180ca4025cb9597e09df61e708902
       size: 1064911
     - path: src/validation.py
-      md5: aebcaf69f73fc2b13ee9c27c237035e1
-      size: 11962
+      md5: ba7d837914c06751f6867158e65330ab
+      size: 12593
     params:
       params.json:
         model: GCNSI
     outs:
     - path: reports/latest.json
-      md5: d00662c4420cf3f79f64005447087c80
-      size: 1529
+      md5: a0bcb575338a85b71b3971b15604affc
+      size: 1538
