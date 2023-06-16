@@ -255,7 +255,10 @@ def get_predictions(model, data_set):
     for data in tqdm(data_set, desc="make predictions with model"):
         features = data.x
         edge_index = data.edge_index
-        predictions.append(model(features, edge_index))
+        if const.MODEL == "GCNSI":
+            predictions.append(torch.sigmoid(model(features, edge_index)))
+        elif const.MODEL == "GCNR":
+            predictions.append(model(features, edge_index))
     return predictions
 
 
