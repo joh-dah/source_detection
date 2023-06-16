@@ -97,30 +97,24 @@ def min_matching_distance(
     return min_matching_distance / len(sources), avg_dists
 
 
-def calculate_roc_score(pred_label_set, data_set, plot_curve=True):
+def compute_roc_curve(pred_label_set, data_set):
     """
     Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC)
-    from prediction scores, false positive rates and true positive rates.
-    :param predictions: Predicted value for a node to be a source.
-    :param labels: Actual sources.
-    :return: Area under the roc curve, false positive rates and true positive rates.
+    and the false positive rates and true positive rates
+    for the given data set and the predicted labels.
     """
-    roc_scores = []
-    FPs_by_threshold = []
-    TPs_by_threshold = []
-
+    all_true_labels = []
+    all_pred_labels = []
     for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
-        true_labels = data_set[i].y.tolist()
-        pred_labels = pred_labels.tolist()
-        false_positive, true_positive, _ = roc_curve(true_labels, pred_labels)
-        FPs_by_threshold.append(false_positive)
-        TPs_by_threshold.append(true_positive)
-        roc_scores.append(roc_auc_score(true_labels, pred_labels))
+        all_true_labels += data_set[i].y.tolist()
+        all_pred_labels += pred_labels.tolist()
 
-    if plot_curve:
-        vis.plot_roc_curve(FPs_by_threshold, TPs_by_threshold, n_plots=5)
-
-    return {"avg roc score": np.mean(roc_scores)}
+    pos_label = 0 if const.MODEL == "GCNR" else 1
+    false_positive, true_positive, _ = roc_curve(
+        all_true_labels, all_pred_labels, pos_label=pos_label
+    )
+    roc_score = roc_auc_score(all_true_labels, all_pred_labels)
+    return roc_score, true_positive, false_positive
 
 
 def get_predicted_sources(pred_labels, true_sources):
@@ -183,7 +177,7 @@ def get_prediction_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset)
     }
 
 
-def get_supervised_metrics(pred_label_set, data_set):
+def get_supervised_metrics(pred_label_set, data_set, model_name):
     """
     Evaluation for models, that predict for every node if it is a source or not.
     Prints the average predicted rank of the real source and the average min matching distance for the predicted sources.
@@ -193,9 +187,15 @@ def get_supervised_metrics(pred_label_set, data_set):
     metrics = {}
 
     print("Evaluating Model ...")
+
+    roc_score, true_positives, false_positives = compute_roc_curve(
+        pred_label_set, data_set
+    )
+    vis.plot_roc_curve(true_positives, false_positives, model_name)
+
     metrics |= get_prediction_metrics(pred_label_set, data_set)
     metrics |= get_distance_metrics(pred_label_set, data_set)
-    metrics |= calculate_roc_score(pred_label_set, data_set)
+    metrics |= {"roc score": roc_score}
 
     for key, value in metrics.items():
         metrics[key] = round(value, 3)
@@ -290,7 +290,9 @@ def main():
     pred_labels = get_predictions(model, processed_val_data)
 
     metrics_dict = {}
-    metrics_dict["supervised"] = get_supervised_metrics(pred_labels, raw_val_data)
+    metrics_dict["supervised"] = get_supervised_metrics(
+        pred_labels, raw_val_data, model_name
+    )
     metrics_dict["unsupervised"] = get_unsupervised_metrics(raw_val_data)
     metrics_dict["parameters"] = json.load(open("params.json"))
     utils.save_metrics(metrics_dict, model_name)
