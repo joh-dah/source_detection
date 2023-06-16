@@ -1,12 +1,12 @@
 {
-    "model": "GCNR",
+    "model": "GCNSI",
     "data_creation": {
         "graph_type": "watts_strogatz",
         "prop_model": "SI",
         "training_size": 100,
-        "validation_size": 20,
+        "validation_size": 30,
         "mean_nodes": 100,
-        "ws_neighbours": 6,
+        "ws_neighbours": 10,
         "ws_probability": 0.2,
         "ba_neighbours": 3,
         "mean_sources": 2,
@@ -16,12 +16,10 @@
         "si_beta": 0.01
     },
     "training": {
-        "epochs": 10,
+        "epochs": 5,
         "learning_rate": 0.0008,
         "hidden_size": 512,
         "layers": 10,
-        "gcnsi_n_features": 4,
-        "gcnr_n_features": 4,
         "weight_decay": 0.00000001,
         "alpha": 0.5
     },

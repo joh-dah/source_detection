@@ -35,10 +35,13 @@ EPOCHS = training["epochs"]
 LEARNING_RATE = training["learning_rate"]
 HIDDEN_SIZE = training["hidden_size"]
 LAYERS = training["layers"]
-GCNR_N_FEATURES = training["gcnr_n_features"]
-GCNSI_N_FEATURES = training["gcnsi_n_features"]
 ALPHA = training["alpha"]
 WEIGHT_DECAY = training["weight_decay"]
+GCNR_N_FEATURES = 4
+if MODEL == "GCNSI":
+    GCNSI_N_FEATURES = 4
+elif MODEL == "SMALL_INPUT_GCNSI":
+    GCNSI_N_FEATURES = 1
 
 # Visualization
 SEED = params["visualization"]["seed"]
