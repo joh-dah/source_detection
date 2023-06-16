@@ -14,6 +14,7 @@
 #SBATCH --error=/hpi/fs00/home/conrad.halle/source_detection/sbatch_out/slurm_%j_%N_%x_%A_%a.err
 
 source venv/bin/activate
-echo "START TRAINING"
+
+python update_params.py --idx ${SLURM_ARRAY_TASK_ID}
 
 dvc repro
