@@ -112,12 +112,11 @@ def main():
     shutil.rmtree(const.PROCESSED_DATA_PATH, ignore_errors=True)
 
     print("Creating new processed data...")
-    if const.MODEL == "GCNSI":
-        if const.GCNSI_N_FEATURES == 4:
-            SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)
-        else:
-            SDDataset(const.DATA_PATH, pre_transform=process_simplified_gcnsi_data)
 
+    if const.MODEL == "GCNSI":
+        SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)
+    elif const.MODEL == "SMALL_INPUT_GCNSI":
+        SDDataset(const.DATA_PATH, pre_transform=process_simplified_gcnsi_data)
     elif const.MODEL == "GCNR":
         SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)
 
