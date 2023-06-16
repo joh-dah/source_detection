@@ -5,16 +5,16 @@ stages:
     deps:
     - path: src/data_creation.py
       md5: 76ec9fe9de2a59dccfca9c2f14ea1a4b
-      size: 5746
+      size: 5912
     params:
       params.json:
         data_creation:
           graph_type: watts_strogatz
           prop_model: SI
           training_size: 100
-          validation_size: 30
+          validation_size: 20
           mean_nodes: 100
-          ws_neighbours: 10
+          ws_neighbours: 6
           ws_probability: 0.2
           ba_neighbours: 3
           mean_sources: 3
@@ -43,9 +43,9 @@ stages:
           graph_type: watts_strogatz
           prop_model: SI
           training_size: 100
-          validation_size: 30
+          validation_size: 20
           mean_nodes: 100
-          ws_neighbours: 10
+          ws_neighbours: 6
           ws_probability: 0.2
           ba_neighbours: 3
           mean_sources: 3
@@ -95,7 +95,7 @@ stages:
       size: 1064911
     - path: src/visualization.py
       md5: bc26f9a253fbdb3d5f50f0818cd98d5e
-      size: 5655
+      size: 5844
     params:
       params.json:
         model: SMALL_INPUT_GCNSI

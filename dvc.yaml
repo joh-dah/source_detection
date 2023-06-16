@@ -46,7 +46,7 @@ stages:
     - reports/latest.json
 
   visualisation:
-    frozen: true
+    frozen: false
     cmd: python -W ignore -m src.visualization
     deps:
     - src/visualization.py
