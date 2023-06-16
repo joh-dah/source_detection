@@ -17,7 +17,7 @@ stages:
           ws_neighbours: 10
           ws_probability: 0.2
           ba_neighbours: 3
-          mean_sources: 2
+          mean_sources: 3
           mean_iters: 35
           sir_beta: 0.01
           sir_gamma: 0.005
@@ -48,7 +48,7 @@ stages:
           ws_neighbours: 10
           ws_probability: 0.2
           ba_neighbours: 3
-          mean_sources: 2
+          mean_sources: 3
           mean_iters: 35
           sir_beta: 0.01
           sir_gamma: 0.005
@@ -73,12 +73,10 @@ stages:
       params.json:
         model: GCNSI
         training:
-          epochs: 10
+          epochs: 5
           learning_rate: 0.0008
           hidden_size: 512
           layers: 10
-          gcnsi_n_features: 4
-          gcnr_n_features: 4
           weight_decay: 1e-08
           alpha: 0.5
           batch_size: 100

@@ -1,7 +1,12 @@
 import datetime
 from architectures.GCNR import GCNR
 from architectures.GCNSI import GCNSI
-from src.data_processing import SDDataset, process_gcnr_data, process_gcnsi_data
+from src.data_processing import (
+    SDDataset,
+    process_gcnr_data,
+    process_gcnsi_data,
+    process_simplified_gcnsi_data,
+)
 import torch
 from tqdm import tqdm
 import src.constants as const
@@ -59,16 +64,23 @@ def main():
     """Initiates the training of the classifier specified in the constants file."""
 
     print("Prepare Data ...")
+    print(const.GCNSI_N_FEATURES)
 
     current_time = datetime.datetime.now().strftime("%m-%d_%H-%M")
     model_name = f"{const.MODEL}_{current_time}"
 
     if const.MODEL == "GCNSI":
         model = GCNSI().to(device)
-        model.name = model_name
         train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
             : const.TRAINING_SIZE
         ]
+        criterion = torch.nn.BCEWithLogitsLoss()
+
+    elif const.MODEL == "SMALL_INPUT_GCNSI":
+        model = GCNSI().to(device)
+        train_data = SDDataset(
+            const.DATA_PATH, pre_transform=process_simplified_gcnsi_data
+        )[: const.TRAINING_SIZE]
         criterion = torch.nn.BCEWithLogitsLoss()
 
     elif const.MODEL == "GCNR":
