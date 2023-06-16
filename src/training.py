@@ -11,6 +11,15 @@ from torch_geometric.loader import DataLoader
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
+class MSLELoss(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mse = torch.nn.MSELoss()
+
+    def forward(self, pred, actual):
+        return self.mse(torch.log(pred + 1), torch.log(actual + 1))
+
+
 def train(model, model_name, dataset, criterion):
     """
     Trains the model.
@@ -67,7 +76,7 @@ def main():
         train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
             : const.TRAINING_SIZE
         ]
-        criterion = torch.nn.MSELoss()
+        criterion = torch.nn.MSLELoss()
 
     train(model, model_name, train_data, criterion)
     # utils.save_model(model, "latest")
