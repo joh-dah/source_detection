@@ -64,7 +64,6 @@ def main():
     """Initiates the training of the classifier specified in the constants file."""
 
     print("Prepare Data ...")
-    print(const.GCNSI_N_FEATURES)
 
     current_time = datetime.datetime.now().strftime("%m-%d_%H-%M")
     model_name = f"{const.MODEL}_{current_time}"
@@ -88,7 +87,7 @@ def main():
         train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
             : const.TRAINING_SIZE
         ]
-        criterion = torch.nn.MSLELoss()
+        criterion = MSLELoss()
 
     train(model, model_name, train_data, criterion)
     # utils.save_model(model, "latest")

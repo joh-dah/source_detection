@@ -1,5 +1,5 @@
 {
-    "model": "GCNSR",
+    "model": "GCNR",
     "data_creation": {
         "graph_type": "watts_strogatz",
         "prop_model": "SI",
