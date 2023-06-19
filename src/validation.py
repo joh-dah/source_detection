@@ -12,43 +12,13 @@ from rpasdt.algorithm.simulation import perform_source_detection_simulation
 from rpasdt.algorithm.taxonomies import DiffusionTypeEnum, SourceDetectionAlgorithm
 from torch_geometric.utils.convert import from_networkx
 
-from src.data_processing import (
-    SDDataset,
-    process_gcnr_data,
-    process_gcnsi_data,
-    process_simplified_gcnsi_data,
-)
+import src.data_processing as dp
 import src.constants as const
 from architectures.GCNR import GCNR
 from architectures.GCNSI import GCNSI
 import src.constants as const
 from src import visualization as vis
 from src import utils
-
-
-def predict_source_probailities(model, graph_structure, features):
-    """
-    Prediction about the probability that nodes are sources.
-    :param model: The model to evaluate.
-    :param graph_structure: The graph structure.
-    :param features: The features of the nodes.
-    :return: Probabilities that nodes are sources.
-    """
-    prediction = model(features, graph_structure.edge_index)
-    return torch.softmax(prediction, 1)
-
-
-def threshold_predicted_sources(model, graph_structure, features, threshold):
-    """
-    Find nodes whose probability of being a source is higher than the threshold.
-    :param model: The model to evaluate.
-    :param graph_structure: The graph structure.
-    :param features: The features of the nodes.
-    :param threshold: Value that tells how high the probability must be to assume that the node is a source.
-    :return: Nodes whose probability of being a source is higher than the threshold.
-    """
-    prediction = predict_source_probailities(model, graph_structure, features)
-    return torch.where(prediction[:, 1] > threshold)[0]
 
 
 def find_closest_sources(matching_graph, unmatched_nodes):
@@ -127,108 +97,153 @@ def min_matching_distance(
     return min_matching_distance / len(sources), avg_dists
 
 
-def compute_roc_curve(predictions, labels):
+def compute_roc_curve(pred_label_set, data_set):
     """
-    Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC) from prediction scores, false positive rates and true positive rates.
-    :param predictions: Predicted value for a node to be a source.
-    :param labels: Actual sources.
-    :return: Area under the roc curve, false positive rates and true positive rates.
+    Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC)
+    and the false positive rates and true positive rates
+    for the given data set and the predicted labels.
     """
-    source_prob = predictions.flatten()
-    false_positive, true_positive, thresholds = roc_curve(
-        labels.tolist(), source_prob.tolist()
+    all_true_labels = []
+    all_pred_labels = []
+    for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
+        all_true_labels += data_set[i].y.tolist()
+        all_pred_labels += pred_labels.tolist()
+
+    pos_label = 0 if const.MODEL == "GCNR" else 1
+    false_positive, true_positive, _ = roc_curve(
+        all_true_labels, all_pred_labels, pos_label=pos_label
     )
-    roc_score = roc_auc_score(labels.tolist(), source_prob.tolist())
-    return roc_score, false_positive, true_positive
+    roc_score = roc_auc_score(all_true_labels, all_pred_labels)
+    roc_score = 1 - roc_score if const.MODEL == "GCNR" else roc_score
+    return roc_score, true_positive, false_positive
 
 
-def evaluate_source_predictions(model, val_data):
+def get_predicted_sources(pred_labels, true_sources):
+    """Get the predicted sources from the predicted labels."""
+    # TODO: currently we fix the number of predicted sources to the number of true sources
+    # we should try to predict the number of sources as well or use a threshold
+    ranked_predictions = (utils.get_ranked_source_predictions(pred_labels)).tolist()
+    return ranked_predictions[: len(true_sources)]
+
+
+def get_distance_metrics(pred_label_set, data_set):
+    """
+    Get the average min matching distance and the average distance to the source in general.
+    """
+    min_matching_dists = []
+    dist_to_source = []
+
+    for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
+        true_labels = data_set[i].y
+        true_sources = torch.where(true_labels == 1)[0].tolist()
+        pred_sources = get_predicted_sources(pred_labels, true_sources)
+        matching_dist, avg_dist = min_matching_distance(
+            data_set[i].edge_index, true_sources, pred_sources
+        )
+        min_matching_dists.append(matching_dist)
+        dist_to_source += avg_dist
+
+    return {
+        "min matching distance": np.mean(min_matching_dists),
+        "avg dist to source": np.mean(dist_to_source),
+    }
+
+
+def get_TP_FP_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
+    """ """
+    TPs = 0
+    FPs = 0
+    n_positives = 0
+    n_negatives = 0
+    for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
+        true_sources = torch.where(data_set[i].y == 1)[0].tolist()
+        pos_label = 0 if const.MODEL == "GCNR" else 1
+        pred_sources = torch.where(torch.round(pred_labels) == pos_label)[0].tolist()
+        n_TP = len(np.intersect1d(true_sources, pred_sources))
+        TPs += n_TP
+        FPs += len(pred_sources) - n_TP
+        n_positives += len(true_sources)
+        n_negatives += len(pred_labels) - len(true_sources)
+
+    return {
+        "True positive rate": TPs / n_positives,
+        "False positive rate": FPs / n_negatives,
+    }
+
+
+def get_prediction_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
+    """
+    Get the average rank of the source, the average prediction for the source
+    and additional metrics that help to evaluate the prediction.
+    """
+    source_ranks = []
+    predictions_for_source = []
+    general_predictions = []
+
+    for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
+        true_sources = torch.where(data_set[i].y == 1)[0].tolist()
+        ranked_predictions = (utils.get_ranked_source_predictions(pred_labels)).tolist()
+
+        for source in true_sources:
+            source_ranks.append(ranked_predictions.index(source))
+            predictions_for_source += pred_labels[true_sources].tolist()
+            general_predictions += pred_labels.flatten().tolist()
+
+    return {
+        "avg rank of source": np.mean(source_ranks),
+        "mean number of nodes": np.ceil(len(general_predictions) / len(data_set)),
+        "avg prediction for source": np.mean(predictions_for_source),
+        "avg prediction over all nodes": np.mean(general_predictions),
+        "std prediction over all nodes": np.std(general_predictions),
+        "min prediction over all nodes": min(general_predictions),
+        "max prediction over all nodes": max(general_predictions),
+    }
+
+
+def get_supervised_metrics(pred_label_set, data_set, model_name):
     """
     Evaluation for models, that predict for every node if it is a source or not.
     Prints the average predicted rank of the real source and the average min matching distance for the predicted sources.
     :param model: The model to evaluate.
     :param prep_val_data: The validation data.
     """
-    min_matching_distances = []
-    ranks = []
-    roc_scores = []
-    TPs = []
-    FPs = []
-    TPs_by_threshold = []
-    FPs_by_threshold = []
-    n_plots = 5
-    source_dists = []
-    for i, data in enumerate(tqdm(val_data, desc="evaluate model")):
-        labels = data.y
-        features = data.x
-        edge_index = data.edge_index
-        sources = torch.where(labels == 1)[0]
-        predictions = model(features, edge_index)
-        ranked_predictions = (utils.get_ranked_source_predictions(predictions)).tolist()
-        for source in sources:
-            ranks.append(ranked_predictions.index(source))
-        top_n_predictions = utils.get_ranked_source_predictions(
-            predictions, len(sources)
-        )
-        # currently we are fixing the number of predicted sources to the number of sources in the graph
-        matching_dist, avg_dist = min_matching_distance(
-            edge_index, sources.tolist(), top_n_predictions.tolist()
-        )
-        min_matching_distances.append(matching_dist)
-        source_dists.append(avg_dist)
+    metrics = {}
 
-        roc_score, false_positive, true_positive = compute_roc_curve(
-            predictions, labels
-        )
-        roc_scores.append(roc_score)
-        TPs_by_threshold.append(true_positive)
-        FPs_by_threshold.append(false_positive)
-        # TODO: select a fixed threshold
-        TPs.append(true_positive[len(true_positive) // 2])
-        FPs.append(false_positive[len(false_positive) // 2])
+    print("Evaluating Model ...")
 
-    metrics_dict = {
-        "avg predicted rank of source": np.mean(ranks),
-        "avg min matching distance of predicted source": np.mean(
-            min_matching_distances
-        ),
-        "avg distance to source": np.mean(source_dists),
-        "true positive rate": np.mean(TPs),
-        "false positive rate": np.mean(FPs),
-        "avg roc score": round(sum(roc_scores) / len(roc_scores), 2),
-    }
+    roc_score, true_positives, false_positives = compute_roc_curve(
+        pred_label_set, data_set
+    )
+    vis.plot_roc_curve(true_positives, false_positives, model_name)
 
-    vis.plot_roc_curve(TPs_by_threshold[:n_plots], FPs_by_threshold[:n_plots])
+    metrics |= get_prediction_metrics(pred_label_set, data_set)
+    metrics |= get_distance_metrics(pred_label_set, data_set)
+    metrics |= get_TP_FP_metrics(pred_label_set, data_set)
+    metrics |= {"roc score": roc_score}
 
-    return metrics_dict
+    for key, value in metrics.items():
+        metrics[key] = round(value, 3)
+        print(f"{key}: {metrics[key]}")
+
+    return metrics
 
 
 def get_min_matching_distance_netsleuth(result):
-    sum_min_matching_distance = 0
-    for name, results in result.raw_results.items():
-        if name == "NETSLEUTH":
-            for mm_r in results:
-                data = from_networkx(mm_r.G)
-                sum_min_matching_distance += min_matching_distance(
-                    data.edge_index, mm_r.real_sources, mm_r.detected_sources
-                )[0]
-            avg_min_matching_distance = sum_min_matching_distance / len(results)
-
-    return avg_min_matching_distance
+    """Calculate the average min matching distance for the NETSLEUTH results."""
+    min_matching_dists = []
+    for mm_r in result.raw_results["NETSLEUTH"]:
+        data = from_networkx(mm_r.G)
+        min_matching_dists.append(
+            min_matching_distance(
+                data.edge_index, mm_r.real_sources, mm_r.detected_sources
+            )[0]
+        )
+    return np.mean(min_matching_dists)
 
 
 def create_simulation_config():
+    """Create a rpasdt simulation config with the NETSLEUTH source detector."""
     return rpasdt_models.SourceDetectionSimulationConfig(
-        diffusion_models=[
-            rpasdt_models.DiffusionModelSimulationConfig(
-                diffusion_model_type=DiffusionTypeEnum.SI,
-                diffusion_model_params={"beta": 0.08784399402913001},
-            )
-        ],
-        iteration_bunch=20,
-        source_selection_config=rpasdt_models.NetworkSourceSelectionConfig(
-            number_of_sources=5,
-        ),
         source_detectors={
             "NETSLEUTH": rpasdt_models.SourceDetectorSimulationConfig(
                 alg=SourceDetectionAlgorithm.NET_SLEUTH,
@@ -238,131 +253,61 @@ def create_simulation_config():
     )
 
 
-def get_unsupervised_metrics():
-    val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)
-    raw_data_paths = val_data.raw_paths[const.TRAINING_SIZE :]
-
-    val_data = []
-    for path in raw_data_paths:
-        val_data.append(torch.load(path))
-
+def get_unsupervised_metrics(val_data):
+    print("Evaluating unsupervised methods ...")
     simulation_config = create_simulation_config()
 
     result = perform_source_detection_simulation(simulation_config, val_data)
     avg_mm_distance = get_min_matching_distance_netsleuth(result)
 
-    metrics_dict = {
+    metrics = {
         "avg min matching distance of predicted source": avg_mm_distance,
         "True positive rate": result.aggregated_results["NETSLEUTH"].TPR,
         "False positive rate": result.aggregated_results["NETSLEUTH"].FPR,
     }
 
-    return metrics_dict
+    for key, value in metrics.items():
+        metrics[key] = round(value, 3)
+        print(f"unsupervised - {key}: {metrics[key]}")
+
+    return metrics
 
 
-def evaluate_source_distance(model, val_data):
-    """
-    Evaluates the model on the validation data.
-    :param model: The model to evaluate.
-    :param prep_val_data: The validation data.
-    """
-    pred_source_distances = []
-    pred_distances = []
-    TPs = []
-    FPs = []
-    for data in tqdm(val_data, desc="evaluate model"):
-        labels = data.y
+def get_predictions(model, data_set):
+    """Use the model to make predictions on the dataset"""
+    predictions = []
+    for data in tqdm(data_set, desc="make predictions with model"):
         features = data.x
         edge_index = data.edge_index
-        predictions = model(features, edge_index)
-        sources = torch.where(labels == 0)[0]
-        pred_sources = np.array(torch.where(predictions == 0)[0])
-        pred_distances += predictions.tolist()
-        pred_source_distances += predictions[sources].tolist()
-        TPs.append(len(np.intersect1d(sources, pred_sources)))
-        FPs.append(len(pred_sources) - len(np.intersect1d(sources, pred_sources)))
-
-    metrics_dict = {
-        "predicted source_distance of sources:": np.mean(pred_source_distances),
-        "avg predicted source_distances": np.mean(pred_distances),
-        "std predicted source_distances": np.std(pred_distances),
-        "min predicted source_distances": np.min(pred_distances),
-        "max predicted source_distances": np.max(pred_distances),
-        "True positive rate": np.mean(TPs),
-        "False positive rate": np.mean(FPs),
-    }
-
-    return metrics_dict
-
-
-def get_latest_model_name():
-    model_files = glob.glob(const.MODEL_PATH + r"/*[0-9].pth")
-    last_model_file = max(model_files, key=os.path.getctime)
-    model_name = os.path.split(last_model_file)[1].split(".")[0]
-    return model_name
-
-
-def save_metrics(metrics_dict, model_name):
-    Path(const.REPORT_PATH).mkdir(parents=True, exist_ok=True)
-    json.dump(
-        metrics_dict,
-        open(os.path.join(const.REPORT_PATH, f"{model_name}.json"), "w"),
-        indent=4,
-    )
-    json.dump(
-        metrics_dict,
-        open(os.path.join(const.REPORT_PATH, "latest.json"), "w"),
-        indent=4,
-    )
+        if const.MODEL == "GCNSI":
+            predictions.append(torch.sigmoid(model(features, edge_index)))
+        elif const.MODEL == "GCNR":
+            predictions.append(model(features, edge_index))
+    return predictions
 
 
 def main():
     """Initiates the validation of the classifier specified in the constants file."""
 
-    model_name = get_latest_model_name()
-    print(f"loading model: {model_name}")
+    model_name = utils.get_latest_model_name()
 
-    if const.MODEL == "GCNSI":
-        model = GCNSI()
-        model = utils.load_model(
-            model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
-        )
-        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
-            const.TRAINING_SIZE :
-        ]
-        metrics_dict = evaluate_source_predictions(model, val_data)
-
-    elif const.MODEL == "SMALL_INPUT_GCNSI":
-        model = GCNSI()
-        model = utils.load_model(
-            model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
-        )
-        val_data = SDDataset(
-            const.DATA_PATH, pre_transform=process_simplified_gcnsi_data
-        )[const.TRAINING_SIZE :]
-        metrics_dict = evaluate_source_predictions(model, val_data)
-
-    elif const.MODEL == "GCNR":
+    if const.MODEL == "GCNR":
         model = GCNR()
-        model = utils.load_model(
-            model, os.path.join(const.MODEL_PATH, f"{model_name}.pth")
-        )
-        val_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
-            const.TRAINING_SIZE :
-        ]
-        metrics_dict = evaluate_source_distance(model, val_data)
+    elif const.MODEL == "GCNSI":
+        model = GCNSI()
 
-    for key, value in metrics_dict.items():
-        metrics_dict[key] = round(value, 3)
-        print(f"{key}: {metrics_dict[key]}")
+    model = utils.load_model(model, os.path.join(const.MODEL_PATH, f"{model_name}.pth"))
+    processed_val_data = utils.load_processed_data("validation")
+    raw_val_data = utils.load_raw_data("validation")
+    pred_labels = get_predictions(model, processed_val_data)
 
-    metrics_dict["unsupervised"] = get_unsupervised_metrics()
-
-    for key, value in metrics_dict["unsupervised"].items():
-        metrics_dict["unsupervised"][key] = round(value, 3)
-        print(f"unsupervised - {key}: {metrics_dict['unsupervised'][key]}")
-
-    save_metrics(metrics_dict, model_name)
+    metrics_dict = {}
+    metrics_dict["supervised"] = get_supervised_metrics(
+        pred_labels, raw_val_data, model_name
+    )
+    metrics_dict["unsupervised"] = get_unsupervised_metrics(raw_val_data)
+    metrics_dict["parameters"] = json.load(open("params.json"))
+    utils.save_metrics(metrics_dict, model_name)
 
 
 if __name__ == "__main__":
