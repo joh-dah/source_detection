@@ -30,6 +30,7 @@ stages:
     - params.json:
       - training
       - model
+      - model_name
     outs:
     - models/latest.pth
 
@@ -42,6 +43,7 @@ stages:
     params:
     - params.json:
       - model
+      - model_name
     metrics:
     - reports/latest.json
 
