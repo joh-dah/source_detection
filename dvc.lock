@@ -5,13 +5,13 @@ stages:
     deps:
     - path: src/data_creation.py
       md5: 76ec9fe9de2a59dccfca9c2f14ea1a4b
-      size: 5746
+      size: 5912
     params:
       params.json:
         data_creation:
           graph_type: watts_strogatz
           prop_model: SI
-          training_size: 100
+          training_size: 110
           validation_size: 30
           mean_nodes: 100
           ws_neighbours: 10
@@ -25,25 +25,25 @@ stages:
           small_input: false
     outs:
     - path: data/raw
-      md5: 25f42fa538af8b5607a23ccc8dcb3b78.dir
-      size: 2350328
-      nfiles: 130
+      md5: ee097d363fc5b6109f4e5834629ccbb6.dir
+      size: 2533262
+      nfiles: 140
   data-processing:
     cmd: python -W ignore -m src.data_processing
     deps:
     - path: data/raw
-      md5: 25f42fa538af8b5607a23ccc8dcb3b78.dir
-      size: 2350328
-      nfiles: 130
+      md5: ee097d363fc5b6109f4e5834629ccbb6.dir
+      size: 2533262
+      nfiles: 140
     - path: src/data_processing.py
       md5: be6f0e1cb3abad81b6009c4780398878
-      size: 4261
+      size: 4389
     params:
       params.json:
         data_creation:
           graph_type: watts_strogatz
           prop_model: SI
-          training_size: 100
+          training_size: 110
           validation_size: 30
           mean_nodes: 100
           ws_neighbours: 10
@@ -55,27 +55,27 @@ stages:
           sir_gamma: 0.005
           si_beta: 0.01
           small_input: false
-        model: GCNR
+        model: GCNSI
     outs:
     - path: data/processed
-      md5: 4a27ec9499e9cb63c0cb1be7429fa6f7.dir
-      size: 2505832
-      nfiles: 132
+      md5: 2371e82003a52c702fce3b428f3b9bf9.dir
+      size: 2700350
+      nfiles: 142
   training:
     cmd: python -W ignore -m src.training
     deps:
     - path: data/processed
-      md5: 4a27ec9499e9cb63c0cb1be7429fa6f7.dir
-      size: 2505832
-      nfiles: 132
+      md5: 2371e82003a52c702fce3b428f3b9bf9.dir
+      size: 2700350
+      nfiles: 142
     - path: src/training.py
       md5: b3c3a8608984f62adcca0b008b4ae6cb
-      size: 2189
+      size: 2264
     params:
       params.json:
-        model: GCNR
+        model: GCNSI
         training:
-          epochs: 5
+          epochs: 10
           learning_rate: 0.0008
           hidden_size: 512
           layers: 10
@@ -83,48 +83,48 @@ stages:
           alpha: 0.5
     outs:
     - path: models/latest.pth
-      md5: bb255d7d1a192e69027686eaa72a25ed
+      md5: e1c1b25f504db87ac3e5c56b6d952490
       size: 1064911
   visualisation:
     cmd: python -W ignore -m src.visualization
     deps:
     - path: data/processed
-      md5: 4a27ec9499e9cb63c0cb1be7429fa6f7.dir
-      size: 2505832
-      nfiles: 132
+      md5: 2371e82003a52c702fce3b428f3b9bf9.dir
+      size: 2700350
+      nfiles: 142
     - path: models/latest.pth
-      md5: bb255d7d1a192e69027686eaa72a25ed
+      md5: e1c1b25f504db87ac3e5c56b6d952490
       size: 1064911
     - path: src/visualization.py
       md5: 39204a80bc3aab473a3dbd1af493ca3d
-      size: 5220
+      size: 5397
     params:
       params.json:
-        model: GCNR
+        model: GCNSI
         visualization:
           seed: 123
     outs:
     - path: figures
-      md5: ef6a3e526442522ea88b7adde64c3fea.dir
-      size: 2764542
+      md5: 37892b0712c07f10c54934df7d993212.dir
+      size: 2662059
       nfiles: 15
   validation:
     cmd: python -W ignore -m src.validation
     deps:
     - path: data/processed
-      md5: 4a27ec9499e9cb63c0cb1be7429fa6f7.dir
-      size: 2505832
-      nfiles: 132
+      md5: 2371e82003a52c702fce3b428f3b9bf9.dir
+      size: 2700350
+      nfiles: 142
     - path: models/latest.pth
-      md5: bb255d7d1a192e69027686eaa72a25ed
+      md5: e1c1b25f504db87ac3e5c56b6d952490
       size: 1064911
     - path: src/validation.py
-      md5: d0fe6584fc4a675aa7f0fd1ac22b4342
-      size: 12131
+      md5: 62b8b5081e4c24d5c0413b03c615d6e4
+      size: 12514
     params:
       params.json:
-        model: GCNR
+        model: GCNSI
     outs:
     - path: reports/latest.json
-      md5: 97f972c50811e80cd35eaa86a424ddce
-      size: 1504
+      md5: 6c0c9d73c322966708ef707b249f5afc
+      size: 1558

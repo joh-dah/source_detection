@@ -1,9 +1,9 @@
 {
-    "model": "GCNR",
+    "model": "GCNSI",
     "data_creation": {
         "graph_type": "watts_strogatz",
         "prop_model": "SI",
-        "training_size": 100,
+        "training_size": 110,
         "validation_size": 30,
         "mean_nodes": 100,
         "ws_neighbours": 10,
@@ -17,7 +17,7 @@
         "small_input": false
     },
     "training": {
-        "epochs": 5,
+        "epochs": 10,
         "learning_rate": 0.0008,
         "hidden_size": 512,
         "layers": 10,

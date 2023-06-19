@@ -114,6 +114,7 @@ def compute_roc_curve(pred_label_set, data_set):
         all_true_labels, all_pred_labels, pos_label=pos_label
     )
     roc_score = roc_auc_score(all_true_labels, all_pred_labels)
+    roc_score = 1 - roc_score if const.MODEL == "GCNR" else roc_score
     return roc_score, true_positive, false_positive
 
 
@@ -143,7 +144,7 @@ def get_distance_metrics(pred_label_set, data_set):
         dist_to_source += avg_dist
 
     return {
-        "min matiching distance": np.mean(min_matching_dists),
+        "min matching distance": np.mean(min_matching_dists),
         "avg dist to source": np.mean(dist_to_source),
     }
 
