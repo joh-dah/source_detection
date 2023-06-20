@@ -1,10 +1,10 @@
 {
     "model": "GCNR",
-    "model_name": "",
+    "model_name": "6",
     "data_creation": {
         "graph_type": "watts_strogatz",
         "prop_model": "SI",
-        "training_size": 1000,
+        "training_size": 100,
         "validation_size": 100,
         "mean_nodes": 1000,
         "ws_neighbours": 10,
@@ -14,18 +14,20 @@
         "mean_iters": 90,
         "sir_beta": 0.01,
         "sir_gamma": 0.005,
-        "si_beta": 0.01
+        "si_beta": 0.01,
+        "train_size": 10000
     },
     "training": {
         "epochs": 100,
-        "learning_rate": 0.0008,
+        "learning_rate": 5e-05,
         "hidden_size": 512,
         "layers": 10,
         "gcnsi_n_features": 4,
         "gcnr_n_features": 4,
         "weight_decay": 1e-08,
         "alpha": 0.5,
-        "batch_size": 100
+        "batch_size": 100,
+        "useLogLoss": true
     },
     "visualization": {
         "seed": 123

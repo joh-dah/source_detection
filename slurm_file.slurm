@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name="gnn_source_detect"
+#SBATCH --exclude=ac922-[01-02]
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20G
 #SBATCH --cpus-per-gpu=2
@@ -12,6 +13,8 @@
 #SBATCH --verbose
 #SBATCH --output=/hpi/fs00/home/conrad.halle/source_detection/sbatch_out/slurm_%j_%N_%x_%A_%a.out
 #SBATCH --error=/hpi/fs00/home/conrad.halle/source_detection/sbatch_out/slurm_%j_%N_%x_%A_%a.err
+
+conda deactivate
 
 source venv/bin/activate
 

@@ -17,10 +17,14 @@ args = parser.parse_args()
 
 change_dict = {
     "model": ["GCNSI", "GCNSI", "GCNR", "GCNR", "GCNR", "GCNSI", "GCNR"],
-    "training": {"epochs": [30, 30, 100, 100, 100, 100, 100],
-                 "learning_rate": [0.001, 0.0001, 0.001, 0.0001, 0.00001, 0.00001, 0.00005],},
-    "data_creation": {"mean_nodes": [1000, 1000, 1000, 1000, 1000, 1000, 1000],
-                      "train_size": [1000, 1000, 1000, 1000, 10000, 10000, 10000],},
+    "training": {
+        "epochs": [30, 30, 100, 100, 100, 100, 100],
+        "learning_rate": [0.001, 0.0001, 0.001, 0.0001, 0.00001, 0.00001, 0.00005],
+    },
+    "data_creation": {
+        "mean_nodes": [1000, 1000, 1000, 1000, 1000, 1000, 1000],
+        "train_size": [1000, 1000, 1000, 1000, 10000, 10000, 10000],
+    },
 }
 
 # load the params.json file
