@@ -38,7 +38,7 @@ def train(model, model_name, dataset, criterion):
     print(f"Train Model on device:{device} :")
     min_loss = float("inf")
     loader = DataLoader(dataset, batch_size=const.BATCH_SIZE)
-    for epoch in tqdm(epochs):
+    for epoch in tqdm(epochs, disable=const.ON_CLUSTER):
         agg_loss = 0
         for data in loader:
             data.to(device)
@@ -51,8 +51,9 @@ def train(model, model_name, dataset, criterion):
             loss.backward()
             optimizer.step()
             agg_loss += loss.item()
+
+        print(f"Epoch: {epoch}\tLoss: {agg_loss:.4f}")
         if agg_loss < min_loss:
-            print(f"Epoch: {epoch}\tLoss: {agg_loss:.4f}")
             print("Saving new best model ...")
             min_loss = agg_loss
             utils.save_model(model, "latest")

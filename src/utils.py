@@ -38,7 +38,8 @@ def load_model(model, path):
     :return: model with loaded state
     """
     print(f"loading model: {path}")
-    model.load_state_dict(torch.load(path))
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.load_state_dict(torch.load(path, map_location=torch.device(device)))
     return model
 
 

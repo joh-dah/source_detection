@@ -105,7 +105,9 @@ def compute_roc_curve(pred_label_set, data_set):
     """
     all_true_labels = []
     all_pred_labels = []
-    for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
+    for i, pred_labels in enumerate(
+        tqdm(pred_label_set[:10], desc="evaluate model", disable=const.ON_CLUSTER)
+    ):
         all_true_labels += data_set[i].y.tolist()
         all_pred_labels += pred_labels.tolist()
 
@@ -133,7 +135,9 @@ def get_distance_metrics(pred_label_set, data_set):
     min_matching_dists = []
     dist_to_source = []
 
-    for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
+    for i, pred_labels in enumerate(
+        tqdm(pred_label_set, desc="evaluate model", disable=const.ON_CLUSTER)
+    ):
         true_labels = data_set[i].y
         true_sources = torch.where(true_labels == 1)[0].tolist()
         pred_sources = get_predicted_sources(pred_labels, true_sources)
@@ -155,7 +159,9 @@ def get_TP_FP_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
     FPs = 0
     n_positives = 0
     n_negatives = 0
-    for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
+    for i, pred_labels in enumerate(
+        tqdm(pred_label_set, desc="evaluate model", disable=const.ON_CLUSTER)
+    ):
         true_sources = torch.where(data_set[i].y == 1)[0].tolist()
         pos_label = 0 if const.MODEL == "GCNR" else 1
         pred_sources = torch.where(torch.round(pred_labels) == pos_label)[0].tolist()
@@ -180,7 +186,9 @@ def get_prediction_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset)
     predictions_for_source = []
     general_predictions = []
 
-    for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
+    for i, pred_labels in enumerate(
+        tqdm(pred_label_set, desc="evaluate model", disable=const.ON_CLUSTER)
+    ):
         true_sources = torch.where(data_set[i].y == 1)[0].tolist()
         ranked_predictions = (utils.get_ranked_source_predictions(pred_labels)).tolist()
 
@@ -210,7 +218,6 @@ def get_supervised_metrics(pred_label_set, data_set, model_name):
     metrics = {}
 
     print("Evaluating Model ...")
-
     roc_score, true_positives, false_positives = compute_roc_curve(
         pred_label_set, data_set
     )
@@ -276,7 +283,9 @@ def get_unsupervised_metrics(val_data):
 def get_predictions(model, data_set):
     """Use the model to make predictions on the dataset"""
     predictions = []
-    for data in tqdm(data_set, desc="make predictions with model"):
+    for data in tqdm(
+        data_set, desc="make predictions with model", disable=const.ON_CLUSTER
+    ):
         features = data.x
         edge_index = data.edge_index
         if const.MODEL == "GCNSI":

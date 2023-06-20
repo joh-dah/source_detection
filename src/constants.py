@@ -13,6 +13,7 @@ MODEL_PATH = "models"
 FIGURES_PATH = "figures"
 ROC_PATH = "roc"
 REPORT_PATH = "reports"
+ON_CLUSTER = params["on_cluster"]
 
 # Data Creation
 dc = params["data_creation"]

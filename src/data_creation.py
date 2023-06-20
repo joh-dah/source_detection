@@ -139,7 +139,7 @@ def create_data_set(n_graphs, graph_type=const.GRAPH_TYPE, model_type=const.PROP
     for file_name in os.listdir(path):
         os.remove(os.path.join(path, file_name))
 
-    for i in tqdm(range(n_graphs)):
+    for i in tqdm(range(n_graphs), disable=const.ON_CLUSTER):
         graph = create_graph(graph_type)
         prop_model = create_signal_propagation_model(graph, model_type)
         X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)

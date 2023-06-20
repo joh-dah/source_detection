@@ -35,6 +35,7 @@ with open("params.json") as json_file:
 
 update_params(params, change_dict, args.idx)
 params["model_name"] = f"{args.idx}"
+params["on_cluster"] = True
 
 # save the updated params.json file
 with open("params.json", "w") as outfile:
