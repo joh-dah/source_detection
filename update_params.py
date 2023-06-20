@@ -2,12 +2,13 @@ import argparse
 import json
 
 
-def update_params(params, change_dict, idx):
+def update_params(params: dict, change_dict, idx):
     for key, value in change_dict.items():
         if isinstance(value, dict):
             update_params(params[key], value, idx)
         else:
             print(f"Updating {key} to {value[idx]}")
+            assert key in params.keys
             params[key] = value[idx]
 
 
@@ -23,7 +24,7 @@ change_dict = {
     },
     "data_creation": {
         "mean_nodes": [1000, 1000, 1000, 1000, 1000, 1000, 1000],
-        "train_size": [1000, 1000, 1000, 1000, 10000, 10000, 10000],
+        "training_size": [1000, 1000, 1000, 1000, 10000, 10000, 10000],
     },
 }
 
