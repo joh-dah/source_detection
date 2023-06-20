@@ -68,30 +68,16 @@ def main():
     current_time = datetime.datetime.now().strftime("%m-%d_%H-%M")
     model_name = f"{const.MODEL}_{current_time}_{const.MODEL_NAME}"
 
-    if const.MODEL == "GCNSI":
-        model = GCNSI().to(device)
-        train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)[
-            : const.TRAINING_SIZE
-        ]
-        criterion = torch.nn.BCEWithLogitsLoss()
-
-    elif const.MODEL == "SMALL_INPUT_GCNSI":
-        model = GCNSI().to(device)
-        train_data = SDDataset(
-            const.DATA_PATH, pre_transform=process_simplified_gcnsi_data
-        )[: const.TRAINING_SIZE]
-        criterion = torch.nn.BCEWithLogitsLoss()
-
-    elif const.MODEL == "GCNR":
+    if const.MODEL == "GCNR":
         model = GCNR().to(device)
-        train_data = SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)[
-            : const.TRAINING_SIZE
-        ]
         criterion = MSLELoss() if const.USE_LOG_LOSS else torch.nn.MSELoss()
 
+    elif const.MODEL == "GCNSI":
+        model = GCNSI().to(device)
+        criterion = torch.nn.BCEWithLogitsLoss()
+
+    train_data = utils.load_processed_data("train")
     train(model, model_name, train_data, criterion)
-    # utils.save_model(model, "latest")
-    # utils.save_model(model, model_name)
 
 
 if __name__ == "__main__":

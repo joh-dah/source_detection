@@ -1,48 +1,23 @@
 """utility functions for data loading and machine learning"""
-from os import listdir
-import pickle
 from pathlib import Path
-import numpy as np
+import json
+import os
 import torch
-from tqdm import tqdm
 import src.constants as const
-import src.visualization as vis
-import networkx as nx
-from ndlib.models.DiffusionModel import DiffusionModel
-from torch_geometric.data import Data
-from torch_geometric.utils import to_networkx
+import src.data_processing as dp
+import glob
 
 
-def load_data(path, n_files=None):
-    """Loads data from path."""
-    data = []
-    print("Load Data:")
-    if n_files is None:
-        n_files = len(listdir(path))
-    print(listdir(path))
-    for file in tqdm(listdir(path)[:n_files]):
-        print(file)
-        data.append(torch.load(f"{path}/{file}"))
-    return data
-
-
-def extract_sources(prob_model) -> np.ndarray:
-    """Extracts sources from propagation model."""
-    initial_values = np.array(list(prob_model.initial_status.values()))
-    return np.where(initial_values == 1)[0]
-
-
-def get_ranked_source_predictions(predictions, n=None):
+def get_latest_model_name():
     """
-    Return nodes ranked by predicted probability of beeing source. Selects the n nodes with the highest probability.
-    :param predictions: list of tuple predictions of nodes beeing source.
-    :param n: amount of nodes to return.
-    The second value of the tuple is the probability of the node beeing source.
-    :return: list of nodes ranked by predicted probability of beeing source.
+    Extracts the name of the latest trained model.
+    Gets the name of the newest file in the model folder,
+    that is not the "latest.pth" file and splits the path to extract the name.
     """
-    if n is None:
-        n = predictions.shape[0]
-    return torch.topk(predictions.flatten(), n).indices
+    model_files = glob.glob(const.MODEL_PATH + r"/*[0-9].pth")
+    last_model_file = max(model_files, key=os.path.getctime)
+    model_name = os.path.split(last_model_file)[1].split(".")[0]
+    return model_name
 
 
 def save_model(model, name):
@@ -62,65 +37,89 @@ def load_model(model, path):
     :param path: path to model
     :return: model with loaded state
     """
+    print(f"loading model: {path}")
     model.load_state_dict(torch.load(path))
     return model
 
 
-def visualize_results(
-    model: torch.nn.Module,
-    propagation_models: list[DiffusionModel],
-    prep_dataset: list[list[Data, torch.Tensor, torch.Tensor]],
-):
+def get_ranked_source_predictions(predictions, n_nodes=None):
     """
-    visualizes the predictions of the model.
-    :param model: The model on which predictions are made.
-    :param data_set: The data set to visualize on.
-    Contains the graph structure, the features and the labels.
+    Return nodes ranked by predicted probability of beeing source.
+    Selects the n nodes with the highest probability.
+    :param predictions: list of predictions of nodes beeing source.
+    :param n_nodes: amount of nodes to return.
+    :return: list of nodes ranked by predicted probability of beeing source.
     """
-    print("visualize Results:")
-    for i, propagation_model in tqdm(enumerate(propagation_models)):
-        graph_structure, features, _ = prep_dataset[i]
-        predictions = model(features, graph_structure.edge_index)
-        ranked_predictions = get_ranked_source_predictions(predictions)
-        vis.plot_predictions(propagation_model, ranked_predictions, 7, title=f"_{i}")
+    if n_nodes is None:
+        n_nodes = predictions.shape[0]
+    if const.MODEL == "GCNSI":
+        top_nodes = torch.topk(predictions.flatten(), n_nodes).indices
+    elif const.MODEL == "GCNR":
+        top_nodes = torch.topk(predictions.flatten(), n_nodes, largest=False).indices
+    return top_nodes
 
 
-def visualize_results_gcnr(
-    model: torch.nn.Module,
-    propagation_models: list[DiffusionModel],
-    prep_dataset: list[list[Data, torch.Tensor, torch.Tensor]],
-):
+def save_metrics(metrics: dict, model_name: str):
     """
-    visualizes the predictions of the model.
-    :param model: The model on which predictions are made.
-    :param data_set: The data set to visualize on.
-    Contains the graph structure, the features and the labels.
+    Save dictionary with metrics as json in reports folder.
+    One "latest.json" is created and on file named after the corresponding model.
+    :params metrics: dictionary containing metrics
+    :params model_name: name of the corresponding model
     """
-    print("visualize Results:")
-    for i, propagation_model in tqdm(enumerate(propagation_models)):
-        graph_structure, features, _ = prep_dataset[i]
-        predictions = model(features, graph_structure.edge_index)
+    Path(const.REPORT_PATH).mkdir(parents=True, exist_ok=True)
+    with open(os.path.join(const.REPORT_PATH, f"{model_name}.json"), "w") as file:
+        json.dump(metrics, file, indent=4)
+    with open(os.path.join(const.REPORT_PATH, "latest.json"), "w") as file:
+        json.dump(metrics, file, indent=4)
 
-        # convert predictions to np array of rounded integer values
-        predictions = np.round(predictions.detach().numpy().flatten()).astype(int)
 
-        # extract the maximum shortest path length from a source node to any other node -> used for coloring
-        source_nodes = np.where(
-            np.fromiter(propagation_model.initial_status.values(), dtype=int) == 1
-        )[0]
-        g = to_networkx(graph_structure)
-        max_distance_from_source = np.max(
-            [
-                np.max(
-                    np.fromiter(
-                        nx.single_source_shortest_path_length(g, source_node).values(),
-                        dtype=int,
-                    )
-                )
-                for source_node in source_nodes
-            ]
-        )
+def load_processed_data(data_set: str):
+    """
+    Load processed data.
+    :param data: either train or validation
+    :return: processed data
+    """
+    print("Load processed data...")
 
-        vis.plot_predictions(
-            propagation_model, predictions, max_distance_from_source, title=f"_{i}"
-        )
+    if const.MODEL == "GCNSI" and const.SMALL_INPUT:
+        pre_transform = dp.process_simplified_gcnsi_data
+    elif const.MODEL == "GCNSI":
+        pre_transform = dp.process_gcnsi_data
+    elif const.MODEL == "GCNR":
+        pre_transform = dp.process_gcnr_data
+
+    if data_set == "train":
+        data = dp.SDDataset(const.DATA_PATH, pre_transform=pre_transform)[
+            : const.TRAINING_SIZE
+        ]
+    elif data_set == "validation":
+        data = dp.SDDataset(const.DATA_PATH, pre_transform=pre_transform)[
+            const.TRAINING_SIZE :
+        ]
+    else:
+        print("unknown dataset")
+
+    return data
+
+
+def load_raw_data(data_set: str):
+    """
+    Load raw data.
+    :param data: either train or validation
+    :return: raw data
+    """
+    print("Load raw data...")
+    val_data = dp.SDDataset(const.DATA_PATH, pre_transform=dp.process_gcnr_data)
+
+    if data_set == "train":
+        raw_data_paths = val_data.raw_paths[: const.TRAINING_SIZE]
+    elif data_set == "validation":
+        raw_data_paths = val_data.raw_paths[const.TRAINING_SIZE :]
+    else:
+        print("unknown dataset")
+
+    raw_data = []
+    for path in raw_data_paths:
+        raw_data.append(torch.load(path))
+
+    return raw_data

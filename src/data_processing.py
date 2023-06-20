@@ -114,11 +114,14 @@ def main():
     print("Creating new processed data...")
 
     if const.MODEL == "GCNSI":
-        SDDataset(const.DATA_PATH, pre_transform=process_gcnsi_data)
-    elif const.MODEL == "SMALL_INPUT_GCNSI":
-        SDDataset(const.DATA_PATH, pre_transform=process_simplified_gcnsi_data)
+        if const.SMALL_INPUT:
+            pre_transform_function = process_simplified_gcnsi_data
+        else:
+            pre_transform_function = process_gcnsi_data
     elif const.MODEL == "GCNR":
-        SDDataset(const.DATA_PATH, pre_transform=process_gcnr_data)
+        pre_transform_function = process_gcnr_data
+
+    SDDataset(const.DATA_PATH, pre_transform=pre_transform_function)
 
 
 if __name__ == "__main__":

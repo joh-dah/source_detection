@@ -15,11 +15,11 @@
         "sir_beta": 0.01,
         "sir_gamma": 0.005,
         "si_beta": 0.01,
-        "train_size": 10000
+        "small_input": false
     },
     "training": {
-        "epochs": 100,
-        "learning_rate": 5e-05,
+        "epochs": 10,
+        "learning_rate": 0.0008,
         "hidden_size": 512,
         "layers": 10,
         "gcnsi_n_features": 4,

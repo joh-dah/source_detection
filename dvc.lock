@@ -36,8 +36,8 @@ stages:
       size: 33854290
       nfiles: 200
     - path: src/data_processing.py
-      md5: cb456fadc83eba40f2a6583334649122
-      size: 4235
+      md5: be6f0e1cb3abad81b6009c4780398878
+      size: 4389
     params:
       params.json:
         data_creation:
@@ -124,8 +124,8 @@ stages:
       md5: 4c6bfa16380c522daaa58fc30ccec522
       size: 1064975
     - path: src/validation.py
-      md5: 4830271a19c4efda98127c1f4a19a5fd
-      size: 14026
+      md5: 62b8b5081e4c24d5c0413b03c615d6e4
+      size: 12514
     params:
       params.json:
         model: GCNR
