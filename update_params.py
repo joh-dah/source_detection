@@ -8,7 +8,7 @@ def update_params(params: dict, change_dict, idx):
             update_params(params[key], value, idx)
         else:
             print(f"Updating {key} to {value[idx]}")
-            assert key in params.keys
+            assert key in params
             params[key] = value[idx]
 
 
@@ -17,14 +17,15 @@ parser.add_argument("--idx", type=int, default=0, help="Slurm job array index")
 args = parser.parse_args()
 
 change_dict = {
-    "model": ["GCNSI", "GCNSI", "GCNR", "GCNR", "GCNR", "GCNSI", "GCNR"],
+    "model": ["GCNSI", "GCNR", "GCNR"],
     "training": {
-        "epochs": [30, 30, 100, 100, 100, 100, 100],
-        "learning_rate": [0.001, 0.0001, 0.001, 0.0001, 0.00001, 0.00001, 0.00005],
+        "epochs": [100, 100],
+        "learning_rate": [0.00001, 0.00001],
+        "useLogLoss": [True, False],
     },
     "data_creation": {
-        "mean_nodes": [1000, 1000, 1000, 1000, 1000, 1000, 1000],
-        "training_size": [1000, 1000, 1000, 1000, 10000, 10000, 10000],
+        "mean_nodes": [1000, 1000],
+        "training_size": [10000, 10000],
     },
 }
 
