@@ -118,15 +118,15 @@ def compute_roc_curve(pred_label_set, data_set):
     return roc_score, true_positive, false_positive
 
 
-def get_predicted_sources(pred_labels, true_sources):
+def predicted_sources(pred_labels, true_sources):
     """Get the predicted sources from the predicted labels."""
     # TODO: currently we fix the number of predicted sources to the number of true sources
     # we should try to predict the number of sources as well or use a threshold
-    ranked_predictions = (utils.get_ranked_source_predictions(pred_labels)).tolist()
+    ranked_predictions = (utils.ranked_source_predictions(pred_labels)).tolist()
     return ranked_predictions[: len(true_sources)]
 
 
-def get_distance_metrics(pred_label_set, data_set):
+def distance_metrics(pred_label_set, data_set):
     """
     Get the average min matching distance and the average distance to the source in general.
     """
@@ -136,7 +136,7 @@ def get_distance_metrics(pred_label_set, data_set):
     for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
         true_labels = data_set[i].y
         true_sources = torch.where(true_labels == 1)[0].tolist()
-        pred_sources = get_predicted_sources(pred_labels, true_sources)
+        pred_sources = predicted_sources(pred_labels, true_sources)
         matching_dist, avg_dist = min_matching_distance(
             data_set[i].edge_index, true_sources, pred_sources
         )
@@ -149,7 +149,7 @@ def get_distance_metrics(pred_label_set, data_set):
     }
 
 
-def get_TP_FP_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
+def TP_FP_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
     """ """
     TPs = 0
     FPs = 0
@@ -171,7 +171,7 @@ def get_TP_FP_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
     }
 
 
-def get_prediction_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
+def prediction_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
     """
     Get the average rank of the source, the average prediction for the source
     and additional metrics that help to evaluate the prediction.
@@ -182,7 +182,7 @@ def get_prediction_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset)
 
     for i, pred_labels in enumerate(tqdm(pred_label_set, desc="evaluate model")):
         true_sources = torch.where(data_set[i].y == 1)[0].tolist()
-        ranked_predictions = (utils.get_ranked_source_predictions(pred_labels)).tolist()
+        ranked_predictions = (utils.ranked_source_predictions(pred_labels)).tolist()
 
         for source in true_sources:
             source_ranks.append(ranked_predictions.index(source))
@@ -200,7 +200,7 @@ def get_prediction_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset)
     }
 
 
-def get_supervised_metrics(pred_label_set, data_set, model_name):
+def supervised_metrics(pred_label_set, data_set, model_name):
     """
     Evaluation for models, that predict for every node if it is a source or not.
     Prints the average predicted rank of the real source and the average min matching distance for the predicted sources.
@@ -216,9 +216,9 @@ def get_supervised_metrics(pred_label_set, data_set, model_name):
     )
     vis.plot_roc_curve(true_positives, false_positives, model_name)
 
-    metrics |= get_prediction_metrics(pred_label_set, data_set)
-    metrics |= get_distance_metrics(pred_label_set, data_set)
-    metrics |= get_TP_FP_metrics(pred_label_set, data_set)
+    metrics |= prediction_metrics(pred_label_set, data_set)
+    metrics |= distance_metrics(pred_label_set, data_set)
+    metrics |= TP_FP_metrics(pred_label_set, data_set)
     metrics |= {"roc score": roc_score}
 
     for key, value in metrics.items():
@@ -228,7 +228,7 @@ def get_supervised_metrics(pred_label_set, data_set, model_name):
     return metrics
 
 
-def get_min_matching_distance_netsleuth(result):
+def min_matching_distance_netsleuth(result):
     """Calculate the average min matching distance for the NETSLEUTH results."""
     min_matching_dists = []
     for mm_r in result.raw_results["NETSLEUTH"]:
@@ -253,12 +253,12 @@ def create_simulation_config():
     )
 
 
-def get_unsupervised_metrics(val_data):
+def unsupervised_metrics(val_data):
     print("Evaluating unsupervised methods ...")
     simulation_config = create_simulation_config()
 
     result = perform_source_detection_simulation(simulation_config, val_data)
-    avg_mm_distance = get_min_matching_distance_netsleuth(result)
+    avg_mm_distance = min_matching_distance_netsleuth(result)
 
     metrics = {
         "avg min matching distance of predicted source": avg_mm_distance,
@@ -273,7 +273,43 @@ def get_unsupervised_metrics(val_data):
     return metrics
 
 
-def get_predictions(model, data_set):
+def data_stats(raw_data_set):
+    n_nodes = []
+    n_sources = []
+    centrality = []
+    n_nodes_infected = []
+    precent_infected = []
+    for data in tqdm(raw_data_set, desc="get data stats"):
+        n_nodes.append(len(data.y))
+        n_sources.append(len(torch.where(data.y == 1)[0].tolist()))
+        n_nodes_infected.append(len(torch.where(data.x == 1)[0].tolist()))
+        precent_infected.append(n_nodes_infected[-1] / n_nodes[-1])
+        graph = nx.from_edgelist(data.edge_index.t().tolist())
+        centrality.append(np.mean(list(nx.degree_centrality(graph).values())))
+
+    stats = {
+        "graph stats": {
+            "avg number of nodes": np.mean(n_nodes),
+            "avg centrality": np.mean(centrality),
+            "std centrality": np.std(centrality),
+        },
+        "infection stats": {
+            "avg number of sources": np.mean(n_sources),
+            "avg number of infected nodes": np.mean(n_nodes_infected),
+            "std number of infected nodes": np.std(n_nodes_infected),
+            "avg percent infected nodes": np.mean(precent_infected),
+            "std percent infected nodes": np.std(precent_infected),
+        },
+    }
+
+    for key, value in stats.items():
+        for k, v in value.items():
+            stats[key][k] = round(v, 3)
+
+    return stats
+
+
+def predictions(model, data_set):
     """Use the model to make predictions on the dataset"""
     predictions = []
     for data in tqdm(data_set, desc="make predictions with model"):
@@ -289,7 +325,7 @@ def get_predictions(model, data_set):
 def main():
     """Initiates the validation of the classifier specified in the constants file."""
 
-    model_name = utils.get_latest_model_name()
+    model_name = utils.latest_model_name()
 
     if const.MODEL == "GCNR":
         model = GCNR()
@@ -299,13 +335,14 @@ def main():
     model = utils.load_model(model, os.path.join(const.MODEL_PATH, f"{model_name}.pth"))
     processed_val_data = utils.load_processed_data("validation")
     raw_val_data = utils.load_raw_data("validation")
-    pred_labels = get_predictions(model, processed_val_data)
+    pred_labels = predictions(model, processed_val_data)
 
     metrics_dict = {}
-    metrics_dict["supervised"] = get_supervised_metrics(
+    metrics_dict["supervised"] = supervised_metrics(
         pred_labels, raw_val_data, model_name
     )
-    metrics_dict["unsupervised"] = get_unsupervised_metrics(raw_val_data)
+    metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
+    metrics_dict["data stats"] = data_stats(raw_val_data)
     metrics_dict["parameters"] = json.load(open("params.json"))
     utils.save_metrics(metrics_dict, model_name)
 
