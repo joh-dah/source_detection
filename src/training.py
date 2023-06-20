@@ -1,12 +1,7 @@
 import datetime
+from typing import Tuple
 from architectures.GCNR import GCNR
 from architectures.GCNSI import GCNSI
-from src.data_processing import (
-    SDDataset,
-    process_gcnr_data,
-    process_gcnsi_data,
-    process_simplified_gcnsi_data,
-)
 import torch
 from tqdm import tqdm
 import src.constants as const
@@ -23,6 +18,18 @@ class MSLELoss(torch.nn.Module):
 
     def forward(self, pred, actual):
         return self.mse(torch.log(pred + 1), torch.log(actual + 1))
+
+
+def subsampleClasses(
+    y: torch.Tensor, y_hat: torch.Tensor
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    # subsample the majority class
+    non_sources = torch.where(y == 0)[0]
+    sources = torch.where(y == 1)[0]
+    random_numbers = torch.randperm(non_sources.shape[0])[: sources.shape[0]]
+    subsampled_non_sources = non_sources[random_numbers]
+    indices = torch.cat((subsampled_non_sources, sources))
+    return y[indices], y_hat[indices]
 
 
 def train(model, model_name, dataset, criterion):
@@ -47,6 +54,8 @@ def train(model, model_name, dataset, criterion):
             edge_index = data.edge_index
             optimizer.zero_grad()
             out = model(x, edge_index)
+            if const.SUBSAMPLE:
+                y, out = subsampleClasses(y, out)
             loss = criterion(out, y)
             loss.backward()
             optimizer.step()

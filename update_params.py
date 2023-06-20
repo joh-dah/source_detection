@@ -17,11 +17,11 @@ parser.add_argument("--idx", type=int, default=0, help="Slurm job array index")
 args = parser.parse_args()
 
 change_dict = {
-    "model": ["GCNSI", "GCNR", "GCNR"],
+    "model": ["GCNSI", "GCNR"],
     "training": {
         "epochs": [100, 100],
         "learning_rate": [0.00001, 0.00001],
-        "useLogLoss": [True, False],
+        "useLogLoss": [False, True],
     },
     "data_creation": {
         "mean_nodes": [1000, 1000],
