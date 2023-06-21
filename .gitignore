@@ -10,3 +10,4 @@ src/__pycache__/
 /figures
 /roc
 /reports
+/sbatch_out

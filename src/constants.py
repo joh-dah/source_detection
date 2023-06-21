@@ -5,6 +5,7 @@ params = json.load(open("params.json", "r"))
 
 # General
 MODEL = params["model"]  # "GCNR" or "GCNSI"
+MODEL_NAME = params["model_name"]
 DATA_PATH = "data"
 RAW_DATA_PATH = "data/raw"
 PROCESSED_DATA_PATH = "data/processed"
@@ -12,6 +13,7 @@ MODEL_PATH = "models"
 FIGURES_PATH = "figures"
 ROC_PATH = "roc"
 REPORT_PATH = "reports"
+ON_CLUSTER = params["on_cluster"]
 
 # Data Creation
 dc = params["data_creation"]
@@ -38,6 +40,9 @@ HIDDEN_SIZE = training["hidden_size"]
 LAYERS = training["layers"]
 ALPHA = training["alpha"]
 WEIGHT_DECAY = training["weight_decay"]
+BATCH_SIZE = training["batch_size"]
+USE_LOG_LOSS = training["useLogLoss"]
+SUBSAMPLE = training["subsample"]
 GCNR_N_FEATURES = 4
 if SMALL_INPUT:
     GCNSI_N_FEATURES = 1
