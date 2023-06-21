@@ -15,6 +15,7 @@ def get_latest_model_name():
     that is not the "latest.pth" file and splits the path to extract the name.
     """
     model_files = glob.glob(f"{const.MODEL_PATH}/*.pth")
+    model_files = [file for file in model_files if "latest" not in file]
     last_model_file = max(model_files, key=os.path.getctime)
     model_name = os.path.split(last_model_file)[1].split(".")[0]
     return model_name
