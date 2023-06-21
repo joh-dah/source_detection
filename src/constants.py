@@ -42,6 +42,7 @@ ALPHA = training["alpha"]
 WEIGHT_DECAY = training["weight_decay"]
 BATCH_SIZE = training["batch_size"]
 USE_LOG_LOSS = training["useLogLoss"]
+SUBSAMPLE = training["subsample"]
 GCNR_N_FEATURES = 4
 if SMALL_INPUT:
     GCNSI_N_FEATURES = 1
