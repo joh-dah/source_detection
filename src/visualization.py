@@ -108,7 +108,7 @@ def main():
     """Visualize some graphs with the associated predictions"""
 
     n_graphs = 5
-    model_name = utils.get_latest_model_name()
+    model_name = utils.latest_model_name()
 
     if const.MODEL == "GCNR":
         model = GCNR()
@@ -156,7 +156,7 @@ def main():
 
         if const.MODEL == "GCNSI":
             # color the 5 highest predictions
-            pred = utils.get_ranked_source_predictions(pred)
+            pred = utils.ranked_source_predictions(pred)
             n_colors = 5
 
         elif const.MODEL == "GCNR":

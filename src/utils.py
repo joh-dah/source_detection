@@ -8,7 +8,7 @@ import src.data_processing as dp
 import glob
 
 
-def get_latest_model_name():
+def latest_model_name():
     """
     Extracts the name of the latest trained model.
     Gets the name of the newest file in the model folder,
@@ -44,7 +44,7 @@ def load_model(model, path):
     return model
 
 
-def get_ranked_source_predictions(predictions, n_nodes=None):
+def ranked_source_predictions(predictions, n_nodes=None):
     """
     Return nodes ranked by predicted probability of beeing source.
     Selects the n nodes with the highest probability.
