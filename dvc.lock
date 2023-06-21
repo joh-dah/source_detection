@@ -55,7 +55,7 @@ stages:
           sir_gamma: 0.005
           si_beta: 0.01
           small_input: false
-        model: GCNSI
+        model: GCNR
     outs:
     - path: data/processed
       md5: e65389ac9458d73e378e73198284041b.dir
@@ -73,7 +73,7 @@ stages:
       size: 2548
     params:
       params.json:
-        model: GCNSI
+        model: GCNR
         training:
           epochs: 10
           learning_rate: 0.0008
@@ -100,7 +100,7 @@ stages:
       size: 5525
     params:
       params.json:
-        model: GCNSI
+        model: GCNR
         visualization:
           seed: 123
     outs:
@@ -123,7 +123,7 @@ stages:
       size: 16116
     params:
       params.json:
-        model: GCNSI
+        model: GCNR
     outs:
     - path: reports/latest.json
       md5: 5b621936724ae27b2e2f6351aafe5bf9
