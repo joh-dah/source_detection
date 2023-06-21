@@ -6,7 +6,7 @@
         "graph_type": "watts_strogatz",
         "prop_model": "SI",
         "training_size": 100,
-        "validation_size": 30,
+        "validation_size": 20,
         "mean_nodes": 100,
         "ws_neighbours": 10,
         "ws_probability": 0.2,
@@ -31,5 +31,8 @@
     },
     "visualization": {
         "seed": 123
+    },
+    "validation": {
+        "data_sets": ["generated", "karate"]
     }
 }

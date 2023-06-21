@@ -156,7 +156,7 @@ def main():
     Creates a data set of graphs with modeled signal propagation for training and validation.
     """
     print("Create Data:")
-    create_data_set(const.TRAINING_SIZE + const.VALIDATION_SIZE)
+    create_data_set(const.TRAINING_SIZE)
 
 
 if __name__ == "__main__":

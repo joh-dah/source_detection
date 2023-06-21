@@ -90,16 +90,7 @@ def load_processed_data(data_set: str):
     elif const.MODEL == "GCNR":
         pre_transform = dp.process_gcnr_data
 
-    if data_set == "train":
-        data = dp.SDDataset(const.DATA_PATH, pre_transform=pre_transform)[
-            : const.TRAINING_SIZE
-        ]
-    elif data_set == "validation":
-        data = dp.SDDataset(const.DATA_PATH, pre_transform=pre_transform)[
-            const.TRAINING_SIZE :
-        ]
-    else:
-        print("unknown dataset")
+    data = dp.SDDataset(const.DATA_PATH, pre_transform=pre_transform)
 
     return data
 
@@ -113,13 +104,7 @@ def load_raw_data(data_set: str):
     print("Load raw data...")
     val_data = dp.SDDataset(const.DATA_PATH, pre_transform=dp.process_gcnr_data)
 
-    if data_set == "train":
-        raw_data_paths = val_data.raw_paths[: const.TRAINING_SIZE]
-    elif data_set == "validation":
-        raw_data_paths = val_data.raw_paths[const.TRAINING_SIZE :]
-    else:
-        print("unknown dataset")
-
+    raw_data_paths = val_data.raw_paths
     raw_data = []
     for path in raw_data_paths:
         raw_data.append(torch.load(path))

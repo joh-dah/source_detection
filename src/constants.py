@@ -51,3 +51,6 @@ else:
 
 # Visualization
 SEED = params["visualization"]["seed"]
+
+# Validation
+DATA_SETS = params["validation"]["data_sets"]
