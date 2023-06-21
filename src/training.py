@@ -1,3 +1,4 @@
+""" Initiates the training of the classifier specified in the constants file. """
 import datetime
 from typing import Tuple
 from architectures.GCNR import GCNR
@@ -33,14 +34,20 @@ def subsampleClasses(
     return y[indices], y_hat[indices]
 
 
-def train(model, model_name, dataset, criterion):
+def train(
+    model: torch.nn.Module,
+    model_name: str,
+    dataset: SDDataset,
+    criterion: torch.nn.Module,
+):
     """
-    Trains the model.
+    Trains the specified model using the given dataset.
     :param model: The model to train.
-    :param data: The data to train on. Contains the graph structure, the features and the labels.
+    :param model_name: The name of the model.
+    :param dataset: The dataset to train on, containing the graph structure, features, and labels.
+    :param criterion: The loss criterion used for training.
     :return: The trained model.
     """
-
     optimizer = torch.optim.Adam(model.parameters(), weight_decay=const.WEIGHT_DECAY)
     epochs = range(1, const.EPOCHS)
     print(f"Train Model on device:{device} :")
@@ -72,8 +79,9 @@ def train(model, model_name, dataset, criterion):
 
 
 def main():
-    """Initiates the training of the classifier specified in the constants file."""
-
+    """
+    Initiates the training of the classifier specified in the constants file.
+    """
     print("Prepare Data ...")
 
     current_time = datetime.datetime.now().strftime("%m-%d_%H-%M")

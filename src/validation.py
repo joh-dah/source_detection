@@ -1,3 +1,4 @@
+""" Initiates the validation of the classifier specified in the constants file. """
 import json
 import glob
 from pathlib import Path
@@ -21,12 +22,12 @@ from src import visualization as vis
 from src import utils
 
 
-def find_closest_sources(matching_graph, unmatched_nodes):
+def find_closest_sources(matching_graph: nx.Graph, unmatched_nodes: list) -> list:
     """
     Find the minimum weight adjacent edge for each unmatched node.
-    :param matching_graph: The graph with only the sources, the predicted sources and the distances between them.
-    :param unmatched_nodes: Nodes that didn´t match any other node.
-    :return: The minimum weight adjacent edge for each unmatched node.
+    :param matching_graph: the graph with only the sources, the predicted sources and the distances between them
+    :param unmatched_nodes: nodes that didn´t match any other node
+    :return: list of the minimum weight adjacent edge for each unmatched node
     """
     new_edges = []
     for node in unmatched_nodes:
@@ -40,22 +41,16 @@ def find_closest_sources(matching_graph, unmatched_nodes):
     return new_edges
 
 
-def min_matching_distance(
-    edge_index,
-    sources,
-    predicted_sources,
-    title_for_matching_graph="matching_graph",
-):
+def min_matching_distance(edge_index: torch.tensor, sources: list, predicted_sources: list) -> (float, list):
     """
     Calculates the average minimal matching distance between the sources and the predicted sources.
     This Metric tries to match each source to a predicted source while minimizing the sum of the distances between them.
     When |sources| != |predicted_sources|, some nodes of the smaller set will be matched to multiple nodes of the larger set.
     This penelizes the prediction of too many or too few sources.
     To compare the results of different amounts of sources, the result gets normalized by the number of sources.
-    :param graph: The graph to evaluate on.
+    :param edge_index: The edge_index of the graph to evaluate on.
     :param sources: The indices of the sources.
     :param predicted_sources: The indices of the predicted sources.
-    :param title_for_matching_graph: The title for the visualization of the matching graph. Mostly for debugging purposes.
     :return: The avg minimal matching distance between the sources and the predicted sources.
     """
     G = nx.Graph()
@@ -97,11 +92,13 @@ def min_matching_distance(
     return min_matching_distance / len(sources), avg_dists
 
 
-def compute_roc_curve(pred_label_set, data_set):
+def compute_roc_curve(pred_label_set: list, data_set: list) -> (float, np.ndarray, np.ndarray):
     """
-    Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC)
-    and the false positive rates and true positive rates
-    for the given data set and the predicted labels.
+    Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC) and the false positive rates and
+    true positive rates for the given data set and the predicted labels.
+    :param pred_label_set: list of predicted labels for each data instance in the data set
+    :param data_set: list of data instances containing true labels
+    :return: ROC AUC score, true positive rates, and false positive rates
     """
     all_true_labels = []
     all_pred_labels = []
@@ -120,17 +117,25 @@ def compute_roc_curve(pred_label_set, data_set):
     return roc_score, true_positive, false_positive
 
 
-def predicted_sources(pred_labels, true_sources):
-    """Get the predicted sources from the predicted labels."""
+def predicted_sources(pred_labels: list, true_sources: list) -> list:
+    """
+    Get the predicted sources from the predicted labels.
+    :param pred_labels: the predicted labels for the instances
+    :param true_sources: list of true sources
+    :return: the predicted sources based on the predicted labels
+    """
     # TODO: currently we fix the number of predicted sources to the number of true sources
     # we should try to predict the number of sources as well or use a threshold
     ranked_predictions = (utils.ranked_source_predictions(pred_labels)).tolist()
     return ranked_predictions[: len(true_sources)]
 
 
-def distance_metrics(pred_label_set, data_set):
+def distance_metrics(pred_label_set: list, data_set: list) -> dict:
     """
     Get the average min matching distance and the average distance to the source in general.
+    :param pred_label_set: list of predicted labels for each data instance in the data set
+    :param data_set: list of data instances containing true labels
+    :return: dictionary with the average minimum matching distance and average distance to the source
     """
     min_matching_dists = []
     dist_to_source = []
@@ -153,8 +158,13 @@ def distance_metrics(pred_label_set, data_set):
     }
 
 
-def TP_FP_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
-    """ """
+def TP_FP_metrics(pred_label_set: list, data_set: list) -> dict:
+    """
+    Calculate the true positive rate and false positive rate metrics based on the predicted labels and data set.
+    :param pred_label_set: predicted labels for each data instance in the data set
+    :param data_set: a data set containing true labels
+    :return: dictionary with the true positive rate and false positive rate.
+    """
     TPs = 0
     FPs = 0
     n_positives = 0
@@ -177,10 +187,13 @@ def TP_FP_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
     }
 
 
-def prediction_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
+def prediction_metrics(pred_label_set: list, data_set: list) -> dict:
     """
     Get the average rank of the source, the average prediction for the source
     and additional metrics that help to evaluate the prediction.
+    :param pred_label_set: predicted labels for each data instance in the data set
+    :param data_set: a data set containing true labels
+    :return: dictionary with prediction metrics
     """
     source_ranks = []
     predictions_for_source = []
@@ -208,12 +221,13 @@ def prediction_metrics(pred_label_set: torch.tensor, data_set: dp.SDDataset):
     }
 
 
-def supervised_metrics(pred_label_set, data_set, model_name):
+def supervised_metrics(pred_label_set: list, data_set: list, model_name: str) -> dict:
     """
-    Evaluation for models, that predict for every node if it is a source or not.
-    Prints the average predicted rank of the real source and the average min matching distance for the predicted sources.
-    :param model: The model to evaluate.
-    :param prep_val_data: The validation data.
+    Performs supervised evaluation metrics for models that predict whether each node is a source or not.
+    :param pred_label_set: list of predicted labels for each data instance in the data set
+    :param data_set: the data set containing true labels
+    :param model_name: name of the model being evaluated
+    :return: dictionary containing the evaluation metrics
     """
     metrics = {}
 
@@ -235,8 +249,12 @@ def supervised_metrics(pred_label_set, data_set, model_name):
     return metrics
 
 
-def min_matching_distance_netsleuth(result):
-    """Calculate the average min matching distance for the NETSLEUTH results."""
+def min_matching_distance_netsleuth(result: rpasdt_models.SourceDetectionSimulationResult) -> float:
+    """
+    Calculate the average minimum matching distance for the NETSLEUTH results.
+    :param result: NETSLEUTH results
+    :return: average minimum matching distance
+    """
     min_matching_dists = []
     for mm_r in result.raw_results["NETSLEUTH"]:
         data = from_networkx(mm_r.G)
@@ -248,19 +266,26 @@ def min_matching_distance_netsleuth(result):
     return np.mean(min_matching_dists)
 
 
-def create_simulation_config():
-    """Create a rpasdt simulation config with the NETSLEUTH source detector."""
+def create_simulation_config() -> rpasdt_models.SourceDetectionSimulationConfig:
+    """
+    Create a rpasdt simulation config with the NETSLEUTH source detector.
+    """
     return rpasdt_models.SourceDetectionSimulationConfig(
         source_detectors={
             "NETSLEUTH": rpasdt_models.SourceDetectorSimulationConfig(
                 alg=SourceDetectionAlgorithm.NET_SLEUTH,
                 config=rpasdt_models.CommunitiesBasedSourceDetectionConfig(),
             )
-        },
+        }
     )
 
 
-def unsupervised_metrics(val_data):
+def unsupervised_metrics(val_data: list) -> dict:
+    """
+    Performs unsupervised evaluation metrics for models.
+    :param val_data: the validation data
+    :return: dictionary containing the evaluation metrics
+    """
     print("Evaluating unsupervised methods ...")
     simulation_config = create_simulation_config()
 
@@ -280,7 +305,12 @@ def unsupervised_metrics(val_data):
     return metrics
 
 
-def data_stats(raw_data_set):
+def data_stats(raw_data_set: list) -> dict:
+    """
+    Calculates various graph-related statistics and infection-related statistics for the provided raw data set.
+    :param raw_data_set: the raw data set.
+    :return: dictionary containing the calculated statistics
+    """
     n_nodes = []
     n_sources = []
     centrality = []
@@ -316,8 +346,13 @@ def data_stats(raw_data_set):
     return stats
 
 
-def predictions(model, data_set):
-    """Use the model to make predictions on the dataset"""
+def predictions(model: torch.nn.Module, data_set: dp.SDDataset) -> list:
+    """
+    Generate predictions using the specified model for the given data set.
+    :param model: the model used for making predictions
+    :param data_set: the data set to make predictions on
+    :return: predictions generated by the model
+    """
     predictions = []
     for data in tqdm(
         data_set, desc="make predictions with model", disable=const.ON_CLUSTER
@@ -332,8 +367,9 @@ def predictions(model, data_set):
 
 
 def main():
-    """Initiates the validation of the classifier specified in the constants file."""
-
+    """
+    Initiates the validation of the classifier specified in the constants file.
+    """
     model_name = utils.latest_model_name()
 
     if const.MODEL == "GCNR":

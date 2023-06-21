@@ -36,8 +36,8 @@ stages:
       size: 1710392278
       nfiles: 10100
     - path: src/data_processing.py
-      md5: be6f0e1cb3abad81b6009c4780398878
-      size: 4261
+      md5: 30243f5f313ed5b571d71014dccbaaef
+      size: 5161
     params:
       params.json:
         data_creation:

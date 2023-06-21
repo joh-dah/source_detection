@@ -1,3 +1,4 @@
+""" Visualize graphs with the associated predictions. """
 from typing import Union
 import glob
 import os
@@ -62,8 +63,10 @@ def plot_graph_with_colors(
     plt.close()
 
 
-def plot_matching_graph(g, matching, new_edges, title="matching_graph"):
-    """Plots the matching graph to debug the min-matching distance metric"""
+def plot_matching_graph(g: nx.Graph, matching: list, new_edges: list, title: str = "matching_graph"):
+    """
+    Plots the matching graph to debug the min-matching distance metric.
+    """
     Path(const.FIGURES_PATH).mkdir(parents=True, exist_ok=True)
 
     pos = nx.kamada_kawai_layout(g)
@@ -89,11 +92,11 @@ def plot_matching_graph(g, matching, new_edges, title="matching_graph"):
     plt.close()
 
 
-def plot_roc_curve(true_positives, false_positives, model_name):
+def plot_roc_curve(true_positives: np.ndarray, false_positives: np.ndarray, model_name: str):
     """
     Plot ROC curves.
-    :param false_positives: The false positives rates.
-    :param true_positives: The true positives rates.
+    :param false_positives: the false positives rates
+    :param true_positives: the true positives rates
     """
     print("Visualize ROC curve:")
     Path(const.ROC_PATH).mkdir(parents=True, exist_ok=True)
@@ -105,8 +108,9 @@ def plot_roc_curve(true_positives, false_positives, model_name):
 
 
 def main():
-    """Visualize some graphs with the associated predictions"""
-
+    """
+    Visualize graphs with the associated predictions.
+    """
     n_graphs = 5
     model_name = utils.latest_model_name()
 
@@ -175,3 +179,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

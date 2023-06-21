@@ -1,4 +1,4 @@
-"""utility functions for data loading and machine learning"""
+""" Utility functions for data loading and machine learning. """
 from pathlib import Path
 import json
 import os
@@ -21,7 +21,7 @@ def latest_model_name():
     return model_name
 
 
-def save_model(model, name):
+def save_model(model, name: str):
     """
     Saves model state to path.
     :param model: model with state
@@ -31,7 +31,7 @@ def save_model(model, name):
     torch.save(model.state_dict(), f"{const.MODEL_PATH}/{name}.pth")
 
 
-def load_model(model, path):
+def load_model(model, path: str):
     """
     Loads model state from path.
     :param model: model
@@ -44,13 +44,13 @@ def load_model(model, path):
     return model
 
 
-def ranked_source_predictions(predictions, n_nodes=None):
+def ranked_source_predictions(predictions: torch.tensor, n_nodes: int = None) -> torch.tensor:
     """
     Return nodes ranked by predicted probability of beeing source.
     Selects the n nodes with the highest probability.
-    :param predictions: list of predictions of nodes beeing source.
-    :param n_nodes: amount of nodes to return.
-    :return: list of nodes ranked by predicted probability of beeing source.
+    :param predictions: list of predictions of nodes beeing source
+    :param n_nodes: amount of nodes to return
+    :return: list of nodes ranked by predicted probability of beeing source
     """
     if n_nodes is None:
         n_nodes = predictions.shape[0]
@@ -64,7 +64,7 @@ def ranked_source_predictions(predictions, n_nodes=None):
 def save_metrics(metrics: dict, model_name: str):
     """
     Save dictionary with metrics as json in reports folder.
-    One "latest.json" is created and on file named after the corresponding model.
+    One "latest.json" is created and named after the corresponding model.
     :params metrics: dictionary containing metrics
     :params model_name: name of the corresponding model
     """
@@ -78,7 +78,7 @@ def save_metrics(metrics: dict, model_name: str):
 def load_processed_data(data_set: str):
     """
     Load processed data.
-    :param data: either train or validation
+    :param data_set: either train or validation
     :return: processed data
     """
     print("Load processed data...")
@@ -107,7 +107,7 @@ def load_processed_data(data_set: str):
 def load_raw_data(data_set: str):
     """
     Load raw data.
-    :param data: either train or validation
+    :param data_set: either train or validation
     :return: raw data
     """
     print("Load raw data...")
