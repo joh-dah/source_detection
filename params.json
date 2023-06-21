@@ -1,13 +1,13 @@
 {
     "model": "GCNSI",
     "model_name": "0",
-    "on_cluster": true,
+    "on_cluster": false,
     "data_creation": {
         "graph_type": "watts_strogatz",
         "prop_model": "SI",
-        "training_size": 10000,
-        "validation_size": 100,
-        "mean_nodes": 1000,
+        "training_size": 100,
+        "validation_size": 30,
+        "mean_nodes": 100,
         "ws_neighbours": 10,
         "ws_probability": 0.2,
         "ba_neighbours": 3,
@@ -19,13 +19,13 @@
         "small_input": false
     },
     "training": {
-        "epochs": 100,
+        "epochs": 10,
         "learning_rate": 1e-05,
         "hidden_size": 512,
         "layers": 10,
         "weight_decay": 1e-08,
         "alpha": 0.5,
-        "batch_size": 100,
+        "batch_size": 10,
         "useLogLoss": false,
         "subsample": false
     },
