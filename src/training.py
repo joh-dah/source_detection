@@ -24,8 +24,9 @@ def subsampleClasses(
     y: torch.Tensor, y_hat: torch.Tensor
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     # subsample the majority class
-    non_sources = torch.where(y == 0)[0]
-    sources = torch.where(y == 1)[0]
+    source_indicator = 0 if const.MODEL == "GCNR" else 1
+    non_sources = torch.where(y != source_indicator)[0]
+    sources = torch.where(y == source_indicator)[0]
     random_numbers = torch.randperm(non_sources.shape[0])[: sources.shape[0]]
     subsampled_non_sources = non_sources[random_numbers]
     indices = torch.cat((subsampled_non_sources, sources))

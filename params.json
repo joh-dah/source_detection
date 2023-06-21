@@ -1,6 +1,6 @@
 {
-    "model": "GCNR",
-    "model_name": "1",
+    "model": "GCNSI",
+    "model_name": "0",
     "on_cluster": true,
     "data_creation": {
         "graph_type": "watts_strogatz",
@@ -26,7 +26,8 @@
         "weight_decay": 1e-08,
         "alpha": 0.5,
         "batch_size": 100,
-        "useLogLoss": true
+        "useLogLoss": false,
+        "subsample": false
     },
     "visualization": {
         "seed": 123
