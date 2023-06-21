@@ -8,6 +8,7 @@ from tqdm import tqdm
 import src.constants as const
 from src import utils
 from torch_geometric.loader import DataLoader
+from src.data_processing import SDDataset
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

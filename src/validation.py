@@ -41,7 +41,9 @@ def find_closest_sources(matching_graph: nx.Graph, unmatched_nodes: list) -> lis
     return new_edges
 
 
-def min_matching_distance(edge_index: torch.tensor, sources: list, predicted_sources: list) -> (float, list):
+def min_matching_distance(
+    edge_index: torch.tensor, sources: list, predicted_sources: list
+) -> tuple[float, list]:
     """
     Calculates the average minimal matching distance between the sources and the predicted sources.
     This Metric tries to match each source to a predicted source while minimizing the sum of the distances between them.
@@ -92,7 +94,9 @@ def min_matching_distance(edge_index: torch.tensor, sources: list, predicted_sou
     return min_matching_distance / len(sources), avg_dists
 
 
-def compute_roc_curve(pred_label_set: list, data_set: list) -> (float, np.ndarray, np.ndarray):
+def compute_roc_curve(
+    pred_label_set: list, data_set: list
+) -> tuple[float, np.ndarray, np.ndarray]:
     """
     Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC) and the false positive rates and
     true positive rates for the given data set and the predicted labels.
@@ -249,7 +253,9 @@ def supervised_metrics(pred_label_set: list, data_set: list, model_name: str) ->
     return metrics
 
 
-def min_matching_distance_netsleuth(result: rpasdt_models.SourceDetectionSimulationResult) -> float:
+def min_matching_distance_netsleuth(
+    result: rpasdt_models.SourceDetectionSimulationResult,
+) -> float:
     """
     Calculate the average minimum matching distance for the NETSLEUTH results.
     :param result: NETSLEUTH results
