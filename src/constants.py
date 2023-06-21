@@ -28,7 +28,7 @@ MEAN_ITERS = dc["mean_iters"]
 SIR_BETA = dc["sir_beta"]
 SIR_GAMMA = dc["sir_gamma"]
 SI_BETA = dc["si_beta"]
-SMALL_INPUT = dc["small_input"]
+SMALL_INPUT = dc["small_input"] # "true" or "false"
 
 # Training
 training = params["training"]

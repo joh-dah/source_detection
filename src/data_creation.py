@@ -14,10 +14,10 @@ from torch_geometric.data import Data
 import torch
 
 
-def select_random_sources(graph: nx.Graph, select_random=True) -> list:
+def select_random_sources(graph: nx.Graph, select_random: bool = True) -> list:
     """
     Selects nodes from the given graph as sources.
-    The amount of nodes is randoly selected from a
+    The amount of nodes is randomly selected from a
     normal distribution with mean mean_sources and std mean_sources/2.
     :param graph: graph to select sources from
     :return: list of source nodes
@@ -44,7 +44,7 @@ def model_SIR_signal_propagation(
     :return: propagation model
     """
     model = ep.SIRModel(graph, seed=seed)
-    source_nodes = select_random_sources(graph, select_random=False)
+    source_nodes = select_random_sources(graph)
 
     config = mc.Configuration()
     config.add_model_parameter("beta", const.SIR_BETA)
@@ -69,7 +69,7 @@ def model_SI_signal_propagation(
     :return: propagation model
     """
     model = ep.SIModel(graph, seed=seed)
-    source_nodes = select_random_sources(graph, select_random=False)
+    source_nodes = select_random_sources(graph)
 
     config = mc.Configuration()
     config.add_model_parameter("beta", const.SI_BETA)
@@ -86,7 +86,6 @@ def create_graph(graph_type: str) -> nx.Graph:
     """
     Creates a graph of the given type.
     :param graph_type: type of graph to create
-    :param n_nodes: number of nodes in the graph
     :return: created graph
     """
     n = np.random.normal(const.MEAN_N_NODES, np.sqrt(const.MEAN_N_NODES / 2))
@@ -107,7 +106,6 @@ def create_signal_propagation_model(graph: nx.Graph, model_type: str) -> Diffusi
     Creates a signal propagation model of the given type for the given graph.
     :param graph: graph to create the model for
     :param model_type: type of model to create
-    :param iterations: number of iterations to run the model for
     :return: created model
     """
     iterations = np.random.normal(const.MEAN_ITERS, int(np.sqrt(const.MEAN_ITERS / 2)))
@@ -123,13 +121,12 @@ def create_signal_propagation_model(graph: nx.Graph, model_type: str) -> Diffusi
     return prop_model
 
 
-def create_data_set(n_graphs, graph_type=const.GRAPH_TYPE, model_type=const.PROP_MODEL):
+def create_data_set(n_graphs: int, graph_type: str = const.GRAPH_TYPE, model_type: str = const.PROP_MODEL):
     """
     Creates n graphs of type graph_type and runs a
     signal propagation model of type model_type on them.
     The graphs and the results of the signal propagation are saved to the given path.
-    :param n: number of graphs to create
-    :param path: path to save the data set to
+    :param n_graphs: number of graphs to create
     :param graph_type: type of graph to create
     :param model_type: type of model to use for signal propagation
     """

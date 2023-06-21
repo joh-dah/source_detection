@@ -1,3 +1,4 @@
+""" Creates new processed data based on the selected model. """
 from src import constants as const
 import networkx as nx
 import numpy as np
@@ -40,13 +41,15 @@ class SDDataset(Dataset):
         return data
 
 
-def paper_input(current_status: torch.tensor, edge_index: torch.tensor):
+def paper_input(current_status: torch.tensor, edge_index: torch.tensor) -> torch.tensor:
     """
     Prepares the input features for the GCNSI model according to the paper:
     https://dl.acm.org/doi/abs/10.1145/3357384.3357994
+    :param current_status: the current infection status
+    :param edge_index: edge_index of a graph
+    :return: prepared input features
     """
     Y = np.array(current_status)
-    # S = get_laplacian(edge_index, normalization="sym")
     S = nx.normalized_laplacian_matrix(
         to_networkx(Data(edge_index=edge_index), to_undirected=True)
     )
@@ -69,6 +72,9 @@ def create_distance_labels(
 ) -> torch.tensor:
     """
     Creates the labels for the GCNR model. Each label is the distance of the node to the nearest source.
+    :param graph: graph for which to create the distance labels
+    :param initial_values: initial values indicating the source nodes
+    :return: distance labels
     """
     distances = []
     # extract all sources from prob_model
@@ -84,7 +90,11 @@ def create_distance_labels(
 
 
 def process_gcnsi_data(data: Data) -> Data:
-    """Features and Labels for the GCNSI model."""
+    """
+    Features and Labels for the GCNSI model.
+    :param data: input data to be processed.
+    :return: processed data with expanded features and labels
+    """
     X = paper_input(data.x, data.edge_index)
     # expand labels to 2D tensor
     y = data.y.unsqueeze(1).float()
@@ -92,7 +102,11 @@ def process_gcnsi_data(data: Data) -> Data:
 
 
 def process_simplified_gcnsi_data(data: Data) -> Data:
-    """Simplified features and Labels for the GCNSI model."""
+    """
+    Simplified features and Labels for the GCNSI model.
+    :param data: input data to be processed.
+    :return: processed data with expanded features and labels
+    """
     # expand features to 2D tensor
     X = data.x.unsqueeze(1).float()
     # expand labels to 2D tensor
@@ -101,13 +115,20 @@ def process_simplified_gcnsi_data(data: Data) -> Data:
 
 
 def process_gcnr_data(data: Data) -> Data:
-    """Features and Labels for the GCNR model."""
+    """
+    Features and Labels for the GCNR model.
+    :param data: input data to be processed.
+    :return: processed data with expanded features and labels
+    """
     X = paper_input(data.x, data.edge_index)
     y = create_distance_labels(to_networkx(data, to_undirected=True), data.y)
     return Data(x=X, y=y, edge_index=data.edge_index)
 
 
 def main():
+    """
+    Creates new processed data based on the selected model.
+    """
     print("Removing old processed data...")
     shutil.rmtree(const.PROCESSED_DATA_PATH, ignore_errors=True)
 
