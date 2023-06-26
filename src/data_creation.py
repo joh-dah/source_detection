@@ -1,7 +1,7 @@
 """ Creates a data set of graphs with modeled signal propagation for training and validation."""
 import os
 import random
-import pickle
+import argparse
 from pathlib import Path
 import numpy as np
 import ndlib.models.epidemics as ep
@@ -12,6 +12,7 @@ import src.constants as const
 from ndlib.models.DiffusionModel import DiffusionModel
 from torch_geometric.data import Data
 import torch
+import torch_geometric.datasets as datasets
 
 
 def select_random_sources(graph: nx.Graph, select_random: bool = True) -> list:
@@ -121,7 +122,11 @@ def create_signal_propagation_model(graph: nx.Graph, model_type: str) -> Diffusi
     return prop_model
 
 
-def create_data_set(n_graphs: int, graph_type: str = const.GRAPH_TYPE, model_type: str = const.PROP_MODEL):
+def create_data_set(
+    n_graphs: int,
+    graph_type: str = const.GRAPH_TYPE,
+    model_type: str = const.PROP_MODEL,
+):
     """
     Creates n graphs of type graph_type and runs a
     signal propagation model of type model_type on them.
@@ -155,8 +160,24 @@ def main():
     """
     Creates a data set of graphs with modeled signal propagation for training and validation.
     """
-    print("Create Data:")
-    create_data_set(const.TRAINING_SIZE)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--validation",
+        action="store_false",
+        help="whether to create validation or training data",
+    )
+    parser.add_argument("--dataset", type=str, help="name of the dataset")
+    args = parser.parse_args()
+
+    if args.validation:
+        if args.dataset == "synthetic":
+            print("Create Synthetic Validation Data:")
+            create_data_set(const.VALIDATION_SIZE)
+        print("Create Validation Data:")
+        create_data_set(const.VALIDATION_SIZE)
+    else:
+        print("Create Data:")
+        create_data_set(const.TRAINING_SIZE)
 
 
 if __name__ == "__main__":

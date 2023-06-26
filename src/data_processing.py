@@ -10,16 +10,17 @@ import torch
 
 
 class SDDataset(Dataset):
-    def __init__(self, root, transform=None, pre_transform=None, pre_filter=None):
+    def __init__(self, root, size, transform=None, pre_transform=None, pre_filter=None):
         super().__init__(root, transform, pre_transform, pre_filter)
+        self.size = size
 
     @property
     def raw_file_names(self):
-        return [f"{i}.pt" for i in range(const.TRAINING_SIZE + const.VALIDATION_SIZE)]
+        return [f"{i}.pt" for i in range(self.size)]
 
     @property
     def processed_file_names(self):
-        return [f"{i}.pt" for i in range(const.TRAINING_SIZE + const.VALIDATION_SIZE)]
+        return [f"{i}.pt" for i in range(self.size)]
 
     def process(self):
         for idx, raw_path in enumerate(self.raw_paths):
@@ -142,7 +143,16 @@ def main():
     elif const.MODEL == "GCNR":
         pre_transform_function = process_gcnr_data
 
-    SDDataset(const.DATA_PATH, pre_transform=pre_transform_function)
+    SDDataset(
+        os.path.join(const.DATA_PATH, "val", "synthetic"),
+        size=const.VALIDATION_SIZE,
+        pre_transform=pre_transform_function,
+    )
+    SDDataset(
+        os.path.join(const.DATA_PATH, "train", "synthetic"),
+        size=const.TRAINING_SIZE,
+        pre_transform=pre_transform_function,
+    )
 
 
 if __name__ == "__main__":

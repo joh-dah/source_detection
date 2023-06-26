@@ -376,13 +376,12 @@ def diffusion(graph: nx.Graph, model_type: str = const.PROP_MODEL):
     X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)
     y = torch.tensor(list(prop_model.initial_status.values()), dtype=torch.float)
     edge_index = (
-        torch.tensor(list(graph.to_directed().edges), dtype=torch.long)
-        .t()
-        .contiguous()
+        torch.tensor(list(graph.to_directed().edges), dtype=torch.long).t().contiguous()
     )
     data = dc.Data(x=X, y=y, edge_index=edge_index)
     data.validate()
     return data
+
 
 def create_validation_data(data_set_type: str, model_type: str = const.PROP_MODEL):
     """
@@ -394,17 +393,17 @@ def create_validation_data(data_set_type: str, model_type: str = const.PROP_MODE
     :param model_type: type of model to use for signal propagation
     """
     raw_val_data = []
-    if(data_set_type == "generated"):
+    if data_set_type == "generated":
         for i in tqdm(range(const.VALIDATION_SIZE), disable=const.ON_CLUSTER):
             graph = dc.create_graph(const.GRAPH_TYPE)
             data = diffusion(graph, model_type)
             raw_val_data.append(data)
-    elif(data_set_type == "karate"):
+    elif data_set_type == "karate":
         data_dir = "./try"
         os.makedirs(data_dir, exist_ok=True)
         data = torch_geometric.datasets.WebKB(root=data_dir, name="Texas")
         graph = torch_geometric.utils.convert.to_networkx(data[0])
-        #graph = nx.karate_club_graph()
+        # graph = nx.karate_club_graph()
         data = diffusion(graph, model_type)
         raw_val_data.append(data)
 
@@ -451,9 +450,8 @@ def main():
         )
         metrics_dict[data_set]["unsupervised"] = unsupervised_metrics(raw_val_data)
         metrics_dict[data_set]["data stats"] = data_stats(raw_val_data)
-    metrics_dict[data_set]["parameters"] = json.load(open("params.json"))
+    metrics_dict["parameters"] = json.load(open("params.json"))
     utils.save_metrics(metrics_dict, model_name)
-
 
 
 if __name__ == "__main__":

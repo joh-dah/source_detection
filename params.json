@@ -33,6 +33,13 @@
         "seed": 123
     },
     "validation": {
-        "data_sets": ["generated", "karate"]
-    }
+        "data_sets": [
+            "generated",
+            "karate"
+        ]
+    },
+    "datasets": [
+        "a",
+        "b"
+    ]
 }

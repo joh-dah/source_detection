@@ -6,6 +6,7 @@ import torch
 import src.constants as const
 import src.data_processing as dp
 import glob
+import torch_geometric.datasets as datasets
 
 
 def latest_model_name():
@@ -44,7 +45,9 @@ def load_model(model, path: str):
     return model
 
 
-def ranked_source_predictions(predictions: torch.tensor, n_nodes: int = None) -> torch.tensor:
+def ranked_source_predictions(
+    predictions: torch.tensor, n_nodes: int = None
+) -> torch.tensor:
     """
     Return nodes ranked by predicted probability of beeing source.
     Selects the n nodes with the highest probability.
@@ -75,10 +78,11 @@ def save_metrics(metrics: dict, model_name: str):
         json.dump(metrics, file, indent=4)
 
 
-def load_processed_data(data_set: str):
+def load_processed_data(data_set: str, validation: bool = False):
     """
-    Load processed data.
-    :param data_set: either train or validation
+    Load processed data
+    :param data_set: either synthetic or a name of a pyg dataset
+    :param validation: whether to load validation or training data (default: load training data)
     :return: processed data
     """
     print("Load processed data...")
@@ -90,7 +94,14 @@ def load_processed_data(data_set: str):
     elif const.MODEL == "GCNR":
         pre_transform = dp.process_gcnr_data
 
-    data = dp.SDDataset(const.DATA_PATH, pre_transform=pre_transform)
+    train_or_val = "val" if validation else "train"
+    dir = os.path.join(const.DATA_PATH, train_or_val, data_set)
+    size = len(glob.glob(dir + "/*.pt"))
+    data = dp.SDDataset(
+        os.path.join(const.DATA_PATH, "training"),
+        size=size,
+        pre_transform=pre_transform,
+    )
 
     return data
 
@@ -110,3 +121,18 @@ def load_raw_data(data_set: str):
         raw_data.append(torch.load(path))
 
     return raw_data
+
+
+def get_dataset_from_name(name: str):
+    """
+    Get dataset from name.
+    :param name: name of dataset
+    :return: dataset
+    """
+
+    if name == "KarateClub":
+        return datasets.KarateClub
+    elif name == "Airports":
+        return datasets.Airports
+    else:
+        raise ValueError(f"Dataset {name} not found.")

@@ -7,26 +7,26 @@ stages:
       md5: 6b57fef53f17148008fa82fdcb445845
       size: 5744
     params:
-      params.json:
+      params.yaml:
         data_creation:
-          graph_type: watts_strogatz
-          prop_model: SI
-          training_size: 100
-          validation_size: 20
-          mean_nodes: 100
-          ws_neighbours: 10
-          ws_probability: 0.2
-          ba_neighbours: 3
-          mean_sources: 2
-          mean_iters: 90
-          sir_beta: 0.01
-          sir_gamma: 0.005
-          si_beta: 0.01
-          small_input: false
+        - graph_type: watts_strogatz
+        - prop_model: SI
+        - training_size: 100
+        - validation_size: 30
+        - mean_nodes: 100
+        - ws_neighbours: 10
+        - ws_probability: 0.2
+        - ba_neighbours: 3
+        - mean_sources: 2
+        - mean_iters: 90
+        - sir_beta: 0.01
+        - sir_gamma: 0.005
+        - si_beta: 0.01
+        - small_input: false
     outs:
     - path: data/raw
-      md5: ecfb1bc8e85a28caa0c61ed718386a6e.dir
-      size: 1798774
+      md5: 221026a358e34420ba71254583e949d2.dir
+      size: 1818166
       nfiles: 100
   data-processing:
     cmd: python -W ignore -m src.data_processing
@@ -133,3 +133,13 @@ stages:
     - path: reports/latest.json
       md5: 402ef52f1c59634e8d293d42eb9983b1
       size: 4892
+  test@b:
+    cmd: echo b
+  test@a:
+    cmd: echo a
+  tralala@b:
+    cmd: echo b
+  tralala@c:
+    cmd: echo c
+  tralala@a:
+    cmd: echo a

@@ -1,21 +1,42 @@
 stages:
-  data-creation:
-    cmd: python -W ignore -m src.data_creation
+  generate-train-data:
+    cmd: python -W ignore -m src.data_creation --validation=False --dataset="synthetic"
     deps:
     - src/data_creation.py
     params:
-    - params.json:
-      - data_creation
+    - data_creation
     outs:
-    - data/raw
+    - data/train/synthetic/raw
+  
+  generate-val-data:
+    foreach: ${datasets.val}
+    do:
+      cmd: python -W ignore -m src.data_creation --validation=True --dataset=${item.name}
+      deps:
+      - src/data_creation.py
+      params:
+      - data_creation
+      outs:
+      - data/val/${item.name}/raw
 
-  data-processing:
+  process-val-data:
+    foreach: ${datasets.val}
+    cmd: python -W ignore -m src.data_processing --validation=True --dataset=${item.name}
+    deps:
+    - src/data_processing.py
+    - data/val/${item.name}/raw
+    params:
+    - model
+    - data_creation
+    outs:
+    - data/val/${item.name}/processed
+
+  process-train-data:
     cmd: python -W ignore -m src.data_processing
     deps:
     - src/data_processing.py
     - data/raw
     params:
-    - params.json:
       - model
       - data_creation
     outs:
@@ -27,10 +48,9 @@ stages:
     - src/training.py
     - data/processed
     params:
-    - params.json:
-      - training
-      - model
-      - model_name
+    - training
+    - model
+    - model_name
     outs:
     - models/latest.pth
 
@@ -41,9 +61,8 @@ stages:
     - data/processed
     - models/latest.pth
     params:
-    - params.json:
-      - model
-      - model_name
+    - model
+    - model_name
     metrics:
     - reports/latest.json
 
@@ -55,9 +74,7 @@ stages:
     - data/processed
     - models/latest.pth
     params:
-    - params.json:
-      - model
-      - visualization
+    - model
+    - visualization
     outs:
     - figures
-  
