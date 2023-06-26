@@ -70,4 +70,4 @@ The pipeline can be configured by the parameter in `params.json` and is defined 
 https://github.com/ElsevierSoftwareX/SOFTX-D-21-00167
 
 - The data processing for the GCNSI follows the description in this paper: https://dl.acm.org/doi/pdf/10.1145/3357384.3357994
-The arcitectures of the GCNSI and the GCNR are also inspired by this paper
+The arcitectures of the GCNSI and the GCNR are also inspired by this paper.
