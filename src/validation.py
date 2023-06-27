@@ -216,10 +216,8 @@ def prediction_metrics(pred_label_set: list, data_set: list) -> dict:
 
     return {
         "avg rank of source": np.mean(source_ranks),
-        "mean number of nodes": np.ceil(len(general_predictions) / len(data_set)),
         "avg prediction for source": np.mean(predictions_for_source),
         "avg prediction over all nodes": np.mean(general_predictions),
-        "std prediction over all nodes": np.std(general_predictions),
         "min prediction over all nodes": min(general_predictions),
         "max prediction over all nodes": max(general_predictions),
     }
@@ -334,14 +332,11 @@ def data_stats(raw_data_set: list) -> dict:
         "graph stats": {
             "avg number of nodes": np.mean(n_nodes),
             "avg centrality": np.mean(centrality),
-            "std centrality": np.std(centrality),
         },
         "infection stats": {
             "avg number of sources": np.mean(n_sources),
-            "avg number of infected nodes": np.mean(n_nodes_infected),
-            "std number of infected nodes": np.std(n_nodes_infected),
-            "avg percent infected nodes": np.mean(precent_infected),
-            "std percent infected nodes": np.std(precent_infected),
+            "avg portion of infected nodes": np.mean(precent_infected),
+            "std portion of infected nodes": np.std(precent_infected),
         },
     }
 
