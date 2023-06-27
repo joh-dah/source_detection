@@ -2,6 +2,7 @@
 import os
 import random
 import argparse
+from typing import Optional
 from pathlib import Path
 import numpy as np
 import ndlib.models.epidemics as ep
@@ -10,9 +11,10 @@ import networkx as nx
 from tqdm import tqdm
 import src.constants as const
 from ndlib.models.DiffusionModel import DiffusionModel
-from torch_geometric.data import Data
+from torch_geometric.data import Data, Dataset
+from torch_geometric.utils.convert import to_networkx
 import torch
-import torch_geometric.datasets as datasets
+import src.utils as utils
 
 
 def select_random_sources(graph: nx.Graph, select_random: bool = True) -> list:
@@ -124,6 +126,8 @@ def create_signal_propagation_model(graph: nx.Graph, model_type: str) -> Diffusi
 
 def create_data_set(
     n_graphs: int,
+    path: Path,
+    existing_data: Optional[Dataset] = None,
     graph_type: str = const.GRAPH_TYPE,
     model_type: str = const.PROP_MODEL,
 ):
@@ -132,17 +136,24 @@ def create_data_set(
     signal propagation model of type model_type on them.
     The graphs and the results of the signal propagation are saved to the given path.
     :param n_graphs: number of graphs to create
+    :param existing_data: existing data set, if supplied the signal propagation will be performed on the given graphs
     :param graph_type: type of graph to create
     :param model_type: type of model to use for signal propagation
     """
 
-    path = Path(const.RAW_DATA_PATH)
+    path /= "raw"
     Path(path).mkdir(parents=True, exist_ok=True)
+
     for file_name in os.listdir(path):
         os.remove(os.path.join(path, file_name))
 
     for i in tqdm(range(n_graphs), disable=const.ON_CLUSTER):
-        graph = create_graph(graph_type)
+        if existing_data is None:
+            graph = create_graph(graph_type)
+        else:
+            graph = to_networkx(
+                existing_data[i], to_undirected=True, remove_self_loops=True
+            )  # TODO: check if this is correct
         prop_model = create_signal_propagation_model(graph, model_type)
         X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)
         y = torch.tensor(list(prop_model.initial_status.values()), dtype=torch.float)
@@ -163,21 +174,30 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--validation",
-        action="store_false",
+        action="store_true",
         help="whether to create validation or training data",
     )
     parser.add_argument("--dataset", type=str, help="name of the dataset")
     args = parser.parse_args()
 
+    train_or_val = "validation" if args.validation else "training"
+    path = Path(const.DATA_PATH) / train_or_val / args.dataset.lower()
+
     if args.validation:
         if args.dataset == "synthetic":
             print("Create Synthetic Validation Data:")
-            create_data_set(const.VALIDATION_SIZE)
-        print("Create Validation Data:")
-        create_data_set(const.VALIDATION_SIZE)
+            create_data_set(const.VALIDATION_SIZE, path)
+        else:
+            print(f"{args.dataset} Validation Data:")
+            dataset = utils.get_dataset_from_name(args.dataset)
+            create_data_set(
+                len(dataset),
+                path,
+                dataset,
+            )
     else:
-        print("Create Data:")
-        create_data_set(const.TRAINING_SIZE)
+        print("Create Synthetic Train Data:")
+        create_data_set(const.TRAINING_SIZE, path)
 
 
 if __name__ == "__main__":

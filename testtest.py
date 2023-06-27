@@ -1,8 +1,10 @@
-import os
-import glob
+import yaml
+import json
 
-if __name__ == "__main__":
-    dir = os.path.join("data", "val", "karate")
-    print(dir)
-    size = len(glob.glob(dir + "/*.pt"))
-    print(size)
+# read params.json
+with open("params.json", "r") as json_file:
+    params = json.load(json_file)
+
+# write params.yaml
+with open("params_n.yaml", "w") as yaml_file:
+    params_yaml = yaml.dump(params, yaml_file)

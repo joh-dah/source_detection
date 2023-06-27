@@ -1,7 +1,8 @@
 """Global constants for the project."""
 import json
+import yaml
 
-params = json.load(open("params.json", "r"))
+params = yaml.full_load(open("params.yaml", "r"))
 
 # General
 MODEL = params["model"]  # "GCNR" or "GCNSI"
@@ -30,7 +31,7 @@ MEAN_ITERS = dc["mean_iters"]
 SIR_BETA = dc["sir_beta"]
 SIR_GAMMA = dc["sir_gamma"]
 SI_BETA = dc["si_beta"]
-SMALL_INPUT = dc["small_input"] # "true" or "false"
+SMALL_INPUT = dc["small_input"]  # "true" or "false"
 
 # Training
 training = params["training"]
@@ -51,6 +52,3 @@ else:
 
 # Visualization
 SEED = params["visualization"]["seed"]
-
-# Validation
-DATA_SETS = params["validation"]["data_sets"]

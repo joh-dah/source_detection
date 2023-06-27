@@ -1,4 +1,5 @@
 """ Initiates the validation of the classifier specified in the constants file. """
+import argparse
 import json
 import os.path
 import numpy as np
@@ -13,7 +14,6 @@ from rpasdt.algorithm.taxonomies import SourceDetectionAlgorithm
 from torch_geometric.utils.convert import from_networkx
 
 import src.data_processing as dp
-import src.data_creation as dc
 from architectures.GCNR import GCNR
 from architectures.GCNSI import GCNSI
 import src.constants as const
@@ -371,64 +371,16 @@ def predictions(model: torch.nn.Module, data_set: dp.SDDataset) -> list:
     return predictions
 
 
-def diffusion(graph: nx.Graph, model_type: str = const.PROP_MODEL):
-    prop_model = dc.create_signal_propagation_model(graph, model_type)
-    X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)
-    y = torch.tensor(list(prop_model.initial_status.values()), dtype=torch.float)
-    edge_index = (
-        torch.tensor(list(graph.to_directed().edges), dtype=torch.long).t().contiguous()
-    )
-    data = dc.Data(x=X, y=y, edge_index=edge_index)
-    data.validate()
-    return data
-
-
-def create_validation_data(data_set_type: str, model_type: str = const.PROP_MODEL):
-    """
-    Creates n graphs of type graph_type and runs a
-    signal propagation model of type model_type on them.
-    The graphs and the results of the signal propagation are saved to the given path.
-    :param n_graphs: number of graphs to create
-    :param graph_type: type of graph to create
-    :param model_type: type of model to use for signal propagation
-    """
-    raw_val_data = []
-    if data_set_type == "generated":
-        for i in tqdm(range(const.VALIDATION_SIZE), disable=const.ON_CLUSTER):
-            graph = dc.create_graph(const.GRAPH_TYPE)
-            data = diffusion(graph, model_type)
-            raw_val_data.append(data)
-    elif data_set_type == "karate":
-        data_dir = "./try"
-        os.makedirs(data_dir, exist_ok=True)
-        data = torch_geometric.datasets.WebKB(root=data_dir, name="Texas")
-        graph = torch_geometric.utils.convert.to_networkx(data[0])
-        # graph = nx.karate_club_graph()
-        data = diffusion(graph, model_type)
-        raw_val_data.append(data)
-
-    return raw_val_data
-
-
-def process_validation_data(raw_data: list):
-    processed_data = []
-    if const.MODEL == "GCNSI":
-        if const.SMALL_INPUT:
-            for data in raw_data:
-                processed_data.append(dp.process_simplified_gcnsi_data(data))
-        else:
-            for data in raw_data:
-                processed_data.append(dp.process_gcnsi_data(data))
-    elif const.MODEL == "GCNR":
-        for data in raw_data:
-            processed_data.append(dp.process_gcnr_data(data))
-    return processed_data
-
-
 def main():
     """
     Initiates the validation of the classifier specified in the constants file.
     """
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", type=str, help="name of the dataset")
+    args = parser.parse_args()
+
+    dataset = args.dataset.lower()
     model_name = utils.latest_model_name()
 
     if const.MODEL == "GCNR":
@@ -437,21 +389,19 @@ def main():
         model = GCNSI()
 
     model = utils.load_model(model, os.path.join(const.MODEL_PATH, f"{model_name}.pth"))
+    processed_val_data = utils.load_processed_data(dataset, True)
+    raw_val_data = utils.load_raw_data(dataset, True)
+    pred_labels = predictions(model, processed_val_data)
+
     metrics_dict = {}
-
-    for data_set in const.DATA_SETS:
-        raw_val_data = create_validation_data(data_set)
-        processed_val_data = process_validation_data(raw_val_data)
-        pred_labels = predictions(model, processed_val_data)
-
-        metrics_dict[data_set] = {}
-        metrics_dict[data_set]["supervised"] = supervised_metrics(
-            pred_labels, raw_val_data, model_name
-        )
-        metrics_dict[data_set]["unsupervised"] = unsupervised_metrics(raw_val_data)
-        metrics_dict[data_set]["data stats"] = data_stats(raw_val_data)
+    metrics_dict["dataset"] = dataset
+    metrics_dict["supervised"] = supervised_metrics(
+        pred_labels, raw_val_data, model_name
+    )
+    metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
+    metrics_dict["data stats"] = data_stats(raw_val_data)
     metrics_dict["parameters"] = json.load(open("params.json"))
-    utils.save_metrics(metrics_dict, model_name)
+    utils.save_metrics(metrics_dict, model_name, dataset)
 
 
 if __name__ == "__main__":

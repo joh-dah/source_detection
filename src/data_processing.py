@@ -1,4 +1,6 @@
 """ Creates new processed data based on the selected model. """
+import argparse
+from pathlib import Path
 from src import constants as const
 import networkx as nx
 import numpy as np
@@ -130,11 +132,22 @@ def main():
     """
     Creates new processed data based on the selected model.
     """
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--validation",
+        action="store_true",
+        help="whether to create validation or training data",
+    )
+    parser.add_argument("--dataset", type=str, help="name of the dataset")
+    args = parser.parse_args()
+
+    train_or_val = "validation" if args.validation else "training"
+    path = Path(const.DATA_PATH) / train_or_val / args.dataset.lower()
+
     print("Removing old processed data...")
-    shutil.rmtree(const.PROCESSED_DATA_PATH, ignore_errors=True)
+    shutil.rmtree(path / "processed", ignore_errors=True)
 
     print("Creating new processed data...")
-
     if const.MODEL == "GCNSI":
         if const.SMALL_INPUT:
             pre_transform_function = process_simplified_gcnsi_data
@@ -144,12 +157,12 @@ def main():
         pre_transform_function = process_gcnr_data
 
     SDDataset(
-        os.path.join(const.DATA_PATH, "val", "synthetic"),
+        path,
         size=const.VALIDATION_SIZE,
         pre_transform=pre_transform_function,
     )
     SDDataset(
-        os.path.join(const.DATA_PATH, "train", "synthetic"),
+        path,
         size=const.TRAINING_SIZE,
         pre_transform=pre_transform_function,
     )

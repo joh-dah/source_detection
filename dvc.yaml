@@ -1,52 +1,53 @@
 stages:
-  generate-train-data:
-    cmd: python -W ignore -m src.data_creation --validation=False --dataset="synthetic"
+  generate-training-data:
+    cmd: python -W ignore -m src.data_creation --dataset="synthetic"
     deps:
     - src/data_creation.py
     params:
     - data_creation
     outs:
-    - data/train/synthetic/raw
+    - data/training/synthetic/raw
   
-  generate-val-data:
-    foreach: ${datasets.val}
+  generate-validation-data:
+    foreach: ${datasets.validation}
     do:
-      cmd: python -W ignore -m src.data_creation --validation=True --dataset=${item.name}
+      cmd: python -W ignore -m src.data_creation --validation --dataset=${item}
       deps:
       - src/data_creation.py
       params:
       - data_creation
       outs:
-      - data/val/${item.name}/raw
+      - data/validation/${item}/raw
 
-  process-val-data:
-    foreach: ${datasets.val}
-    cmd: python -W ignore -m src.data_processing --validation=True --dataset=${item.name}
-    deps:
-    - src/data_processing.py
-    - data/val/${item.name}/raw
-    params:
-    - model
-    - data_creation
-    outs:
-    - data/val/${item.name}/processed
+  process-validation-data:
+    foreach: ${datasets.validation}
+    do:
+      cmd: python -W ignore -m src.data_processing --validation --dataset=${item}
+      deps:
+      - src/data_processing.py
+      - data/validation/${item}/raw
+      params:
+      - model
+      - data_creation
+      outs:
+      - data/validation/${item}/processed
 
-  process-train-data:
+  process-training-data:
     cmd: python -W ignore -m src.data_processing
     deps:
     - src/data_processing.py
-    - data/raw
+    - data/training/synthetic/raw
     params:
       - model
       - data_creation
     outs:
-    - data/processed
+    - data/training/synthetic/processed
 
   training:
     cmd: python -W ignore -m src.training
     deps:
     - src/training.py
-    - data/processed
+    - data/training/synthetic/processed
     params:
     - training
     - model
@@ -55,26 +56,26 @@ stages:
     - models/latest.pth
 
   validation:
-    cmd: python -W ignore -m src.validation
-    deps:
-    - src/validation.py
-    - data/processed
-    - models/latest.pth
-    params:
-    - model
-    - model_name
-    metrics:
-    - reports/latest.json
+    foreach: ${datasets.validation}
+    do:
+      cmd: python -W ignore -m src.validation --dataset=${item}
+      deps:
+      - src/validation.py
+      - data/validation/${item}/processed
+      - models/latest.pth
+      params:
+      - model
+      - model_name
 
-  visualisation:
-    frozen: false
-    cmd: python -W ignore -m src.visualization
-    deps:
-    - src/visualization.py
-    - data/processed
-    - models/latest.pth
-    params:
-    - model
-    - visualization
-    outs:
-    - figures
+  # visualisation:
+  #   frozen: true
+  #   cmd: python -W ignore -m src.visualization --dataset=${item}
+  #   deps:
+  #   - src/visualization.py
+  #   - data/validation/${item}/processed
+  #   - models/latest.pth
+  #   params:
+  #   - model
+  #   - visualization
+  #   outs:
+  #   - figures

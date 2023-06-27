@@ -63,7 +63,9 @@ def plot_graph_with_colors(
     plt.close()
 
 
-def plot_matching_graph(g: nx.Graph, matching: list, new_edges: list, title: str = "matching_graph"):
+def plot_matching_graph(
+    g: nx.Graph, matching: list, new_edges: list, title: str = "matching_graph"
+):
     """
     Plots the matching graph to debug the min-matching distance metric.
     """
@@ -92,7 +94,9 @@ def plot_matching_graph(g: nx.Graph, matching: list, new_edges: list, title: str
     plt.close()
 
 
-def plot_roc_curve(true_positives: np.ndarray, false_positives: np.ndarray, model_name: str):
+def plot_roc_curve(
+    true_positives: np.ndarray, false_positives: np.ndarray, model_name: str
+):
     """
     Plot ROC curves.
     :param false_positives: the false positives rates
@@ -120,8 +124,8 @@ def main():
         model = GCNSI()
 
     model = utils.load_model(model, os.path.join(const.MODEL_PATH, f"{model_name}.pth"))
-    processed_val_data = utils.load_processed_data("validation")[:n_graphs]
-    raw_val_data = utils.load_raw_data("validation")[:n_graphs]
+    processed_val_data = utils.load_processed_data("synthetic", True)[:n_graphs]
+    raw_val_data = utils.load_raw_data("synthetic", True)[:n_graphs]
 
     print("Visualize example predictions:")
     for i, data in tqdm(enumerate(raw_val_data)):
@@ -179,4 +183,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

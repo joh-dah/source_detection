@@ -143,3 +143,31 @@ stages:
     cmd: echo c
   tralala@a:
     cmd: echo a
+  generate-training-data:
+    cmd: python -W ignore -m src.data_creation --dataset="synthetic"
+    deps:
+    - path: src/data_creation.py
+      md5: ef432672352b6a116a3c94a852f1fc54
+      size: 7189
+    params:
+      params.yaml:
+        data_creation:
+          ba_neighbours: 3
+          graph_type: watts_strogatz
+          mean_iters: 90
+          mean_nodes: 100
+          mean_sources: 2
+          prop_model: SI
+          si_beta: 0.01
+          sir_beta: 0.01
+          sir_gamma: 0.005
+          small_input: false
+          training_size: 100
+          validation_size: 20
+          ws_neighbours: 10
+          ws_probability: 0.2
+    outs:
+    - path: data/training/synthetic/raw
+      md5: 7d44c241ca3843f05a5ffec738c29358.dir
+      size: 1809462
+      nfiles: 100

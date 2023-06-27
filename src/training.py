@@ -96,7 +96,7 @@ def main():
         model = GCNSI().to(device)
         criterion = torch.nn.BCEWithLogitsLoss()
 
-    train_data = utils.load_processed_data("train")
+    train_data = utils.load_processed_data("synthetic", False)
     train(model, model_name, train_data, criterion)
 
 

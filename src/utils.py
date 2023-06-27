@@ -64,24 +64,24 @@ def ranked_source_predictions(
     return top_nodes
 
 
-def save_metrics(metrics: dict, model_name: str):
+def save_metrics(metrics: dict, model_name: str, dataset: str):
     """
     Save dictionary with metrics as json in reports folder.
     One "latest.json" is created and named after the corresponding model.
     :params metrics: dictionary containing metrics
     :params model_name: name of the corresponding model
     """
-    Path(const.REPORT_PATH).mkdir(parents=True, exist_ok=True)
-    with open(os.path.join(const.REPORT_PATH, f"{model_name}.json"), "w") as file:
+    (Path(const.REPORT_PATH) / model_name).mkdir(parents=True, exist_ok=True)
+    with open(os.path.join(const.REPORT_PATH, f"{dataset}.json"), "w") as file:
         json.dump(metrics, file, indent=4)
-    with open(os.path.join(const.REPORT_PATH, "latest.json"), "w") as file:
-        json.dump(metrics, file, indent=4)
+    # with open(os.path.join(const.REPORT_PATH, "latest.json"), "w") as file:
+    #     json.dump(metrics, file, indent=4)
 
 
-def load_processed_data(data_set: str, validation: bool = False):
+def load_processed_data(dataset: str, validation: bool = False):
     """
     Load processed data
-    :param data_set: either synthetic or a name of a pyg dataset
+    :param dataset: either synthetic or a name of a pyg dataset
     :param validation: whether to load validation or training data (default: load training data)
     :return: processed data
     """
@@ -94,11 +94,12 @@ def load_processed_data(data_set: str, validation: bool = False):
     elif const.MODEL == "GCNR":
         pre_transform = dp.process_gcnr_data
 
-    train_or_val = "val" if validation else "train"
-    dir = os.path.join(const.DATA_PATH, train_or_val, data_set)
-    size = len(glob.glob(dir + "/*.pt"))
+    train_or_val = "validation" if validation else "training"
+    path = Path(const.DATA_PATH) / train_or_val / dataset.lower()
+
+    size = len(glob.glob(path + "/*.pt"))
     data = dp.SDDataset(
-        os.path.join(const.DATA_PATH, "training"),
+        path,
         size=size,
         pre_transform=pre_transform,
     )
@@ -106,14 +107,19 @@ def load_processed_data(data_set: str, validation: bool = False):
     return data
 
 
-def load_raw_data(data_set: str):
+def load_raw_data(dataset: str, validation: bool = False):
     """
     Load raw data.
-    :param data_set: either train or validation
+    :param dataset: either synthetic or a name of a pyg dataset
+    :param validation: whether to load validation or training data (default: load training data)
     :return: raw data
     """
     print("Load raw data...")
-    val_data = dp.SDDataset(const.DATA_PATH, pre_transform=dp.process_gcnr_data)
+
+    train_or_val = "validation" if validation else "training"
+    path = Path(const.DATA_PATH) / train_or_val / dataset.lower()
+
+    val_data = dp.SDDataset(path)  # TODO: change path
 
     raw_data_paths = val_data.raw_paths
     raw_data = []
@@ -129,10 +135,28 @@ def get_dataset_from_name(name: str):
     :param name: name of dataset
     :return: dataset
     """
+    data_dir = Path(const.DATA_PATH) / "downloaded_raw_data"
 
-    if name == "KarateClub":
-        return datasets.KarateClub
-    elif name == "Airports":
-        return datasets.Airports
-    else:
+    datasets = {
+        "karate": datasets.KarateClub(),  # nodes: 34,  edges: 156,  avg(degree): 9.18, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.KarateClub.html#torch_geometric.datasets.KarateClub
+        "airports": datasets.Airports(
+            root=data_dir, name="USA"
+        ),  # nodes: 1190,  edges: 13599,  avg(degree): 22.86, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.Airports.html#torch_geometric.datasets.Airports
+        "wiki": datasets.AttributedGraphDataset(
+            root=data_dir, name="Wiki"
+        ),  # nodes: 2405,  edges: 17981,  avg(degree): 13.74, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.AttributedGraphDataset.html#torch_geometric.datasets.AttributedGraphDataset
+        "facebook": datasets.AttributedGraphDataset(
+            root=data_dir, name="Facebook"
+        ),  # nodes: 4039,  edges: 88234,  avg(degree): 43.69, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.AttributedGraphDataset.html#torch_geometric.datasets.AttributedGraphDataset
+        "actor": datasets.Actor(
+            root=data_dir / "actor"
+        ),  # nodes: 7600,  edges: 30019,  avg(degree): 07.90, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.Actor.html#torch_geometric.datasets.Actor
+        "github": datasets.GitHub(
+            root=data_dir / "github"
+        ),  # nodes: 37700, edges: 578006, avg(degree): 30.66, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.GitHub.html#torch_geometric.datasets.GitHub
+    }
+
+    if name.lower() not in datasets:
         raise ValueError(f"Dataset {name} not found.")
+    else:
+        return datasets[name.lower()]
