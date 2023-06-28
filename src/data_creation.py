@@ -1,15 +1,13 @@
 """ Creates a data set of graphs with modeled signal propagation for training and validation."""
 import os
 import random
-import pickle
 from pathlib import Path
 import numpy as np
-import ndlib.models.epidemics as ep
+import ndlib.models.epidemics as epidemic_model
 import ndlib.models.ModelConfig as mc
 import networkx as nx
 from tqdm import tqdm
 import src.constants as const
-from ndlib.models.DiffusionModel import DiffusionModel
 from torch_geometric.data import Data
 import torch
 
@@ -33,55 +31,6 @@ def select_random_sources(graph: nx.Graph, select_random: bool = True) -> list:
     return random.choices(list(graph.nodes), k=n_sources)
 
 
-def model_SIR_signal_propagation(
-    graph: nx.Graph, iterations: int, seed: int = None
-) -> ep.SIRModel:
-    """
-    Creates a SIR model and runs it on the given graph.
-    :param graph: graph to run the model on
-    :param seed: seed for signal propagation
-    :param iterations: number of iterations to run the model for
-    :return: propagation model
-    """
-    model = ep.SIRModel(graph, seed=seed)
-    source_nodes = select_random_sources(graph)
-
-    config = mc.Configuration()
-    config.add_model_parameter("beta", const.SIR_BETA)
-    config.add_model_parameter("gamma", const.SIR_GAMMA)
-    config.add_model_initial_configuration("Infected", source_nodes)
-
-    model.set_initial_status(config)
-    iterations = model.iteration_bunch(iterations)
-    model.build_trends(iterations)
-
-    return model
-
-
-def model_SI_signal_propagation(
-    graph: nx.Graph, iterations: int, seed: int = None
-) -> ep.SIModel:
-    """
-    Creates a SI model and runs it on the given graph.
-    :param graph: graph to run the model on
-    :param seed: seed for signal propagation
-    :param iterations: number of iterations to run the model for
-    :return: propagation model
-    """
-    model = ep.SIModel(graph, seed=seed)
-    source_nodes = select_random_sources(graph)
-
-    config = mc.Configuration()
-    config.add_model_parameter("beta", const.SI_BETA)
-    config.add_model_initial_configuration("Infected", source_nodes)
-
-    model.set_initial_status(config)
-    iterations = model.iteration_bunch(iterations)
-    model.build_trends(iterations)
-
-    return model
-
-
 def create_graph(graph_type: str) -> nx.Graph:
     """
     Creates a graph of the given type.
@@ -101,27 +50,43 @@ def create_graph(graph_type: str) -> nx.Graph:
     return graph
 
 
-def create_signal_propagation_model(graph: nx.Graph, model_type: str) -> DiffusionModel:
+def create_signal_propagation_model(graph: nx.Graph, model_type: str) -> epidemic_model:
     """
     Creates a signal propagation model of the given type for the given graph.
     :param graph: graph to create the model for
     :param model_type: type of model to create
     :return: created model
     """
-    iterations = np.random.normal(const.MEAN_ITERS, int(np.sqrt(const.MEAN_ITERS / 2)))
-    iterations = np.maximum(1, iterations).astype(int)
+    source_nodes = select_random_sources(graph)
+    beta = np.random.uniform(0, 1)
 
+    config = mc.Configuration()
     if model_type == "SI":
-        prop_model = model_SI_signal_propagation(graph, iterations)
+        prop_model = epidemic_model.SIModel(graph)
+        config.add_model_parameter("beta", beta)
+
     elif model_type == "SIR":
-        prop_model = model_SIR_signal_propagation(graph, iterations)
+        gamma = np.random.uniform(0, beta)
+        prop_model = epidemic_model.SIRModel(graph)
+        config.add_model_parameter("beta", beta)
+        config.add_model_parameter("gamma", gamma)
+
     else:
         raise ValueError("Unknown model type")
+
+    config.add_model_initial_configuration("Infected", source_nodes)
+    prop_model.set_initial_status(config)
+    iterations = prop_model.iteration_bunch(const.ITERATIONS)
+    prop_model.build_trends(iterations)
 
     return prop_model
 
 
-def create_data_set(n_graphs: int, graph_type: str = const.GRAPH_TYPE, model_type: str = const.PROP_MODEL):
+def create_data_set(
+    n_graphs: int,
+    graph_type: str = const.GRAPH_TYPE,
+    model_type: str = const.PROP_MODEL,
+):
     """
     Creates n graphs of type graph_type and runs a
     signal propagation model of type model_type on them.
