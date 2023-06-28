@@ -151,9 +151,8 @@ def create_data_set(
         if existing_data is None:
             graph = create_graph(graph_type)
         else:
-            graph = to_networkx(
-                existing_data[i], to_undirected=True, remove_self_loops=True
-            )  # TODO: check if this is correct
+            graph = to_networkx(existing_data[i], to_undirected=False).to_undirected()
+            print(graph.number_of_nodes(), graph.number_of_edges())
         prop_model = create_signal_propagation_model(graph, model_type)
         X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)
         y = torch.tensor(list(prop_model.initial_status.values()), dtype=torch.float)
@@ -177,7 +176,9 @@ def main():
         action="store_true",
         help="whether to create validation or training data",
     )
-    parser.add_argument("--dataset", type=str, help="name of the dataset")
+    parser.add_argument(
+        "--dataset", type=str, default="synthetic", help="name of the dataset"
+    )
     args = parser.parse_args()
 
     train_or_val = "validation" if args.validation else "training"

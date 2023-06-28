@@ -1,5 +1,4 @@
 """Global constants for the project."""
-import json
 import yaml
 
 params = yaml.full_load(open("params.yaml", "r"))

@@ -72,7 +72,9 @@ def save_metrics(metrics: dict, model_name: str, dataset: str):
     :params model_name: name of the corresponding model
     """
     (Path(const.REPORT_PATH) / model_name).mkdir(parents=True, exist_ok=True)
-    with open(os.path.join(const.REPORT_PATH, f"{dataset}.json"), "w") as file:
+    with open(
+        os.path.join((Path(const.REPORT_PATH) / model_name), f"{dataset}.json"), "w"
+    ) as file:
         json.dump(metrics, file, indent=4)
     # with open(os.path.join(const.REPORT_PATH, "latest.json"), "w") as file:
     #     json.dump(metrics, file, indent=4)
@@ -97,10 +99,8 @@ def load_processed_data(dataset: str, validation: bool = False):
     train_or_val = "validation" if validation else "training"
     path = Path(const.DATA_PATH) / train_or_val / dataset.lower()
 
-    size = len(glob.glob(path + "/*.pt"))
     data = dp.SDDataset(
         path,
-        size=size,
         pre_transform=pre_transform,
     )
 
@@ -137,10 +137,10 @@ def get_dataset_from_name(name: str):
     """
     data_dir = Path(const.DATA_PATH) / "downloaded_raw_data"
 
-    datasets = {
+    dataset_dict = {
         "karate": datasets.KarateClub(),  # nodes: 34,  edges: 156,  avg(degree): 9.18, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.KarateClub.html#torch_geometric.datasets.KarateClub
         "airports": datasets.Airports(
-            root=data_dir, name="USA"
+            root=data_dir, name="Europe"
         ),  # nodes: 1190,  edges: 13599,  avg(degree): 22.86, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.Airports.html#torch_geometric.datasets.Airports
         "wiki": datasets.AttributedGraphDataset(
             root=data_dir, name="Wiki"
@@ -156,7 +156,7 @@ def get_dataset_from_name(name: str):
         ),  # nodes: 37700, edges: 578006, avg(degree): 30.66, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.GitHub.html#torch_geometric.datasets.GitHub
     }
 
-    if name.lower() not in datasets:
+    if name.lower() not in dataset_dict:
         raise ValueError(f"Dataset {name} not found.")
     else:
-        return datasets[name.lower()]
+        return dataset_dict[name.lower()]

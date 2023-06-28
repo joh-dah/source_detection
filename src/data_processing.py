@@ -1,5 +1,6 @@
 """ Creates new processed data based on the selected model. """
 import argparse
+import glob
 from pathlib import Path
 from src import constants as const
 import networkx as nx
@@ -12,9 +13,9 @@ import torch
 
 
 class SDDataset(Dataset):
-    def __init__(self, root, size, transform=None, pre_transform=None, pre_filter=None):
+    def __init__(self, root, transform=None, pre_transform=None, pre_filter=None):
+        self.size = len(list((root / "raw").glob("*.pt")))
         super().__init__(root, transform, pre_transform, pre_filter)
-        self.size = size
 
     @property
     def raw_file_names(self):
@@ -53,9 +54,8 @@ def paper_input(current_status: torch.tensor, edge_index: torch.tensor) -> torch
     :return: prepared input features
     """
     Y = np.array(current_status)
-    S = nx.normalized_laplacian_matrix(
-        to_networkx(Data(edge_index=edge_index), to_undirected=True)
-    )
+    g = to_networkx(Data(edge_index=edge_index), to_undirected=False).to_undirected()
+    S = nx.normalized_laplacian_matrix(g)
     V3 = Y.copy()
     Y = [-1 if x == 0 else 1 for x in Y]
     V4 = [-1 if x == -1 else 0 for x in Y]
@@ -98,6 +98,8 @@ def process_gcnsi_data(data: Data) -> Data:
     :param data: input data to be processed.
     :return: processed data with expanded features and labels
     """
+    print(data.x.shape)
+    print(data.edge_index.shape)
     X = paper_input(data.x, data.edge_index)
     # expand labels to 2D tensor
     y = data.y.unsqueeze(1).float()
@@ -138,7 +140,9 @@ def main():
         action="store_true",
         help="whether to create validation or training data",
     )
-    parser.add_argument("--dataset", type=str, help="name of the dataset")
+    parser.add_argument(
+        "--dataset", type=str, default="synthetic", help="name of the dataset"
+    )
     args = parser.parse_args()
 
     train_or_val = "validation" if args.validation else "training"
@@ -156,14 +160,9 @@ def main():
     elif const.MODEL == "GCNR":
         pre_transform_function = process_gcnr_data
 
+    # triggers the process function of the dataset
     SDDataset(
         path,
-        size=const.VALIDATION_SIZE,
-        pre_transform=pre_transform_function,
-    )
-    SDDataset(
-        path,
-        size=const.TRAINING_SIZE,
         pre_transform=pre_transform_function,
     )
 

@@ -1,6 +1,6 @@
 """ Initiates the validation of the classifier specified in the constants file. """
 import argparse
-import json
+import yaml
 import os.path
 import numpy as np
 import torch
@@ -377,7 +377,9 @@ def main():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="name of the dataset")
+    parser.add_argument(
+        "--dataset", type=str, default="synthetic", help="name of the dataset"
+    )
     args = parser.parse_args()
 
     dataset = args.dataset.lower()
@@ -400,7 +402,7 @@ def main():
     )
     metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
     metrics_dict["data stats"] = data_stats(raw_val_data)
-    metrics_dict["parameters"] = json.load(open("params.json"))
+    metrics_dict["parameters"] = yaml.full_load(open("params.yaml", "r"))
     utils.save_metrics(metrics_dict, model_name, dataset)
 
 

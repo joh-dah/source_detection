@@ -30,5 +30,6 @@ datasets:
   validation:
   - synthetic
   - airports
+  - karate
 visualization:
   seed: 123
