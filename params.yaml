@@ -1,13 +1,10 @@
 data_creation:
   ba_neighbours: 3
   graph_type: watts_strogatz
-  mean_iters: 90
+  iterations: 90
   mean_nodes: 100
   mean_sources: 2
   prop_model: SI
-  si_beta: 0.01
-  sir_beta: 0.01
-  sir_gamma: 0.005
   small_input: false
   training_size: 100
   validation_size: 20

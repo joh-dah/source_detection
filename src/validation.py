@@ -60,10 +60,8 @@ def min_matching_distance(
 
     # creating a graph with only the sources, the predicted sources and the distances between them
     matching_graph = nx.Graph()
-    avg_dists = []
     for source in sources:
         distances = nx.single_source_shortest_path_length(G, source)
-        avg_dists.append(np.mean(list(distances.values())))
         new_edges = [
             ("s" + str(source), str(k), v)
             for k, v in distances.items()
@@ -90,7 +88,7 @@ def min_matching_distance(
         sum([matching_graph.get_edge_data(k, v)["weight"] for k, v in matching_list])
         / 2
     )  # counting each edge twice
-    return min_matching_distance / len(sources), avg_dists
+    return min_matching_distance / len(sources)
 
 
 def compute_roc_curve(
@@ -120,17 +118,49 @@ def compute_roc_curve(
     return roc_score, true_positive, false_positive
 
 
-def predicted_sources(pred_labels: list, true_sources: list) -> list:
+def predicted_sources(pred_labels: list) -> list:
     """
     Get the predicted sources from the predicted labels.
     :param pred_labels: the predicted labels for the instances
     :param true_sources: list of true sources
-    :return: the predicted sources based on the predicted labels
+    :return: list of predicted sources
     """
-    # TODO: currently we fix the number of predicted sources to the number of true sources
-    # we should try to predict the number of sources as well or use a threshold
-    ranked_predictions = (utils.ranked_source_predictions(pred_labels)).tolist()
-    return ranked_predictions[: len(true_sources)]
+    pos_label = 0 if const.MODEL == "GCNR" else 1
+    return torch.where(torch.round(pred_labels) == pos_label)[0].tolist()
+
+
+def get_max_dist_from_sources(sources: list, edge_index: torch.tensor) -> float:
+    """
+    Get the maximum distance from the sources to any other node in the graph.
+    :param sources: list of sources
+    :param edge_index: edge_index of the graph
+    :return: avg maximum distances from the sources to any other node in the graph
+    """
+    G = nx.Graph()
+    G.add_nodes_from(range(len(edge_index[0])))
+    G.add_edges_from(edge_index.t().tolist())
+    max_dists = []
+    for source in sources:
+        distances = nx.single_source_shortest_path_length(G, source)
+        max_dists.append(max(distances.values()))
+    return np.mean(max_dists)
+
+
+def get_avg_dist_from_sources(sources: list, edge_index: torch.tensor) -> float:
+    """
+    Get the average distance from the sources to any other node in the graph.
+    :param sources: list of sources
+    :param edge_index: edge_index of the graph
+    :return: avg average distances from the sources to any other node in the graph
+    """
+    G = nx.Graph()
+    G.add_nodes_from(range(len(edge_index[0])))
+    G.add_edges_from(edge_index.t().tolist())
+    avg_dists = []
+    for source in sources:
+        distances = nx.single_source_shortest_path_length(G, source)
+        avg_dists.append(np.mean(list(distances.values())))
+    return np.mean(avg_dists)
 
 
 def distance_metrics(pred_label_set: list, data_set: list) -> dict:
@@ -148,12 +178,19 @@ def distance_metrics(pred_label_set: list, data_set: list) -> dict:
     ):
         true_labels = data_set[i].y
         true_sources = torch.where(true_labels == 1)[0].tolist()
-        pred_sources = predicted_sources(pred_labels, true_sources)
-        matching_dist, avg_dist = min_matching_distance(
+        pred_sources = predicted_sources(pred_labels)
+        dist_to_source.append(
+            get_avg_dist_from_sources(true_sources, data_set[i].edge_index)
+        )
+        if len(pred_sources) == 0:
+            min_matching_dists.append(
+                get_max_dist_from_sources(true_sources, data_set[i].edge_index)
+            )
+            continue
+        matching_dist = min_matching_distance(
             data_set[i].edge_index, true_sources, pred_sources
         )
         min_matching_dists.append(matching_dist)
-        dist_to_source += avg_dist
 
     return {
         "min matching distance": np.mean(min_matching_dists),
@@ -176,8 +213,7 @@ def TP_FP_metrics(pred_label_set: list, data_set: list) -> dict:
         tqdm(pred_label_set, desc="evaluate model", disable=const.ON_CLUSTER)
     ):
         true_sources = torch.where(data_set[i].y == 1)[0].tolist()
-        pos_label = 0 if const.MODEL == "GCNR" else 1
-        pred_sources = torch.where(torch.round(pred_labels) == pos_label)[0].tolist()
+        pred_sources = predicted_sources(pred_labels)
         n_TP = len(np.intersect1d(true_sources, pred_sources))
         TPs += n_TP
         FPs += len(pred_sources) - n_TP
@@ -215,10 +251,8 @@ def prediction_metrics(pred_label_set: list, data_set: list) -> dict:
 
     return {
         "avg rank of source": np.mean(source_ranks),
-        "mean number of nodes": np.ceil(len(general_predictions) / len(data_set)),
         "avg prediction for source": np.mean(predictions_for_source),
         "avg prediction over all nodes": np.mean(general_predictions),
-        "std prediction over all nodes": np.std(general_predictions),
         "min prediction over all nodes": min(general_predictions),
         "max prediction over all nodes": max(general_predictions),
     }
@@ -266,7 +300,7 @@ def min_matching_distance_netsleuth(
         min_matching_dists.append(
             min_matching_distance(
                 data.edge_index, mm_r.real_sources, mm_r.detected_sources
-            )[0]
+            )
         )
     return np.mean(min_matching_dists)
 
@@ -333,14 +367,11 @@ def data_stats(raw_data_set: list) -> dict:
         "graph stats": {
             "avg number of nodes": np.mean(n_nodes),
             "avg centrality": np.mean(centrality),
-            "std centrality": np.std(centrality),
         },
         "infection stats": {
             "avg number of sources": np.mean(n_sources),
-            "avg number of infected nodes": np.mean(n_nodes_infected),
-            "std number of infected nodes": np.std(n_nodes_infected),
-            "avg percent infected nodes": np.mean(precent_infected),
-            "std percent infected nodes": np.std(precent_infected),
+            "avg portion of infected nodes": np.mean(precent_infected),
+            "std portion of infected nodes": np.std(precent_infected),
         },
     }
 

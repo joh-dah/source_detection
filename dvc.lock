@@ -50,10 +50,7 @@ stages:
           ws_probability: 0.2
           ba_neighbours: 3
           mean_sources: 2
-          mean_iters: 90
-          sir_beta: 0.01
-          sir_gamma: 0.005
-          si_beta: 0.01
+          iterations: 6
           small_input: false
         model: GCNSI
     outs:

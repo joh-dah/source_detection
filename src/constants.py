@@ -26,10 +26,7 @@ WS_NEIGHBOURS = dc["ws_neighbours"]
 WS_PROBABILITY = dc["ws_probability"]
 BA_NEIGHBOURS = dc["ba_neighbours"]
 MEAN_SOURCES = dc["mean_sources"]
-MEAN_ITERS = dc["mean_iters"]
-SIR_BETA = dc["sir_beta"]
-SIR_GAMMA = dc["sir_gamma"]
-SI_BETA = dc["si_beta"]
+ITERATIONS = dc["iterations"]
 SMALL_INPUT = dc["small_input"]  # "true" or "false"
 
 # Training
