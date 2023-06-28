@@ -1,15 +1,13 @@
 """ Creates a data set of graphs with modeled signal propagation for training and validation."""
 import os
 import random
-import pickle
 from pathlib import Path
 import numpy as np
-import ndlib.models.epidemics as ep
+import ndlib.models.epidemics as epidemic_model
 import ndlib.models.ModelConfig as mc
 import networkx as nx
 from tqdm import tqdm
 import src.constants as const
-from ndlib.models.DiffusionModel import DiffusionModel
 from torch_geometric.data import Data
 import torch
 
@@ -52,7 +50,7 @@ def create_graph(graph_type: str) -> nx.Graph:
     return graph
 
 
-def create_signal_propagation_model(graph: nx.Graph, model_type: str):
+def create_signal_propagation_model(graph: nx.Graph, model_type: str) -> epidemic_model:
     """
     Creates a signal propagation model of the given type for the given graph.
     :param graph: graph to create the model for
@@ -64,12 +62,12 @@ def create_signal_propagation_model(graph: nx.Graph, model_type: str):
 
     config = mc.Configuration()
     if model_type == "SI":
-        prop_model = ep.SIModel(graph)
+        prop_model = epidemic_model.SIModel(graph)
         config.add_model_parameter("beta", beta)
 
     elif model_type == "SIR":
         gamma = np.random.uniform(0, beta)
-        prop_model = ep.SIRModel(graph)
+        prop_model = epidemic_model.SIRModel(graph)
         config.add_model_parameter("beta", beta)
         config.add_model_parameter("gamma", gamma)
 
