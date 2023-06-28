@@ -53,7 +53,7 @@ def train(
     epochs = range(1, const.EPOCHS)
     print(f"Train Model on device:{device} :")
     min_loss = float("inf")
-    loader = DataLoader(dataset, batch_size=const.BATCH_SIZE)
+    loader = DataLoader(dataset, batch_size=const.BATCH_SIZE, shuffle=True)
     for epoch in tqdm(epochs, disable=const.ON_CLUSTER):
         agg_loss = 0
         for data in loader:
