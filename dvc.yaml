@@ -68,15 +68,15 @@ stages:
       - model
       - model_name
 
-  # visualisation:
-  #   frozen: true
-  #   cmd: python -W ignore -m src.visualization --dataset=${item}
-  #   deps:
-  #   - src/visualization.py
-  #   - data/validation/${item}/processed
-  #   - models/latest.pth
-  #   params:
-  #   - model
-  #   - visualization
-  #   outs:
-  #   - figures
+  visualization:
+    foreach: ${datasets.validation}
+    do:
+      cmd: python -W ignore -m src.visualization --dataset=${item}
+      deps:
+      - src/visualization.py
+      - data/validation/${item}/processed
+      - models/latest.pth
+      params:
+      - model
+      - model_name
+      - visualization

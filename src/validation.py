@@ -416,8 +416,9 @@ def main():
     args = parser.parse_args()
 
     dataset = args.dataset.lower()
-    model_name = utils.latest_model_name()
-
+    model_name = (
+        utils.latest_model_name() if const.MODEL_NAME is None else const.MODEL_NAME
+    )
     if const.MODEL == "GCNR":
         model = GCNR()
     elif const.MODEL == "GCNSI":
@@ -433,7 +434,7 @@ def main():
     metrics_dict["supervised"] = supervised_metrics(
         pred_labels, raw_val_data, model_name, dataset_name=dataset
     )
-    metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
+    # metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
     metrics_dict["data stats"] = data_stats(raw_val_data)
     metrics_dict["parameters"] = yaml.full_load(open("params.yaml", "r"))
     utils.save_metrics(metrics_dict, model_name, dataset)

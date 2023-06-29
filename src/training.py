@@ -86,7 +86,11 @@ def main():
     print("Prepare Data ...")
 
     current_time = datetime.datetime.now().strftime("%m-%d_%H-%M")
-    model_name = f"{const.MODEL}_{current_time}_{const.MODEL_NAME}"
+    model_name = (
+        f"{const.MODEL}_{current_time}"
+        if const.MODEL_NAME is None
+        else const.MODEL_NAME
+    )
 
     if const.MODEL == "GCNR":
         model = GCNR().to(device)

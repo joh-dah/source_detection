@@ -1,7 +1,7 @@
 data_creation:
   ba_neighbours: 3
   graph_type: watts_strogatz
-  iterations: 90
+  iterations: 30
   mean_nodes: 100
   mean_sources: 2
   prop_model: SI
@@ -12,7 +12,7 @@ data_creation:
   ws_probability: 0.2
   propagations_per_real_world_graph: 10
 model: GCNSI
-model_name: '0'
+model_name: GCNSI_06-21_11-30_0
 on_cluster: false
 training:
   alpha: 0.5

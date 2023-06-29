@@ -1,4 +1,5 @@
 """ Visualize graphs with the associated predictions. """
+import argparse
 from typing import Union
 import glob
 import os
@@ -38,7 +39,7 @@ def plot_graph_with_colors(
 
     pos = layout(g)
 
-    plt.figure(figsize=(6, 4))
+    plt.figure(figsize=(50, 50))
 
     node_values = np.clip(node_values, 0, max_colored_value)
     nx.draw(
@@ -73,7 +74,7 @@ def plot_matching_graph(
 
     pos = nx.kamada_kawai_layout(g)
 
-    plt.figure(figsize=(6, 4))
+    plt.figure(figsize=(20, 20))
     edge_colors = [
         "green" if edge in matching else "red" if edge in new_edges else "black"
         for edge in g.edges
@@ -120,8 +121,15 @@ def main():
     """
     Visualize graphs with the associated predictions.
     """
-    n_graphs = 5
-    model_name = utils.latest_model_name()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--dataset", type=str, default="synthetic", help="name of the dataset"
+    )
+    args = parser.parse_args()
+    n_graphs = 2
+    model_name = (
+        utils.latest_model_name() if const.MODEL_NAME is None else const.MODEL_NAME
+    )
 
     if const.MODEL == "GCNR":
         model = GCNR()
@@ -129,8 +137,8 @@ def main():
         model = GCNSI()
 
     model = utils.load_model(model, os.path.join(const.MODEL_PATH, f"{model_name}.pth"))
-    processed_val_data = utils.load_processed_data("synthetic", True)[:n_graphs]
-    raw_val_data = utils.load_raw_data("synthetic", True)[:n_graphs]
+    processed_val_data = utils.load_processed_data(args.dataset, True)[:n_graphs]
+    raw_val_data = utils.load_raw_data(args.dataset, True)[:n_graphs]
 
     print("Visualize example predictions:")
     for i, data in tqdm(enumerate(raw_val_data)):
@@ -143,16 +151,13 @@ def main():
         g.add_edges_from(edge_index.t().tolist())
 
         sir_cmap = ListedColormap(["blue", "red", "gray"])
-        predictions_cmap = LinearSegmentedColormap.from_list(
-            "predictions", ["red", "blue"]
-        )
 
         # initial infection graph
         plot_graph_with_colors(
             g,
             np.fromiter(initial_status, dtype=int),
             2,
-            f"initial_{i}",
+            f"{args.dataset}_initial_{i}",
             cmap=sir_cmap,
         )
 
@@ -161,7 +166,7 @@ def main():
             g,
             np.fromiter(status, dtype=int),
             2,
-            f"current_{i}",
+            f"{args.dataset}_current_{i}",
             cmap=sir_cmap,
         )
 
@@ -169,19 +174,26 @@ def main():
 
         if const.MODEL == "GCNSI":
             # color the 5 highest predictions
-            pred = utils.ranked_source_predictions(pred)
-            n_colors = 5
+            pred = torch.sigmoid(pred)
+            pred = torch.round(pred)
+            n_colors = 1
+            predictions_cmap = LinearSegmentedColormap.from_list(
+                "predictions", ["blue", "red"]
+            )
 
         elif const.MODEL == "GCNR":
             # for every node, colorcode the distance to the source. If distance is bigger than 5, color is blue
             n_colors = 4
+            predictions_cmap = LinearSegmentedColormap.from_list(
+                "predictions", ["red", "blue"]
+            )
 
         # predicted graph
         plot_graph_with_colors(
             g,
-            np.fromiter(pred, dtype=int),
+            np.fromiter(pred, dtype=float),
             n_colors,
-            f"prediction_{i}",
+            f"{args.dataset}_prediction_{i}",
             cmap=predictions_cmap,
         )
 

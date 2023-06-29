@@ -5,7 +5,7 @@ params = yaml.full_load(open("params.yaml", "r"))
 
 # General
 MODEL = params["model"]  # "GCNR" or "GCNSI"
-MODEL_NAME = params["model_name"]
+MODEL_NAME = params["model_name"]  # defins
 DATA_PATH = "data"
 RAW_DATA_PATH = "data/raw"
 PROCESSED_DATA_PATH = "data/processed"

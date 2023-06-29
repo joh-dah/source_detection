@@ -63,6 +63,7 @@ def create_signal_propagation_model(graph: nx.Graph, model_type: str) -> epidemi
     """
     source_nodes = select_random_sources(graph)
     beta = np.random.uniform(0, 1)
+    beta = 0.01
 
     config = mc.Configuration()
     if model_type == "SI":
@@ -116,7 +117,9 @@ def create_data_set(
         if existing_data is None:
             graph = create_graph(graph_type)
         else:
-            graph = to_networkx(existing_data[i], to_undirected=False).to_undirected()
+            graph = to_networkx(
+                existing_data[i], to_undirected=False, remove_self_loops=True
+            ).to_undirected()
         edge_index = (
             torch.tensor(list(graph.to_directed().edges), dtype=torch.long)
             .t()
