@@ -62,16 +62,16 @@ stages:
     cmd: python -W ignore -m src.training
     deps:
     - path: data/training/synthetic/processed
-      md5: 8ea4db48729c3a663e9bb3f263eb63a9.dir
-      size: 1934694
+      md5: 3d12b17eab8e07dfebbddc197c0019da.dir
+      size: 1913574
       nfiles: 102
     - path: src/training.py
-      md5: b1ec1763aa328b12ea86b019563be8b2
-      size: 3515
+      md5: 6e755aa1446059f1682a63de380623e9
+      size: 3596
     params:
       params.yaml:
         model: GCNSI
-        model_name: '0'
+        model_name: GCNSI_06-21_11-30_0
         training:
           alpha: 0.5
           batch_size: 10
@@ -79,12 +79,12 @@ stages:
           hidden_size: 512
           layers: 10
           learning_rate: 1e-05
-          subsample: false
+          subsample: true
           useLogLoss: false
           weight_decay: 1e-08
     outs:
     - path: models/latest.pth
-      md5: d2729fff6ad2b4f90de0d3fa916271d9
+      md5: cc8c99af9541665ce30651c2103dbc11
       size: 1064911
   visualisation:
     cmd: python -W ignore -m src.visualization
@@ -144,294 +144,401 @@ stages:
     cmd: python -W ignore -m src.data_creation --dataset="synthetic"
     deps:
     - path: src/data_creation.py
-      md5: 7129bde8c3fb2d86a724d89626e3172a
-      size: 7222
+      md5: 4fd311413ff32a4f1070132ec46df5a7
+      size: 6324
     params:
       params.yaml:
         data_creation:
           ba_neighbours: 3
           graph_type: watts_strogatz
-          mean_iters: 90
+          iterations: 30
           mean_nodes: 100
           mean_sources: 2
           prop_model: SI
-          si_beta: 0.01
-          sir_beta: 0.01
-          sir_gamma: 0.005
           small_input: false
           training_size: 100
           validation_size: 20
           ws_neighbours: 10
           ws_probability: 0.2
+          propagations_per_real_world_graph: 10
     outs:
     - path: data/training/synthetic/raw
-      md5: 60407502d07da10825c8ac220b857adf.dir
-      size: 1814518
+      md5: 6fb20ff79ac169630d72c550324098b0.dir
+      size: 1795190
       nfiles: 100
   generate-validation-data@synthetic:
     cmd: python -W ignore -m src.data_creation --validation --dataset=synthetic
     deps:
     - path: src/data_creation.py
-      md5: 7129bde8c3fb2d86a724d89626e3172a
-      size: 7222
+      md5: 4fd311413ff32a4f1070132ec46df5a7
+      size: 6324
     params:
       params.yaml:
         data_creation:
           ba_neighbours: 3
           graph_type: watts_strogatz
-          mean_iters: 90
+          iterations: 30
           mean_nodes: 100
           mean_sources: 2
           prop_model: SI
-          si_beta: 0.01
-          sir_beta: 0.01
-          sir_gamma: 0.005
           small_input: false
           training_size: 100
           validation_size: 20
           ws_neighbours: 10
           ws_probability: 0.2
+          propagations_per_real_world_graph: 10
     outs:
     - path: data/validation/synthetic/raw
-      md5: 2bb44d2329cf16f9d63874372a987e38.dir
-      size: 367830
+      md5: 1e4aae9ca4692ed9f082339b46d1827a.dir
+      size: 361238
       nfiles: 20
   generate-validation-data@airports:
     cmd: python -W ignore -m src.data_creation --validation --dataset=airports
     deps:
     - path: src/data_creation.py
-      md5: 7129bde8c3fb2d86a724d89626e3172a
-      size: 7222
+      md5: 4fd311413ff32a4f1070132ec46df5a7
+      size: 6324
     params:
       params.yaml:
         data_creation:
           ba_neighbours: 3
           graph_type: watts_strogatz
-          mean_iters: 90
+          iterations: 30
           mean_nodes: 100
           mean_sources: 2
           prop_model: SI
-          si_beta: 0.01
-          sir_beta: 0.01
-          sir_gamma: 0.005
           small_input: false
           training_size: 100
           validation_size: 20
           ws_neighbours: 10
           ws_probability: 0.2
+          propagations_per_real_world_graph: 10
     outs:
     - path: data/validation/airports/raw
-      md5: 3b14469dc04d66ecc8a92cf2baa78eeb.dir
-      size: 196357
-      nfiles: 1
+      md5: 595f1ddade97bc22c8d1981c656455a1.dir
+      size: 1963570
+      nfiles: 10
   process-training-data:
     cmd: python -W ignore -m src.data_processing
     deps:
     - path: data/training/synthetic/raw
-      md5: 60407502d07da10825c8ac220b857adf.dir
-      size: 1814518
+      md5: 6fb20ff79ac169630d72c550324098b0.dir
+      size: 1795190
       nfiles: 100
     - path: src/data_processing.py
-      md5: d9d01217f5f7c4d627e9f1b8f4c5b1c1
-      size: 5818
+      md5: 7f4671c98bf63f9a165c9afe1da32f6e
+      size: 5759
     params:
       params.yaml:
         data_creation:
           ba_neighbours: 3
           graph_type: watts_strogatz
-          mean_iters: 90
+          iterations: 30
           mean_nodes: 100
           mean_sources: 2
           prop_model: SI
-          si_beta: 0.01
-          sir_beta: 0.01
-          sir_gamma: 0.005
           small_input: false
           training_size: 100
           validation_size: 20
           ws_neighbours: 10
           ws_probability: 0.2
+          propagations_per_real_world_graph: 10
         model: GCNSI
     outs:
     - path: data/training/synthetic/processed
-      md5: 8ea4db48729c3a663e9bb3f263eb63a9.dir
-      size: 1934694
+      md5: 3d12b17eab8e07dfebbddc197c0019da.dir
+      size: 1913574
       nfiles: 102
   process-validation-data@synthetic:
     cmd: python -W ignore -m src.data_processing --validation --dataset=synthetic
     deps:
     - path: data/validation/synthetic/raw
-      md5: 2bb44d2329cf16f9d63874372a987e38.dir
-      size: 367830
+      md5: 1e4aae9ca4692ed9f082339b46d1827a.dir
+      size: 361238
       nfiles: 20
     - path: src/data_processing.py
-      md5: d9d01217f5f7c4d627e9f1b8f4c5b1c1
-      size: 5818
+      md5: 7f4671c98bf63f9a165c9afe1da32f6e
+      size: 5759
     params:
       params.yaml:
         data_creation:
           ba_neighbours: 3
           graph_type: watts_strogatz
-          mean_iters: 90
+          iterations: 30
           mean_nodes: 100
           mean_sources: 2
           prop_model: SI
-          si_beta: 0.01
-          sir_beta: 0.01
-          sir_gamma: 0.005
           small_input: false
           training_size: 100
           validation_size: 20
           ws_neighbours: 10
           ws_probability: 0.2
+          propagations_per_real_world_graph: 10
         model: GCNSI
     outs:
     - path: data/validation/synthetic/processed
-      md5: bd4e1e14b38c86bd8745569f4cd1ff7c.dir
-      size: 392902
+      md5: 2f32494bbe9df428a72a9323130b609d.dir
+      size: 385798
       nfiles: 22
   validation@synthetic:
     cmd: python -W ignore -m src.validation --dataset=synthetic
     deps:
     - path: data/validation/synthetic/processed
-      md5: bd4e1e14b38c86bd8745569f4cd1ff7c.dir
-      size: 392902
+      md5: 2f32494bbe9df428a72a9323130b609d.dir
+      size: 385798
       nfiles: 22
     - path: models/latest.pth
-      md5: d2729fff6ad2b4f90de0d3fa916271d9
+      md5: cc8c99af9541665ce30651c2103dbc11
       size: 1064911
     - path: src/validation.py
-      md5: 1efe472251b238fbab8c73cf4ffef171
-      size: 16601
+      md5: 387d43a3bbddccb19cd7b848759452ec
+      size: 17580
+    - path: src/visualization.py
+      md5: e586f2a081d59e05dbd8e3754694958e
+      size: 6286
     params:
       params.yaml:
         model: GCNSI
-        model_name: '0'
+        model_name: GCNSI_06-21_11-30_0
   generate-validation-data@karate:
     cmd: python -W ignore -m src.data_creation --validation --dataset=karate
     deps:
     - path: src/data_creation.py
-      md5: 7129bde8c3fb2d86a724d89626e3172a
-      size: 7222
+      md5: 4fd311413ff32a4f1070132ec46df5a7
+      size: 6324
     params:
       params.yaml:
         data_creation:
           ba_neighbours: 3
           graph_type: watts_strogatz
-          mean_iters: 90
+          iterations: 30
           mean_nodes: 100
           mean_sources: 2
           prop_model: SI
-          si_beta: 0.01
-          sir_beta: 0.01
-          sir_gamma: 0.005
           small_input: false
           training_size: 100
           validation_size: 20
           ws_neighbours: 10
           ws_probability: 0.2
+          propagations_per_real_world_graph: 10
     outs:
     - path: data/validation/karate/raw
-      md5: 097a27493b214f33ad1873f9eab0c4b0.dir
-      size: 4229
-      nfiles: 1
+      md5: 794ce31c1e5a764763895e61ed1a61c8.dir
+      size: 42290
+      nfiles: 10
   process-validation-data@karate:
     cmd: python -W ignore -m src.data_processing --validation --dataset=karate
     deps:
     - path: data/validation/karate/raw
-      md5: 097a27493b214f33ad1873f9eab0c4b0.dir
-      size: 4229
-      nfiles: 1
+      md5: 794ce31c1e5a764763895e61ed1a61c8.dir
+      size: 42290
+      nfiles: 10
     - path: src/data_processing.py
-      md5: d9d01217f5f7c4d627e9f1b8f4c5b1c1
-      size: 5818
+      md5: 7f4671c98bf63f9a165c9afe1da32f6e
+      size: 5759
     params:
       params.yaml:
         data_creation:
           ba_neighbours: 3
           graph_type: watts_strogatz
-          mean_iters: 90
+          iterations: 30
           mean_nodes: 100
           mean_sources: 2
           prop_model: SI
-          si_beta: 0.01
-          sir_beta: 0.01
-          sir_gamma: 0.005
           small_input: false
           training_size: 100
           validation_size: 20
           ws_neighbours: 10
           ws_probability: 0.2
+          propagations_per_real_world_graph: 10
         model: GCNSI
     outs:
     - path: data/validation/karate/processed
-      md5: c298c9c3ce1aa9a9fa1ea50bb9b7b8ae.dir
-      size: 5493
-      nfiles: 3
+      md5: f61ec9ae68bc200655cfcb73dcb32edd.dir
+      size: 47010
+      nfiles: 12
   process-validation-data@airports:
     cmd: python -W ignore -m src.data_processing --validation --dataset=airports
     deps:
     - path: data/validation/airports/raw
-      md5: 3b14469dc04d66ecc8a92cf2baa78eeb.dir
-      size: 196357
-      nfiles: 1
+      md5: 595f1ddade97bc22c8d1981c656455a1.dir
+      size: 1963570
+      nfiles: 10
     - path: src/data_processing.py
-      md5: d9d01217f5f7c4d627e9f1b8f4c5b1c1
-      size: 5818
+      md5: 7f4671c98bf63f9a165c9afe1da32f6e
+      size: 5759
     params:
       params.yaml:
         data_creation:
           ba_neighbours: 3
           graph_type: watts_strogatz
-          mean_iters: 90
+          iterations: 30
           mean_nodes: 100
           mean_sources: 2
           prop_model: SI
-          si_beta: 0.01
-          sir_beta: 0.01
-          sir_gamma: 0.005
           small_input: false
           training_size: 100
           validation_size: 20
           ws_neighbours: 10
           ws_probability: 0.2
+          propagations_per_real_world_graph: 10
         model: GCNSI
     outs:
     - path: data/validation/airports/processed
-      md5: c3e6cc99a47892a579028ee8183ba9c4.dir
-      size: 202037
-      nfiles: 3
+      md5: 85c826083d4d9573cd3d73c9a81b57b7.dir
+      size: 2012450
+      nfiles: 12
   validation@airports:
     cmd: python -W ignore -m src.validation --dataset=airports
     deps:
     - path: data/validation/airports/processed
-      md5: c3e6cc99a47892a579028ee8183ba9c4.dir
-      size: 202037
-      nfiles: 3
+      md5: 85c826083d4d9573cd3d73c9a81b57b7.dir
+      size: 2012450
+      nfiles: 12
     - path: models/latest.pth
-      md5: d2729fff6ad2b4f90de0d3fa916271d9
+      md5: cc8c99af9541665ce30651c2103dbc11
       size: 1064911
     - path: src/validation.py
-      md5: 1efe472251b238fbab8c73cf4ffef171
-      size: 16601
+      md5: 387d43a3bbddccb19cd7b848759452ec
+      size: 17580
+    - path: src/visualization.py
+      md5: e586f2a081d59e05dbd8e3754694958e
+      size: 6286
     params:
       params.yaml:
         model: GCNSI
-        model_name: '0'
+        model_name: GCNSI_06-21_11-30_0
   validation@karate:
     cmd: python -W ignore -m src.validation --dataset=karate
     deps:
     - path: data/validation/karate/processed
-      md5: c298c9c3ce1aa9a9fa1ea50bb9b7b8ae.dir
-      size: 5493
-      nfiles: 3
+      md5: f61ec9ae68bc200655cfcb73dcb32edd.dir
+      size: 47010
+      nfiles: 12
     - path: models/latest.pth
-      md5: d2729fff6ad2b4f90de0d3fa916271d9
+      md5: cc8c99af9541665ce30651c2103dbc11
       size: 1064911
     - path: src/validation.py
-      md5: 1efe472251b238fbab8c73cf4ffef171
-      size: 16601
+      md5: 387d43a3bbddccb19cd7b848759452ec
+      size: 17580
+    - path: src/visualization.py
+      md5: e586f2a081d59e05dbd8e3754694958e
+      size: 6286
     params:
       params.yaml:
         model: GCNSI
-        model_name: '0'
+        model_name: GCNSI_06-21_11-30_0
+  visualisation@airports:
+    cmd: python -W ignore -m src.visualization --dataset=airports
+    deps:
+    - path: data/validation/airports/processed
+      md5: 31d48ab6a19c492c030a4beb47e90847.dir
+      size: 2012450
+      nfiles: 12
+    - path: models/latest.pth
+      md5: 8700c789191fd6173f3eec11833cc96e
+      size: 1064911
+    - path: src/visualization.py
+      md5: 29d6d1f4f4ecaae1764b097f3b970d96
+      size: 6122
+    params:
+      params.yaml:
+        model: GCNSI
+        model_name: GCNR_06-21_13-30_0
+        visualization:
+          seed: 123
+  visualisation@karate:
+    cmd: python -W ignore -m src.visualization --dataset=karate
+    deps:
+    - path: data/validation/karate/processed
+      md5: 8e67655dbaf15f0b995155f91ecece7b.dir
+      size: 47010
+      nfiles: 12
+    - path: models/latest.pth
+      md5: 8700c789191fd6173f3eec11833cc96e
+      size: 1064911
+    - path: src/visualization.py
+      md5: 29d6d1f4f4ecaae1764b097f3b970d96
+      size: 6122
+    params:
+      params.yaml:
+        model: GCNSI
+        model_name: GCNR_06-21_13-30_0
+        visualization:
+          seed: 123
+  visualisation@synthetic:
+    cmd: python -W ignore -m src.visualization --dataset=synthetic
+    deps:
+    - path: data/validation/synthetic/processed
+      md5: e269f89643b05242534a75e6c05ef36a.dir
+      size: 385798
+      nfiles: 22
+    - path: models/latest.pth
+      md5: 8700c789191fd6173f3eec11833cc96e
+      size: 1064911
+    - path: src/visualization.py
+      md5: 29d6d1f4f4ecaae1764b097f3b970d96
+      size: 6122
+    params:
+      params.yaml:
+        model: GCNSI
+        model_name: GCNR_06-21_13-30_0
+        visualization:
+          seed: 123
+  visualization@karate:
+    cmd: python -W ignore -m src.visualization --dataset=karate
+    deps:
+    - path: data/validation/karate/processed
+      md5: f61ec9ae68bc200655cfcb73dcb32edd.dir
+      size: 47010
+      nfiles: 12
+    - path: models/latest.pth
+      md5: cc8c99af9541665ce30651c2103dbc11
+      size: 1064911
+    - path: src/visualization.py
+      md5: e586f2a081d59e05dbd8e3754694958e
+      size: 6286
+    params:
+      params.yaml:
+        model: GCNSI
+        model_name: GCNSI_06-21_11-30_0
+        visualization:
+          seed: 123
+  visualization@synthetic:
+    cmd: python -W ignore -m src.visualization --dataset=synthetic
+    deps:
+    - path: data/validation/synthetic/processed
+      md5: 2f32494bbe9df428a72a9323130b609d.dir
+      size: 385798
+      nfiles: 22
+    - path: models/latest.pth
+      md5: cc8c99af9541665ce30651c2103dbc11
+      size: 1064911
+    - path: src/visualization.py
+      md5: e586f2a081d59e05dbd8e3754694958e
+      size: 6286
+    params:
+      params.yaml:
+        model: GCNSI
+        model_name: GCNSI_06-21_11-30_0
+        visualization:
+          seed: 123
+  visualization@airports:
+    cmd: python -W ignore -m src.visualization --dataset=airports
+    deps:
+    - path: data/validation/airports/processed
+      md5: 85c826083d4d9573cd3d73c9a81b57b7.dir
+      size: 2012450
+      nfiles: 12
+    - path: models/latest.pth
+      md5: cc8c99af9541665ce30651c2103dbc11
+      size: 1064911
+    - path: src/visualization.py
+      md5: e586f2a081d59e05dbd8e3754694958e
+      size: 6286
+    params:
+      params.yaml:
+        model: GCNSI
+        model_name: GCNSI_06-21_11-30_0
+        visualization:
+          seed: 123
