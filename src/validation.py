@@ -258,7 +258,9 @@ def prediction_metrics(pred_label_set: list, data_set: list) -> dict:
     }
 
 
-def supervised_metrics(pred_label_set: list, data_set: list, model_name: str) -> dict:
+def supervised_metrics(
+    pred_label_set: list, data_set: list, model_name: str, dataset_name: str
+) -> dict:
     """
     Performs supervised evaluation metrics for models that predict whether each node is a source or not.
     :param pred_label_set: list of predicted labels for each data instance in the data set
@@ -272,7 +274,7 @@ def supervised_metrics(pred_label_set: list, data_set: list, model_name: str) ->
     roc_score, true_positives, false_positives = compute_roc_curve(
         pred_label_set, data_set
     )
-    vis.plot_roc_curve(true_positives, false_positives, model_name)
+    vis.plot_roc_curve(true_positives, false_positives, model_name, dataset_name)
 
     metrics |= prediction_metrics(pred_label_set, data_set)
     metrics |= distance_metrics(pred_label_set, data_set)
@@ -429,7 +431,7 @@ def main():
     metrics_dict = {}
     metrics_dict["dataset"] = dataset
     metrics_dict["supervised"] = supervised_metrics(
-        pred_labels, raw_val_data, model_name
+        pred_labels, raw_val_data, model_name, dataset_name=dataset
     )
     metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
     metrics_dict["data stats"] = data_stats(raw_val_data)

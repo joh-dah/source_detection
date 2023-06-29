@@ -62,6 +62,7 @@ stages:
       deps:
       - src/validation.py
       - data/validation/${item}/processed
+      - src/visualization.py
       - models/latest.pth
       params:
       - model

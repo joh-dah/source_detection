@@ -28,6 +28,7 @@ BA_NEIGHBOURS = dc["ba_neighbours"]
 MEAN_SOURCES = dc["mean_sources"]
 ITERATIONS = dc["iterations"]
 SMALL_INPUT = dc["small_input"]  # "true" or "false"
+PROPAGATIONS_PER_REAL_WORLD_GRAPH = dc["propagations_per_real_world_graph"]
 
 # Training
 training = params["training"]

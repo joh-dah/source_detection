@@ -10,6 +10,7 @@ data_creation:
   validation_size: 20
   ws_neighbours: 10
   ws_probability: 0.2
+  propagations_per_real_world_graph: 10
 model: GCNSI
 model_name: '0'
 on_cluster: false
@@ -20,7 +21,7 @@ training:
   hidden_size: 512
   layers: 10
   learning_rate: 1.0e-05
-  subsample: false
+  subsample: true
   useLogLoss: false
   weight_decay: 1.0e-08
 datasets:

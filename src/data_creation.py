@@ -90,6 +90,7 @@ def create_data_set(
     n_graphs: int,
     path: Path,
     existing_data: Optional[Dataset] = None,
+    propagations_per_graph: int = 1,
     graph_type: str = const.GRAPH_TYPE,
     model_type: str = const.PROP_MODEL,
 ):
@@ -98,7 +99,9 @@ def create_data_set(
     signal propagation model of type model_type on them.
     The graphs and the results of the signal propagation are saved to the given path.
     :param n_graphs: number of graphs to create
+    :param path: path to save the created data set to
     :param existing_data: existing data set, if supplied the signal propagation will be performed on the given graphs
+    :param propagations_per_graph: number of signal propagations to perform per graph
     :param graph_type: type of graph to create
     :param model_type: type of model to use for signal propagation
     """
@@ -114,18 +117,20 @@ def create_data_set(
             graph = create_graph(graph_type)
         else:
             graph = to_networkx(existing_data[i], to_undirected=False).to_undirected()
-            print(graph.number_of_nodes(), graph.number_of_edges())
-        prop_model = create_signal_propagation_model(graph, model_type)
-        X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)
-        y = torch.tensor(list(prop_model.initial_status.values()), dtype=torch.float)
         edge_index = (
             torch.tensor(list(graph.to_directed().edges), dtype=torch.long)
             .t()
             .contiguous()
         )
-        data = Data(x=X, y=y, edge_index=edge_index)
-        data.validate()
-        torch.save(data, path / f"{i}.pt")
+        for j in range(propagations_per_graph):
+            prop_model = create_signal_propagation_model(graph, model_type)
+            X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)
+            y = torch.tensor(
+                list(prop_model.initial_status.values()), dtype=torch.float
+            )
+            data = Data(x=X, y=y, edge_index=edge_index)
+            data.validate()
+            torch.save(data, path / f"{i * propagations_per_graph + j}.pt")
 
 
 def main():
@@ -157,6 +162,7 @@ def main():
                 len(dataset),
                 path,
                 dataset,
+                propagations_per_graph=const.PROPAGATIONS_PER_REAL_WORLD_GRAPH,
             )
     else:
         print("Create Synthetic Train Data:")

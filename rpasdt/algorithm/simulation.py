@@ -7,6 +7,7 @@ from torch_geometric.utils.convert import to_networkx
 
 import networkx as nx
 from ndlib.models import DiffusionModel
+from tqdm import tqdm
 
 from rpasdt.algorithm.diffusion import (
     get_and_init_diffusion_model,
@@ -91,7 +92,7 @@ def perform_source_detection_simulation(
     result = SourceDetectionSimulationResult(
         source_detection_config=source_detection_config
     )
-    for data in data_set:
+    for data in tqdm(data_set):
         G = to_networkx(data, to_undirected=True)
         infected_nodes = data.x.nonzero().flatten().tolist()
         IG = G.subgraph(infected_nodes)

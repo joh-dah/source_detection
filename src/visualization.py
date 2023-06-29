@@ -95,19 +95,24 @@ def plot_matching_graph(
 
 
 def plot_roc_curve(
-    true_positives: np.ndarray, false_positives: np.ndarray, model_name: str
+    true_positives: np.ndarray,
+    false_positives: np.ndarray,
+    model_name: str,
+    dataset_name: str,
 ):
     """
     Plot ROC curves.
     :param false_positives: the false positives rates
     :param true_positives: the true positives rates
+    :param model_name: the name of the model that is evaluated (used for saving the plot)
+    :param dataset_name: the name of the dataset the model is evaluated on (used for saving the plot)
     """
     print("Visualize ROC curve:")
-    Path(const.ROC_PATH).mkdir(parents=True, exist_ok=True)
+    (Path(const.ROC_PATH) / model_name).mkdir(parents=True, exist_ok=True)
     plt.plot(false_positives, true_positives)
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
-    plt.savefig(os.path.join(const.ROC_PATH, f"{model_name}_roc.png"))
+    plt.savefig(Path(const.ROC_PATH) / model_name / f"{dataset_name}_roc.png")
     plt.close()
 
 

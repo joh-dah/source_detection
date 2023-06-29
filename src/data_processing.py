@@ -98,8 +98,6 @@ def process_gcnsi_data(data: Data) -> Data:
     :param data: input data to be processed.
     :return: processed data with expanded features and labels
     """
-    print(data.x.shape)
-    print(data.edge_index.shape)
     X = paper_input(data.x, data.edge_index)
     # expand labels to 2D tensor
     y = data.y.unsqueeze(1).float()
