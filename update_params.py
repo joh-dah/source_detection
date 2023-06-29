@@ -1,5 +1,5 @@
 import argparse
-import json
+import yaml
 
 
 def update_params(params: dict, change_dict, idx):
@@ -31,8 +31,8 @@ change_dict = {
 }
 
 # load the params.json file
-with open("params.json") as json_file:
-    params = json.load(json_file)
+with open("params.json") as yaml_file:
+    params = yaml.full_load(yaml_file)
 
 update_params(params, change_dict, args.idx)
 params["model_name"] = f"{args.idx}"
@@ -40,4 +40,4 @@ params["on_cluster"] = True
 
 # save the updated params.json file
 with open("params.json", "w") as outfile:
-    json.dump(params, outfile, indent=4)
+    yaml.dump(params, outfile, indent=4)
