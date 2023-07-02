@@ -1,0 +1,33 @@
+data_creation:
+  ba_neighbours: 3
+  graph_type: watts_strogatz
+  iterations: 30
+  mean_nodes: 100
+  mean_sources: 2
+  prop_model: SI
+  small_input: false
+  training_size: 100
+  validation_size: 20
+  ws_neighbours: 10
+  ws_probability: 0.2
+  propagations_per_real_world_graph: 10
+model: GCNSI
+model_name: GCNSI_06-21_11-30_0
+on_cluster: false
+training:
+  alpha: 0.5
+  batch_size: 10
+  epochs: 10
+  hidden_size: 512
+  layers: 10
+  learning_rate: 1.0e-05
+  subsample: true
+  useLogLoss: false
+  weight_decay: 1.0e-08
+datasets:
+  validation:
+  - synthetic
+  - airports
+  - karate
+visualization:
+  seed: 123
