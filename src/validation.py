@@ -207,6 +207,8 @@ def TP_FP_metrics(pred_label_set: list, data_set: list) -> dict:
     """
     TPs = 0
     FPs = 0
+    FNs = 0
+    F1_scores = []
     n_positives = 0
     n_negatives = 0
     for i, pred_labels in enumerate(
@@ -215,14 +217,18 @@ def TP_FP_metrics(pred_label_set: list, data_set: list) -> dict:
         true_sources = torch.where(data_set[i].y == 1)[0].tolist()
         pred_sources = predicted_sources(pred_labels)
         n_TP = len(np.intersect1d(true_sources, pred_sources))
+        n_FP = len(pred_sources) - n_TP
+        n_FN = len(true_sources) - n_TP
+        F1_scores.append(2 * n_TP / (2 * n_TP + n_FP + n_FN) if n_TP > 0 else 0)
         TPs += n_TP
-        FPs += len(pred_sources) - n_TP
+        FPs += n_FP
         n_positives += len(true_sources)
         n_negatives += len(pred_labels) - len(true_sources)
 
     return {
         "True positive rate": TPs / n_positives,
         "False positive rate": FPs / n_negatives,
+        "avg F1 score": np.mean(F1_scores),
     }
 
 
@@ -337,6 +343,7 @@ def unsupervised_metrics(val_data: list) -> dict:
         "avg min matching distance of predicted source": avg_mm_distance,
         "True positive rate": result.aggregated_results["NETSLEUTH"].TPR,
         "False positive rate": result.aggregated_results["NETSLEUTH"].FPR,
+        "avg F1 score": result.aggregated_results["NETSLEUTH"].F1,
     }
 
     for key, value in metrics.items():
@@ -434,7 +441,7 @@ def main():
     metrics_dict["supervised"] = supervised_metrics(
         pred_labels, raw_val_data, model_name, dataset_name=dataset
     )
-    # metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
+    metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
     metrics_dict["data stats"] = data_stats(raw_val_data)
     metrics_dict["parameters"] = yaml.full_load(open("params.yaml", "r"))
     utils.save_metrics(metrics_dict, model_name, dataset)
