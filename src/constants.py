@@ -1,11 +1,11 @@
 """Global constants for the project."""
-import json
+import yaml
 
-params = json.load(open("params.json", "r"))
+params = yaml.full_load(open("params.yaml", "r"))
 
 # General
 MODEL = params["model"]  # "GCNR" or "GCNSI"
-MODEL_NAME = params["model_name"]
+MODEL_NAME = params["model_name"]  # defins
 DATA_PATH = "data"
 RAW_DATA_PATH = "data/raw"
 PROCESSED_DATA_PATH = "data/processed"
@@ -28,6 +28,7 @@ BA_NEIGHBOURS = dc["ba_neighbours"]
 MEAN_SOURCES = dc["mean_sources"]
 ITERATIONS = dc["iterations"]
 SMALL_INPUT = dc["small_input"]  # "true" or "false"
+PROPAGATIONS_PER_REAL_WORLD_GRAPH = dc["propagations_per_real_world_graph"]
 
 # Training
 training = params["training"]

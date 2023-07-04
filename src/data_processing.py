@@ -1,4 +1,7 @@
 """ Creates new processed data based on the selected model. """
+import argparse
+import glob
+from pathlib import Path
 from src import constants as const
 import networkx as nx
 import numpy as np
@@ -11,15 +14,16 @@ import torch
 
 class SDDataset(Dataset):
     def __init__(self, root, transform=None, pre_transform=None, pre_filter=None):
+        self.size = len(list((root / "raw").glob("*.pt")))
         super().__init__(root, transform, pre_transform, pre_filter)
 
     @property
     def raw_file_names(self):
-        return [f"{i}.pt" for i in range(const.TRAINING_SIZE + const.VALIDATION_SIZE)]
+        return [f"{i}.pt" for i in range(self.size)]
 
     @property
     def processed_file_names(self):
-        return [f"{i}.pt" for i in range(const.TRAINING_SIZE + const.VALIDATION_SIZE)]
+        return [f"{i}.pt" for i in range(self.size)]
 
     def process(self):
         for idx, raw_path in enumerate(self.raw_paths):
@@ -50,9 +54,8 @@ def paper_input(current_status: torch.tensor, edge_index: torch.tensor) -> torch
     :return: prepared input features
     """
     Y = np.array(current_status)
-    S = nx.normalized_laplacian_matrix(
-        to_networkx(Data(edge_index=edge_index), to_undirected=True)
-    )
+    g = to_networkx(Data(edge_index=edge_index), to_undirected=False).to_undirected()
+    S = nx.normalized_laplacian_matrix(g)
     V3 = Y.copy()
     Y = [-1 if x == 0 else 1 for x in Y]
     V4 = [-1 if x == -1 else 0 for x in Y]
@@ -129,11 +132,24 @@ def main():
     """
     Creates new processed data based on the selected model.
     """
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--validation",
+        action="store_true",
+        help="whether to create validation or training data",
+    )
+    parser.add_argument(
+        "--dataset", type=str, default="synthetic", help="name of the dataset"
+    )
+    args = parser.parse_args()
+
+    train_or_val = "validation" if args.validation else "training"
+    path = Path(const.DATA_PATH) / train_or_val / args.dataset.lower()
+
     print("Removing old processed data...")
-    shutil.rmtree(const.PROCESSED_DATA_PATH, ignore_errors=True)
+    shutil.rmtree(path / "processed", ignore_errors=True)
 
     print("Creating new processed data...")
-
     if const.MODEL == "GCNSI":
         if const.SMALL_INPUT:
             pre_transform_function = process_simplified_gcnsi_data
@@ -142,7 +158,11 @@ def main():
     elif const.MODEL == "GCNR":
         pre_transform_function = process_gcnr_data
 
-    SDDataset(const.DATA_PATH, pre_transform=pre_transform_function)
+    # triggers the process function of the dataset
+    SDDataset(
+        path,
+        pre_transform=pre_transform_function,
+    )
 
 
 if __name__ == "__main__":

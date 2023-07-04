@@ -86,7 +86,11 @@ def main():
     print("Prepare Data ...")
 
     current_time = datetime.datetime.now().strftime("%m-%d_%H-%M")
-    model_name = f"{const.MODEL}_{current_time}_{const.MODEL_NAME}"
+    model_name = (
+        f"{const.MODEL}_{current_time}"
+        if const.MODEL_NAME is None
+        else const.MODEL_NAME
+    )
 
     if const.MODEL == "GCNR":
         model = GCNR().to(device)
@@ -96,7 +100,7 @@ def main():
         model = GCNSI().to(device)
         criterion = torch.nn.BCEWithLogitsLoss()
 
-    train_data = utils.load_processed_data("train")
+    train_data = utils.load_processed_data("synthetic", False)
     train(model, model_name, train_data, criterion)
 
 

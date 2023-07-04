@@ -1,20 +1,19 @@
 """ Initiates the validation of the classifier specified in the constants file. """
-import json
-import glob
-from pathlib import Path
+import argparse
+import yaml
 import os.path
 import numpy as np
 import torch
+import torch_geometric
 from tqdm import tqdm
 import networkx as nx
 from sklearn.metrics import roc_auc_score, roc_curve
 import rpasdt.algorithm.models as rpasdt_models
 from rpasdt.algorithm.simulation import perform_source_detection_simulation
-from rpasdt.algorithm.taxonomies import DiffusionTypeEnum, SourceDetectionAlgorithm
+from rpasdt.algorithm.taxonomies import SourceDetectionAlgorithm
 from torch_geometric.utils.convert import from_networkx
 
 import src.data_processing as dp
-import src.constants as const
 from architectures.GCNR import GCNR
 from architectures.GCNSI import GCNSI
 import src.constants as const
@@ -259,7 +258,9 @@ def prediction_metrics(pred_label_set: list, data_set: list) -> dict:
     }
 
 
-def supervised_metrics(pred_label_set: list, data_set: list, model_name: str) -> dict:
+def supervised_metrics(
+    pred_label_set: list, data_set: list, model_name: str, dataset_name: str
+) -> dict:
     """
     Performs supervised evaluation metrics for models that predict whether each node is a source or not.
     :param pred_label_set: list of predicted labels for each data instance in the data set
@@ -273,7 +274,7 @@ def supervised_metrics(pred_label_set: list, data_set: list, model_name: str) ->
     roc_score, true_positives, false_positives = compute_roc_curve(
         pred_label_set, data_set
     )
-    vis.plot_roc_curve(true_positives, false_positives, model_name)
+    vis.plot_roc_curve(true_positives, false_positives, model_name, dataset_name)
 
     metrics |= prediction_metrics(pred_label_set, data_set)
     metrics |= distance_metrics(pred_label_set, data_set)
@@ -407,26 +408,36 @@ def main():
     """
     Initiates the validation of the classifier specified in the constants file.
     """
-    model_name = utils.latest_model_name()
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--dataset", type=str, default="synthetic", help="name of the dataset"
+    )
+    args = parser.parse_args()
+
+    dataset = args.dataset.lower()
+    model_name = (
+        utils.latest_model_name() if const.MODEL_NAME is None else const.MODEL_NAME
+    )
     if const.MODEL == "GCNR":
         model = GCNR()
     elif const.MODEL == "GCNSI":
         model = GCNSI()
 
     model = utils.load_model(model, os.path.join(const.MODEL_PATH, f"{model_name}.pth"))
-    processed_val_data = utils.load_processed_data("validation")
-    raw_val_data = utils.load_raw_data("validation")
+    processed_val_data = utils.load_processed_data(dataset, True)
+    raw_val_data = utils.load_raw_data(dataset, True)
     pred_labels = predictions(model, processed_val_data)
 
     metrics_dict = {}
+    metrics_dict["dataset"] = dataset
     metrics_dict["supervised"] = supervised_metrics(
-        pred_labels, raw_val_data, model_name
+        pred_labels, raw_val_data, model_name, dataset_name=dataset
     )
-    metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
+    # metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
     metrics_dict["data stats"] = data_stats(raw_val_data)
-    metrics_dict["parameters"] = json.load(open("params.json"))
-    utils.save_metrics(metrics_dict, model_name)
+    metrics_dict["parameters"] = yaml.full_load(open("params.yaml", "r"))
+    utils.save_metrics(metrics_dict, model_name, dataset)
 
 
 if __name__ == "__main__":
