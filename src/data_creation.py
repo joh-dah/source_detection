@@ -47,6 +47,7 @@ def create_graph(seed: int) -> nx.Graph:
             graph = nx.barabasi_albert_graph(n, neighbours)
         success = nx.is_connected(graph)
         iterations += 1
+        prob_reconnect /= 2
         if iterations > 10:
             raise Exception("Could not create connected graph.")
 
