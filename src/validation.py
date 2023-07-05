@@ -48,7 +48,8 @@ def min_matching_distance(
     This Metric tries to match each source to a predicted source while minimizing the sum of the distances between them.
     When |sources| != |predicted_sources|, some nodes of the smaller set will be matched to multiple nodes of the larger set.
     This penelizes the prediction of too many or too few sources.
-    To compare the results of different amounts of sources, the result gets normalized by the number of sources.
+    To compare the results of different amounts of sources, the result gets normalized by the minimum of the number of sources
+    and the number of predicted sources.
     :param edge_index: The edge_index of the graph to evaluate on.
     :param sources: The indices of the sources.
     :param predicted_sources: The indices of the predicted sources.
@@ -88,7 +89,7 @@ def min_matching_distance(
         sum([matching_graph.get_edge_data(k, v)["weight"] for k, v in matching_list])
         / 2
     )  # counting each edge twice
-    return min_matching_distance / len(sources)
+    return min_matching_distance / max(1, min(len(sources), len(predicted_sources)))
 
 
 def compute_roc_curve(
