@@ -14,21 +14,21 @@ FIGURES_PATH = "figures"
 ROC_PATH = "roc"
 REPORT_PATH = "reports"
 ON_CLUSTER = params["on_cluster"]
+N_CORES = 7
 
 # Data Creation
 dc = params["data_creation"]
-GRAPH_TYPE = dc["graph_type"]  # "watts_strogatz" or "barabasi_albert"
-PROP_MODEL = dc["prop_model"]  # "SIR" or "SI"
 TRAINING_SIZE = dc["training_size"]
 VALIDATION_SIZE = dc["validation_size"]
-MEAN_N_NODES = dc["mean_nodes"]
-WS_NEIGHBOURS = dc["ws_neighbours"]
-WS_PROBABILITY = dc["ws_probability"]
-BA_NEIGHBOURS = dc["ba_neighbours"]
-MEAN_SOURCES = dc["mean_sources"]
-ITERATIONS = dc["iterations"]
 SMALL_INPUT = dc["small_input"]  # "true" or "false"
 PROPAGATIONS_PER_REAL_WORLD_GRAPH = dc["propagations_per_real_world_graph"]
+RELATIVE_N_SOURCES = tuple(dc["relative_n_sources"])
+RELATIVE_INFECTED = tuple(dc["relative_infected"])
+N_NODES = tuple(dc["n_nodes"])
+WATTS_STROGATZ_NEIGHBOURS = tuple(dc["watts_strogatz_neighbours"])
+WATTS_STROGATZ_PROBABILITY = tuple(dc["watts_strogatz_probability"])
+BETA = tuple(dc["beta"])
+ROOT_SEED = dc["root_seed"]
 
 # Training
 training = params["training"]

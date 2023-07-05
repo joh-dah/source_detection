@@ -5,7 +5,7 @@ import argparse
 from typing import Optional
 from pathlib import Path
 import numpy as np
-import ndlib.models.epidemics as epidemic_model
+import ndlib.models.epidemics as ep
 import ndlib.models.ModelConfig as mc
 import networkx as nx
 from tqdm import tqdm
@@ -14,77 +14,130 @@ from torch_geometric.data import Data, Dataset
 from torch_geometric.utils.convert import to_networkx
 import torch
 import src.utils as utils
+import multiprocessing as mp
 
 
-def select_random_sources(graph: nx.Graph, select_random: bool = True) -> list:
-    """
-    Selects nodes from the given graph as sources.
-    The amount of nodes is randomly selected from a
-    normal distribution with mean mean_sources and std mean_sources/2.
-    :param graph: graph to select sources from
-    :return: list of source nodes
-    """
-    if select_random:
-        mu = const.MEAN_SOURCES
-        sigma = int(np.sqrt(mu))
-        n_sources = np.random.normal(mu, sigma)
-        # make sure there are no sources smaller than 1 or larger than 1/4 of the graph
-        n_sources = np.clip(n_sources, 1, len(graph.nodes) / 4).astype(int)
-    else:
-        n_sources = const.MEAN_SOURCES
-    return random.choices(list(graph.nodes), k=n_sources)
+def random_generator(seed):
+    return np.random.default_rng([seed, const.ROOT_SEED])
 
 
-def create_graph(graph_type: str) -> nx.Graph:
+def create_graph(seed: int) -> nx.Graph:
     """
     Creates a graph of the given type.
-    :param graph_type: type of graph to create
     :return: created graph
     """
-    n = np.random.normal(const.MEAN_N_NODES, np.sqrt(const.MEAN_N_NODES / 2))
-    n = np.maximum(1, n).astype(int)
+    n = random_generator(seed).integers(*const.N_NODES)
+    neighbours = (
+        random_generator(seed + 1).uniform(*const.WATTS_STROGATZ_NEIGHBOURS) * n
+    )
+    neighbours = np.clip(neighbours, 2, n).astype(int)
+    prob_reconnect = random_generator(seed + 2).uniform(
+        *const.WATTS_STROGATZ_PROBABILITY
+    )
+    graph_type = random_generator(seed + 3).choice(
+        ["watts_strogatz", "barabasi_albert"]
+    )
+    success = False
+    iterations = 0
+    while not success:
+        if graph_type == "watts_strogatz":
+            graph = nx.watts_strogatz_graph(n, neighbours, prob_reconnect)
+        elif graph_type == "barabasi_albert":
+            neighbours = int(neighbours / 2)
+            graph = nx.barabasi_albert_graph(n, neighbours)
+        success = nx.is_connected(graph)
+        iterations += 1
+        if iterations > 10:
+            raise Exception("Could not create connected graph.")
 
-    if graph_type == "watts_strogatz":
-        graph = nx.watts_strogatz_graph(n, const.WS_NEIGHBOURS, const.WS_PROBABILITY)
-    elif graph_type == "barabasi_albert":
-        graph = nx.barabasi_albert_graph(n, const.BA_NEIGHBOURS)
-    else:
-        raise ValueError("Unknown graph type")
-
-    return graph
+    return graph, graph_type, neighbours, prob_reconnect
 
 
-def create_signal_propagation_model(graph: nx.Graph, model_type: str) -> epidemic_model:
+def iterate_until(threshold_infected: float, model: ep.SIModel) -> int:
     """
-    Creates a signal propagation model of the given type for the given graph.
-    :param graph: graph to create the model for
-    :param model_type: type of model to create
-    :return: created model
+    Runs the given model until the given percentage of nodes is infected.
+    :param threshold_infected: maximum percentage of infected nodes
+    :param model: model to run
+    :param config: configuration of the model
+    :return: number of iterations until threshold was reached
     """
-    source_nodes = select_random_sources(graph)
-    beta = np.random.uniform(0, 1)
-    beta = 0.01
 
+    iterations = 0
+    threshold = int(threshold_infected * len(model.status))
+    n_infected_nodes = sum([x if x == 1 else 0 for x in model.status.values()])
+    while n_infected_nodes <= threshold and iterations < 50:
+        n_infected_nodes = sum([x if x == 1 else 0 for x in model.status.values()])
+        model.iteration(False)
+        iterations += 1
+
+    return iterations
+
+
+def signal_propagation(seed: int, graph: nx.Graph):
+    """
+    Simulates signal propagation on the given graph.
+    :param graph: graph to simulate signal propagation on
+    :return: list of infected nodes
+    """
+    model = ep.SIModel(graph)
     config = mc.Configuration()
-    if model_type == "SI":
-        prop_model = epidemic_model.SIModel(graph)
-        config.add_model_parameter("beta", beta)
+    beta = random_generator(seed).uniform(*const.BETA)
+    config.add_model_parameter("beta", beta)
+    percentage_infected = random_generator(seed + 1).uniform(*const.RELATIVE_N_SOURCES)
+    config.add_model_parameter("percentage_infected", percentage_infected)
+    model.set_initial_status(config)
+    threshold_infected = random_generator(seed + 2).uniform(*const.RELATIVE_INFECTED)
+    iterations = iterate_until(threshold_infected, model)
+    return model, iterations, percentage_infected, beta, threshold_infected
 
-    elif model_type == "SIR":
-        gamma = np.random.uniform(0, beta)
-        prop_model = epidemic_model.SIRModel(graph)
-        config.add_model_parameter("beta", beta)
-        config.add_model_parameter("gamma", gamma)
+
+def create_data(params: tuple):
+    """
+    Creates a single data point. Consisting of a graph and the result of a signal propagation model on that graph.
+    The data point is saved to the given path.
+    :param i: index of the data point (used for seeding)
+    :param file: path to save the data point to (including file name)
+    :param existing_data: existing data point, if supplied the signal propagation will be performed on the given graph
+    """
+
+    i, path, existing_data = params
+
+    seed = i * 10
+    if existing_data is not None:
+        graph = to_networkx(
+            existing_data, to_undirected=False, remove_self_loops=True
+        ).to_undirected()
+        graph_type = "real world"
+        neighbours = -1
+        prob_reconnect = -1
 
     else:
-        raise ValueError("Unknown model type")
-
-    config.add_model_initial_configuration("Infected", source_nodes)
-    prop_model.set_initial_status(config)
-    iterations = prop_model.iteration_bunch(const.ITERATIONS)
-    prop_model.build_trends(iterations)
-
-    return prop_model
+        graph, graph_type, neighbours, prob_reconnect = create_graph(seed)
+    (
+        prop_model,
+        iterations,
+        percentage_infected,
+        beta,
+        threshold_infected,
+    ) = signal_propagation(seed + 5, graph)
+    X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)
+    y = torch.tensor(list(prop_model.initial_status.values()), dtype=torch.float)
+    edge_index = (
+        torch.tensor(list(graph.to_directed().edges), dtype=torch.long).t().contiguous()
+    )
+    data = Data(
+        x=X,
+        y=y,
+        edge_index=edge_index,
+        graph_type=graph_type,
+        neighbours=neighbours,
+        prob_reconnect=prob_reconnect,
+        beta=beta,
+        threshold_infected=threshold_infected,
+        iterations=iterations,
+        percentage_initially_infected=percentage_infected,
+    )
+    torch.save(data, path / f"{i}.pt")
 
 
 def create_data_set(
@@ -92,19 +145,15 @@ def create_data_set(
     path: Path,
     existing_data: Optional[Dataset] = None,
     propagations_per_graph: int = 1,
-    graph_type: str = const.GRAPH_TYPE,
-    model_type: str = const.PROP_MODEL,
 ):
     """
-    Creates n graphs of type graph_type and runs a
-    signal propagation model of type model_type on them.
+    Creates n random graphs and performs a signal propagation on each of them.
+    Parameters of the signal propagation are chosen randomly from ranges given in params.yaml.
     The graphs and the results of the signal propagation are saved to the given path.
     :param n_graphs: number of graphs to create
     :param path: path to save the created data set to
-    :param existing_data: existing data set, if supplied the signal propagation will be performed on the given graphs
+    :param existing_data: existing dataset, if supplied the signal propagation will be performed on the given graphs
     :param propagations_per_graph: number of signal propagations to perform per graph
-    :param graph_type: type of graph to create
-    :param model_type: type of model to use for signal propagation
     """
 
     path /= "raw"
@@ -113,27 +162,24 @@ def create_data_set(
     for file_name in os.listdir(path):
         os.remove(os.path.join(path, file_name))
 
-    for i in tqdm(range(n_graphs), disable=const.ON_CLUSTER):
-        if existing_data is None:
-            graph = create_graph(graph_type)
-        else:
-            graph = to_networkx(
-                existing_data[i], to_undirected=False, remove_self_loops=True
-            ).to_undirected()
-        edge_index = (
-            torch.tensor(list(graph.to_directed().edges), dtype=torch.long)
-            .t()
-            .contiguous()
+    inputs = [
+        (
+            i * propagations_per_graph + j,
+            path,
+            existing_data[i] if existing_data is not None else None,
         )
-        for j in range(propagations_per_graph):
-            prop_model = create_signal_propagation_model(graph, model_type)
-            X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)
-            y = torch.tensor(
-                list(prop_model.initial_status.values()), dtype=torch.float
+        for j in range(propagations_per_graph)
+        for i in range(n_graphs)
+    ]
+
+    with mp.Pool(const.N_CORES) as pool:
+        print(f"Creating data set using multiprocessing ({pool})")
+        list(
+            tqdm(
+                pool.imap_unordered(create_data, inputs),
+                total=len(inputs),
             )
-            data = Data(x=X, y=y, edge_index=edge_index)
-            data.validate()
-            torch.save(data, path / f"{i * propagations_per_graph + j}.pt")
+        )
 
 
 def main():
