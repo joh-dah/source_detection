@@ -6,13 +6,13 @@ data_creation:
   mean_sources: 2
   prop_model: SI
   small_input: false
-  training_size: 100
-  validation_size: 20
+  training_size: 10
+  validation_size: 5
   ws_neighbours: 10
   ws_probability: 0.2
   propagations_per_real_world_graph: 10
 model: GCNSI
-model_name: GCNSI_06-21_11-30_0
+model_name: GCNSI_3
 on_cluster: false
 training:
   alpha: 0.5
