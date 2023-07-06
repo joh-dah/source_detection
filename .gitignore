@@ -11,3 +11,4 @@ src/__pycache__/
 /roc
 /reports
 /sbatch_out
+/data_creation_slurm

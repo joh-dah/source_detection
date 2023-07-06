@@ -11,8 +11,9 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=conrad.halle@student.hpi.de
 #SBATCH --verbose
-#SBATCH --output=/hpi/fs00/home/conrad.halle/source_detection/z_out/slurm_%j_%N_%x_%A_%a.out
-#SBATCH --error=/hpi/fs00/home/conrad.halle/source_detection/z_out/slurm_%j_%N_%x_%A_%a.err
+#SBATCH --output=/hpi/fs00/home/conrad.halle/source_detection/data_creation_slurm/slurm_%j_%N_%x_%A_%a.out
+#SBATCH --error=/hpi/fs00/home/conrad.halle/source_detection/data_creation_slurm/slurm_%j_%N_%x_%A_%a.err
 
 source venv/bin/activate
-python testtest.py
+dvc repro generate-training-data
+dvc repro generate-validation-data
