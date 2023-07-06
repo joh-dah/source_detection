@@ -69,7 +69,7 @@ stages:
       - model_name
 
   visualization:
-    foreach: ${datasets.validation}
+    foreach: ${datasets.visualization}
     do:
       cmd: python -W ignore -m src.visualization --dataset=${item}
       deps:

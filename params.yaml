@@ -29,6 +29,7 @@ datasets:
   - airports
   - karate
   - facebook
-  - github
+  visualization:
+  - karate
 visualization:
   seed: 123
