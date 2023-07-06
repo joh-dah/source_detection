@@ -2,14 +2,14 @@ data_creation:
   ba_neighbours: 3
   graph_type: watts_strogatz
   iterations: 30
-  mean_nodes: 100
+  mean_nodes: 110
   mean_sources: 2
   prop_model: SI
   small_input: false
   training_size: 10
   validation_size: 5
   ws_neighbours: 10
-  ws_probability: 0.2
+  ws_probability: 0.3
   propagations_per_real_world_graph: 10
 model: GCNSI
 model_name: GCNSI_3
@@ -27,7 +27,7 @@ training:
 datasets:
   validation:
   - synthetic
-  - airports
   - karate
+  - airports
 visualization:
   seed: 123
