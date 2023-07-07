@@ -431,10 +431,9 @@ def main():
 
     metrics_dict = {}
     metrics_dict["dataset"] = dataset
-    metrics_dict["supervised"] = supervised_metrics(
+    metrics_dict["metrics"] = supervised_metrics(
         pred_labels, raw_val_data, model_name, dataset_name=dataset
     )
-    metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
     metrics_dict["data stats"] = data_stats(raw_val_data)
     metrics_dict["parameters"] = yaml.full_load(open("params.yaml", "r"))
     utils.save_metrics(metrics_dict, model_name, dataset)

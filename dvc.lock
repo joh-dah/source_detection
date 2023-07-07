@@ -62,12 +62,12 @@ stages:
     cmd: python -W ignore -m src.training
     deps:
     - path: data/training/synthetic/processed
-      md5: 35ece2b23e10817848f34edc0264bae9.dir
-      size: 212194
+      md5: f6867f0b13bc1c0557b931fed578d232.dir
+      size: 211298
       nfiles: 12
     - path: src/training.py
       md5: 6e755aa1446059f1682a63de380623e9
-      size: 3596
+      size: 3488
     params:
       params.yaml:
         model: GCNSI
@@ -84,7 +84,7 @@ stages:
           weight_decay: 1e-08
     outs:
     - path: models/latest.pth
-      md5: 348d6f4736bfb52106bf58e2cfd14247
+      md5: 33b52299c02f2082b980100114d586d0
       size: 1064911
   visualisation:
     cmd: python -W ignore -m src.visualization
@@ -145,7 +145,7 @@ stages:
     deps:
     - path: src/data_creation.py
       md5: 4fd311413ff32a4f1070132ec46df5a7
-      size: 6324
+      size: 6148
     params:
       params.yaml:
         data_creation:
@@ -163,15 +163,15 @@ stages:
           propagations_per_real_world_graph: 10
     outs:
     - path: data/training/synthetic/raw
-      md5: 4823da6afa2d592e5a7777c3e964d998.dir
-      size: 198194
+      md5: 31b7e53615e0122dfe7dbca4a24b4ddf.dir
+      size: 197234
       nfiles: 10
   generate-validation-data@synthetic:
     cmd: python -W ignore -m src.data_creation --validation --dataset=synthetic
     deps:
     - path: src/data_creation.py
       md5: 4fd311413ff32a4f1070132ec46df5a7
-      size: 6324
+      size: 6148
     params:
       params.yaml:
         data_creation:
@@ -189,15 +189,15 @@ stages:
           propagations_per_real_world_graph: 10
     outs:
     - path: data/validation/synthetic/raw
-      md5: 542a1943158749be2f5adeca3a97cb76.dir
-      size: 101145
+      md5: 2cbda22fd9196f59c6f19e15bfbd8a5c.dir
+      size: 97433
       nfiles: 5
   generate-validation-data@airports:
     cmd: python -W ignore -m src.data_creation --validation --dataset=airports
     deps:
     - path: src/data_creation.py
       md5: 4fd311413ff32a4f1070132ec46df5a7
-      size: 6324
+      size: 6148
     params:
       params.yaml:
         data_creation:
@@ -215,19 +215,19 @@ stages:
           propagations_per_real_world_graph: 10
     outs:
     - path: data/validation/airports/raw
-      md5: 32eb8363677a34beef22a8e5dac30acf.dir
+      md5: fe3ae56b1ad9c04f0fee432cfe33902c.dir
       size: 1963570
       nfiles: 10
   process-training-data:
     cmd: python -W ignore -m src.data_processing
     deps:
     - path: data/training/synthetic/raw
-      md5: 4823da6afa2d592e5a7777c3e964d998.dir
-      size: 198194
+      md5: 31b7e53615e0122dfe7dbca4a24b4ddf.dir
+      size: 197234
       nfiles: 10
     - path: src/data_processing.py
       md5: 7f4671c98bf63f9a165c9afe1da32f6e
-      size: 5759
+      size: 5590
     params:
       params.yaml:
         data_creation:
@@ -246,19 +246,19 @@ stages:
         model: GCNSI
     outs:
     - path: data/training/synthetic/processed
-      md5: 35ece2b23e10817848f34edc0264bae9.dir
-      size: 212194
+      md5: f6867f0b13bc1c0557b931fed578d232.dir
+      size: 211298
       nfiles: 12
   process-validation-data@synthetic:
     cmd: python -W ignore -m src.data_processing --validation --dataset=synthetic
     deps:
     - path: data/validation/synthetic/raw
-      md5: 542a1943158749be2f5adeca3a97cb76.dir
-      size: 101145
+      md5: 2cbda22fd9196f59c6f19e15bfbd8a5c.dir
+      size: 97433
       nfiles: 5
     - path: src/data_processing.py
       md5: 7f4671c98bf63f9a165c9afe1da32f6e
-      size: 5759
+      size: 5590
     params:
       params.yaml:
         data_creation:
@@ -277,25 +277,25 @@ stages:
         model: GCNSI
     outs:
     - path: data/validation/synthetic/processed
-      md5: 0bf77af99ece8cbdf2b9d13766560be3.dir
-      size: 108745
+      md5: bd3078052d8b43a347964a570eaf407c.dir
+      size: 104841
       nfiles: 7
   validation@synthetic:
     cmd: python -W ignore -m src.validation --dataset=synthetic
     deps:
     - path: data/validation/synthetic/processed
-      md5: 0bf77af99ece8cbdf2b9d13766560be3.dir
-      size: 108745
+      md5: 8e1985dd293853886b983a256917c0d0.dir
+      size: 104457
       nfiles: 7
     - path: models/latest.pth
-      md5: 348d6f4736bfb52106bf58e2cfd14247
+      md5: 09d632fd27f044cbd644055c8b5f95c4
       size: 1064911
     - path: src/validation.py
-      md5: da89424b86802697221f74e3c007c151
-      size: 17578
+      md5: 87808e916f3446d77b6aab421aef740d
+      size: 17061
     - path: src/visualization.py
       md5: e586f2a081d59e05dbd8e3754694958e
-      size: 6286
+      size: 6084
     params:
       params.yaml:
         model: GCNSI
@@ -305,7 +305,7 @@ stages:
     deps:
     - path: src/data_creation.py
       md5: 4fd311413ff32a4f1070132ec46df5a7
-      size: 6324
+      size: 6148
     params:
       params.yaml:
         data_creation:
@@ -323,19 +323,19 @@ stages:
           propagations_per_real_world_graph: 10
     outs:
     - path: data/validation/karate/raw
-      md5: dce94cd0219c920e00a8f78ea47080e4.dir
+      md5: 8990909a4faba821ef5478b286e2878b.dir
       size: 42290
       nfiles: 10
   process-validation-data@karate:
     cmd: python -W ignore -m src.data_processing --validation --dataset=karate
     deps:
     - path: data/validation/karate/raw
-      md5: dce94cd0219c920e00a8f78ea47080e4.dir
+      md5: 083256815f46b001b1a84bdd8841dfdf.dir
       size: 42290
       nfiles: 10
     - path: src/data_processing.py
       md5: 7f4671c98bf63f9a165c9afe1da32f6e
-      size: 5759
+      size: 5590
     params:
       params.yaml:
         data_creation:
@@ -354,19 +354,19 @@ stages:
         model: GCNSI
     outs:
     - path: data/validation/karate/processed
-      md5: 33fc71a54ae16a61c484caea06e8636c.dir
+      md5: e05426d3dc40fe896a3fa8b698cb0e89.dir
       size: 47010
       nfiles: 12
   process-validation-data@airports:
     cmd: python -W ignore -m src.data_processing --validation --dataset=airports
     deps:
     - path: data/validation/airports/raw
-      md5: 32eb8363677a34beef22a8e5dac30acf.dir
+      md5: fe3ae56b1ad9c04f0fee432cfe33902c.dir
       size: 1963570
       nfiles: 10
     - path: src/data_processing.py
       md5: 7f4671c98bf63f9a165c9afe1da32f6e
-      size: 5759
+      size: 5590
     params:
       params.yaml:
         data_creation:
@@ -385,25 +385,25 @@ stages:
         model: GCNSI
     outs:
     - path: data/validation/airports/processed
-      md5: f3eb0b81dd0ee61f0a46cae9bfc1d1da.dir
+      md5: 352e7edd73930b8011174d80993f0294.dir
       size: 2012450
       nfiles: 12
   validation@airports:
     cmd: python -W ignore -m src.validation --dataset=airports
     deps:
     - path: data/validation/airports/processed
-      md5: f3eb0b81dd0ee61f0a46cae9bfc1d1da.dir
+      md5: 4f070908a3d698a2da8b089427a3c42d.dir
       size: 2012450
       nfiles: 12
     - path: models/latest.pth
-      md5: 348d6f4736bfb52106bf58e2cfd14247
+      md5: 09d632fd27f044cbd644055c8b5f95c4
       size: 1064911
     - path: src/validation.py
-      md5: da89424b86802697221f74e3c007c151
-      size: 17578
+      md5: 87808e916f3446d77b6aab421aef740d
+      size: 17061
     - path: src/visualization.py
       md5: e586f2a081d59e05dbd8e3754694958e
-      size: 6286
+      size: 6084
     params:
       params.yaml:
         model: GCNSI
@@ -412,18 +412,18 @@ stages:
     cmd: python -W ignore -m src.validation --dataset=karate
     deps:
     - path: data/validation/karate/processed
-      md5: 33fc71a54ae16a61c484caea06e8636c.dir
+      md5: e05426d3dc40fe896a3fa8b698cb0e89.dir
       size: 47010
       nfiles: 12
     - path: models/latest.pth
-      md5: 348d6f4736bfb52106bf58e2cfd14247
+      md5: 09d632fd27f044cbd644055c8b5f95c4
       size: 1064911
     - path: src/validation.py
-      md5: da89424b86802697221f74e3c007c151
-      size: 17578
+      md5: 87808e916f3446d77b6aab421aef740d
+      size: 17061
     - path: src/visualization.py
       md5: e586f2a081d59e05dbd8e3754694958e
-      size: 6286
+      size: 6084
     params:
       params.yaml:
         model: GCNSI
@@ -489,15 +489,15 @@ stages:
     cmd: python -W ignore -m src.visualization --dataset=karate
     deps:
     - path: data/validation/karate/processed
-      md5: 33fc71a54ae16a61c484caea06e8636c.dir
+      md5: e05426d3dc40fe896a3fa8b698cb0e89.dir
       size: 47010
       nfiles: 12
     - path: models/latest.pth
-      md5: 348d6f4736bfb52106bf58e2cfd14247
+      md5: 09d632fd27f044cbd644055c8b5f95c4
       size: 1064911
     - path: src/visualization.py
       md5: e586f2a081d59e05dbd8e3754694958e
-      size: 6286
+      size: 6084
     params:
       params.yaml:
         model: GCNSI
@@ -508,15 +508,15 @@ stages:
     cmd: python -W ignore -m src.visualization --dataset=synthetic
     deps:
     - path: data/validation/synthetic/processed
-      md5: 0bf77af99ece8cbdf2b9d13766560be3.dir
-      size: 108745
+      md5: bd3078052d8b43a347964a570eaf407c.dir
+      size: 104841
       nfiles: 7
     - path: models/latest.pth
-      md5: 348d6f4736bfb52106bf58e2cfd14247
+      md5: 33b52299c02f2082b980100114d586d0
       size: 1064911
     - path: src/visualization.py
       md5: e586f2a081d59e05dbd8e3754694958e
-      size: 6286
+      size: 6084
     params:
       params.yaml:
         model: GCNSI
@@ -527,18 +527,57 @@ stages:
     cmd: python -W ignore -m src.visualization --dataset=airports
     deps:
     - path: data/validation/airports/processed
-      md5: f3eb0b81dd0ee61f0a46cae9bfc1d1da.dir
+      md5: 4f070908a3d698a2da8b089427a3c42d.dir
       size: 2012450
       nfiles: 12
     - path: models/latest.pth
-      md5: 348d6f4736bfb52106bf58e2cfd14247
+      md5: 09d632fd27f044cbd644055c8b5f95c4
       size: 1064911
     - path: src/visualization.py
       md5: e586f2a081d59e05dbd8e3754694958e
-      size: 6286
+      size: 6084
     params:
       params.yaml:
         model: GCNSI
         model_name: GCNSI_3
         visualization:
           seed: 123
+  unsupervised@airports:
+    cmd: python -W ignore -m src.unsupervised --dataset=airports
+    deps:
+    - path: data/validation/airports/raw
+      md5: 08ac9f8a417b518f8dec406ce075bf29.dir
+      size: 1963570
+      nfiles: 10
+    - path: src/unsupervised.py
+      md5: 98d535515c6900802e6185bc7cfde798
+      size: 917
+    - path: src/validation.py
+      md5: 87808e916f3446d77b6aab421aef740d
+      size: 17061
+  unsupervised@synthetic:
+    cmd: python -W ignore -m src.unsupervised --dataset=synthetic
+    deps:
+    - path: data/validation/synthetic/raw
+      md5: 2cbda22fd9196f59c6f19e15bfbd8a5c.dir
+      size: 97433
+      nfiles: 5
+    - path: src/unsupervised.py
+      md5: 98d535515c6900802e6185bc7cfde798
+      size: 917
+    - path: src/validation.py
+      md5: 87808e916f3446d77b6aab421aef740d
+      size: 17061
+  unsupervised@karate:
+    cmd: python -W ignore -m src.unsupervised --dataset=karate
+    deps:
+    - path: data/validation/karate/raw
+      md5: 083256815f46b001b1a84bdd8841dfdf.dir
+      size: 42290
+      nfiles: 10
+    - path: src/unsupervised.py
+      md5: 98d535515c6900802e6185bc7cfde798
+      size: 917
+    - path: src/validation.py
+      md5: 87808e916f3446d77b6aab421aef740d
+      size: 17061
