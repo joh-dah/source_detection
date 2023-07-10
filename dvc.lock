@@ -144,14 +144,14 @@ stages:
     cmd: python -W ignore -m src.data_creation --dataset="synthetic"
     deps:
     - path: src/data_creation.py
-      md5: 0610ecc79be726595ff8c44262fde43a
-      size: 8766
+      md5: a59215f4caeece11702fae73fde14909
+      size: 8758
     params:
       params.yaml:
         data_creation:
           small_input: false
-          training_size: 1000
-          validation_size: 200
+          training_size: 20
+          validation_size: 20
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.01
@@ -174,20 +174,20 @@ stages:
           root_seed: 11650217406899810833644412201113384193
     outs:
     - path: data/training/synthetic/raw
-      md5: 4f89155d05b25b67ad56053a1cba232f.dir
-      size: 3457733874
-      nfiles: 1000
+      md5: cbe80ead55b5cface28aed48413fe161.dir
+      size: 60970326
+      nfiles: 20
   generate-validation-data@synthetic:
     cmd: python -W ignore -m src.data_creation --validation --dataset=synthetic
     deps:
     - path: src/data_creation.py
-      md5: 5d27cf37bad3b32a71c8c6fc6e7b6521
-      size: 7552
+      md5: a59215f4caeece11702fae73fde14909
+      size: 8758
     params:
       params.yaml:
         data_creation:
           small_input: false
-          training_size: 100
+          training_size: 20
           validation_size: 20
           propagations_per_real_world_graph: 100
           relative_n_sources:
@@ -195,10 +195,10 @@ stages:
           - 0.05
           relative_infected:
           - 0.2
-          - 0.8
+          - 0.5
           n_nodes:
           - 100
-          - 1000
+          - 5000
           watts_strogatz_neighbours:
           - 0.001
           - 0.05
@@ -206,13 +206,13 @@ stages:
           - 0.0
           - 0.5
           beta:
+          - 0.001
           - 0.01
-          - 0.4
           root_seed: 11650217406899810833644412201113384193
     outs:
     - path: data/validation/synthetic/raw
-      md5: 04032d6c7150759d064d63cd798fe27e.dir
-      size: 3320086
+      md5: cbe80ead55b5cface28aed48413fe161.dir
+      size: 60970326
       nfiles: 20
   generate-validation-data@airports:
     cmd: python -W ignore -m src.data_creation --validation --dataset=airports
@@ -255,9 +255,9 @@ stages:
     cmd: python -W ignore -m src.data_processing
     deps:
     - path: data/training/synthetic/raw
-      md5: 0b81dd885fab4a263918f6b67b97effb.dir
-      size: 17587766
-      nfiles: 100
+      md5: cbe80ead55b5cface28aed48413fe161.dir
+      size: 60970326
+      nfiles: 20
     - path: src/data_processing.py
       md5: 7f4671c98bf63f9a165c9afe1da32f6e
       size: 5590
@@ -265,7 +265,7 @@ stages:
       params.yaml:
         data_creation:
           small_input: false
-          training_size: 100
+          training_size: 20
           validation_size: 20
           propagations_per_real_world_graph: 100
           relative_n_sources:
@@ -273,10 +273,10 @@ stages:
           - 0.05
           relative_infected:
           - 0.2
-          - 0.8
+          - 0.5
           n_nodes:
           - 100
-          - 1000
+          - 5000
           watts_strogatz_neighbours:
           - 0.001
           - 0.05
@@ -284,15 +284,15 @@ stages:
           - 0.0
           - 0.5
           beta:
+          - 0.001
           - 0.01
-          - 0.4
           root_seed: 11650217406899810833644412201113384193
         model: GCNSI
     outs:
     - path: data/training/synthetic/processed
-      md5: f63d7e1592a31860052a9ce3912d58d4.dir
-      size: 18268390
-      nfiles: 102
+      md5: 99061796a7e356d4ad4300eb7832b890.dir
+      size: 61575750
+      nfiles: 22
   process-validation-data@synthetic:
     cmd: python -W ignore -m src.data_processing --validation --dataset=synthetic
     deps:
