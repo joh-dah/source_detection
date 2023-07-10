@@ -41,10 +41,12 @@ def create_graph(seed: int) -> nx.Graph:
     iterations = 0
     while not success:
         if graph_type == "watts_strogatz":
-            graph = nx.watts_strogatz_graph(n, neighbours, prob_reconnect)
+            graph = nx.watts_strogatz_graph(
+                n, neighbours, prob_reconnect, seed=seed + 4 + iterations
+            )
         elif graph_type == "barabasi_albert":
             neighbours = int(neighbours / 2)
-            graph = nx.barabasi_albert_graph(n, neighbours)
+            graph = nx.barabasi_albert_graph(n, neighbours, seed=seed + 4 + iterations)
         success = nx.is_connected(graph)
         iterations += 1
         prob_reconnect /= 2
@@ -80,16 +82,36 @@ def signal_propagation(seed: int, graph: nx.Graph):
     :param graph: graph to simulate signal propagation on
     :return: list of infected nodes
     """
-    model = ep.SIModel(graph)
+    model = ep.SIModel(graph, seed=seed + 1)
     config = mc.Configuration()
     beta = random_generator(seed).uniform(*const.BETA)
     config.add_model_parameter("beta", beta)
-    percentage_infected = random_generator(seed + 1).uniform(*const.RELATIVE_N_SOURCES)
+    percentage_infected = random_generator(seed + 2).uniform(*const.RELATIVE_N_SOURCES)
     config.add_model_parameter("percentage_infected", percentage_infected)
     model.set_initial_status(config)
-    threshold_infected = random_generator(seed + 2).uniform(*const.RELATIVE_INFECTED)
+    threshold_infected = random_generator(seed + 3).uniform(*const.RELATIVE_INFECTED)
     iterations = iterate_until(threshold_infected, model)
     return model, iterations, percentage_infected, beta, threshold_infected
+
+
+def generate_metrics(graph: nx.Graph, data: Data):
+    """
+    Generates metrics for the given graph and model.
+    :param graph: graph to generate metrics for
+    :param model: model to generate metrics for
+    :param data: data point to save metrics to
+    """
+    data.metrics = dict(
+        # diameter=nx.diameter(graph),
+        # average_shortest_path_length=nx.average_shortest_path_length(
+        #     graph, method="unweighted"
+        # ),
+        average_clustering_coefficient=nx.average_clustering(graph),
+        average_degree=np.mean([x[1] for x in graph.degree]),
+        n_nodes=len(graph.nodes),
+        n_edges=len(graph.edges),
+        avg_degree_centrality=np.mean(list(nx.degree_centrality(graph).values())),
+    )
 
 
 def create_data(params: tuple):
@@ -101,9 +123,9 @@ def create_data(params: tuple):
     :param existing_data: existing data point, if supplied the signal propagation will be performed on the given graph
     """
 
-    i, path, existing_data = params
+    i, path, existing_data, metrics = params
 
-    seed = i * 10
+    seed = i * 20
     if existing_data is not None:
         graph = to_networkx(
             existing_data, to_undirected=False, remove_self_loops=True
@@ -120,7 +142,7 @@ def create_data(params: tuple):
         percentage_infected,
         beta,
         threshold_infected,
-    ) = signal_propagation(seed + 5, graph)
+    ) = signal_propagation(seed + 15, graph)
     X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)
     y = torch.tensor(list(prop_model.initial_status.values()), dtype=torch.float)
     edge_index = (
@@ -130,14 +152,21 @@ def create_data(params: tuple):
         x=X,
         y=y,
         edge_index=edge_index,
-        graph_type=graph_type,
-        neighbours=neighbours,
-        prob_reconnect=prob_reconnect,
-        beta=beta,
-        threshold_infected=threshold_infected,
-        iterations=iterations,
-        percentage_initially_infected=percentage_infected,
+        settings=dict(
+            graph_type=graph_type,
+            neighbours=neighbours,
+            prob_reconnect=prob_reconnect,
+            beta=beta,
+            threshold_infected=threshold_infected,
+            iterations=iterations,
+            percentage_initially_infected=percentage_infected,
+            currently_infected=sum(
+                [x if x == 1 else 0 for x in prop_model.status.values()]
+            ),
+        ),
     )
+    if metrics:
+        generate_metrics(graph, data)
     torch.save(data, path / f"{i}.pt")
 
 
@@ -146,6 +175,7 @@ def create_data_set(
     path: Path,
     existing_data: Optional[Dataset] = None,
     propagations_per_graph: int = 1,
+    generate_graph_metrics: bool = True,
 ):
     """
     Creates n random graphs and performs a signal propagation on each of them.
@@ -168,6 +198,7 @@ def create_data_set(
             i * propagations_per_graph + j,
             path,
             existing_data[i] if existing_data is not None else None,
+            j == 0 and generate_graph_metrics,
         )
         for j in range(propagations_per_graph)
         for i in range(n_graphs)
