@@ -144,24 +144,24 @@ stages:
     cmd: python -W ignore -m src.data_creation --dataset="synthetic"
     deps:
     - path: src/data_creation.py
-      md5: 5d27cf37bad3b32a71c8c6fc6e7b6521
-      size: 7552
+      md5: 0610ecc79be726595ff8c44262fde43a
+      size: 8766
     params:
       params.yaml:
         data_creation:
           small_input: false
-          training_size: 100
-          validation_size: 20
+          training_size: 1000
+          validation_size: 200
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.01
           - 0.05
           relative_infected:
           - 0.2
-          - 0.8
+          - 0.5
           n_nodes:
           - 100
-          - 1000
+          - 5000
           watts_strogatz_neighbours:
           - 0.001
           - 0.05
@@ -169,14 +169,14 @@ stages:
           - 0.0
           - 0.5
           beta:
+          - 0.001
           - 0.01
-          - 0.4
           root_seed: 11650217406899810833644412201113384193
     outs:
     - path: data/training/synthetic/raw
-      md5: 0b81dd885fab4a263918f6b67b97effb.dir
-      size: 17587766
-      nfiles: 100
+      md5: 4f89155d05b25b67ad56053a1cba232f.dir
+      size: 3457733874
+      nfiles: 1000
   generate-validation-data@synthetic:
     cmd: python -W ignore -m src.data_creation --validation --dataset=synthetic
     deps:
