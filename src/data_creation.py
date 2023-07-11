@@ -131,7 +131,6 @@ def create_data(params: tuple):
         graph = to_networkx(
             existing_data, to_undirected=False, remove_self_loops=True
         ).to_undirected()
-        graph = graph.subgraph(max(nx.connected_components(graph), key=len)).copy()
         graph_type = "real world"
         neighbours = -1
         prob_reconnect = -1
@@ -199,7 +198,7 @@ def create_data_set(
         (
             i * propagations_per_graph + j,
             path,
-            existing_data[i] if existing_data is not None else None,
+            existing_data if existing_data is not None else None,
             j == 0 and generate_graph_metrics,
         )
         for j in range(propagations_per_graph)
