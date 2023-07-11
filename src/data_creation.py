@@ -15,6 +15,7 @@ from torch_geometric.utils.convert import to_networkx
 import torch
 import src.utils as utils
 import multiprocessing as mp
+import torch_geometric.transforms as T
 
 
 def random_generator(seed):
@@ -129,7 +130,9 @@ def create_data(params: tuple):
     if existing_data is not None:
         graph = to_networkx(
             existing_data, to_undirected=False, remove_self_loops=True
-        ).to_undirected()
+        )
+        transform = T.Compose([T.LargestConnectedComponents, T.ToUndirected])
+        graph = transform(graph)
         graph_type = "real world"
         neighbours = -1
         prob_reconnect = -1
