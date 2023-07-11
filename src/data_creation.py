@@ -197,7 +197,7 @@ def create_data_set(
         (
             i * propagations_per_graph + j,
             path,
-            existing_data[i] if existing_data is not None else None,
+            existing_data if existing_data is not None else None,
             j == 0 and generate_graph_metrics,
         )
         for j in range(propagations_per_graph)
