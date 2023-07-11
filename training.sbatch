@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name="gnn_source_detect"
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:3
 #SBATCH --exclude=ac922-[01-02]
 #SBATCH --mem=40G
 #SBATCH --cpus-per-gpu=2
@@ -17,5 +17,5 @@
 source venv/bin/activate
 echo "START TRAINING"
 
-#dvc repro training
-dvc repro validation@synthetic
+dvc repro training
+#dvc repro validation@synthetic
