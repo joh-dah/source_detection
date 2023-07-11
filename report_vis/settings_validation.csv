@@ -1,2 +1,1 @@
-,graph_type,neighbours,prob_reconnect,beta,threshold_infected,iterations,percentage_initially_infected,currently_infected
-0,watts_strogatz,9,0.11192930567510107,0.00550286297555801,0.2594882397908855,50,0.03940348438349545,802
+""

@@ -144,13 +144,14 @@ stages:
     cmd: python -W ignore -m src.data_creation --dataset="synthetic"
     deps:
     - path: src/data_creation.py
+      hash: md5
       md5: a59215f4caeece11702fae73fde14909
       size: 8758
     params:
       params.yaml:
         data_creation:
           small_input: false
-          training_size: 20
+          training_size: 1000
           validation_size: 20
           propagations_per_real_world_graph: 100
           relative_n_sources:
@@ -174,9 +175,10 @@ stages:
           root_seed: 11650217406899810833644412201113384193
     outs:
     - path: data/training/synthetic/raw
-      md5: cbe80ead55b5cface28aed48413fe161.dir
-      size: 60970326
-      nfiles: 20
+      hash: md5
+      md5: 2471ec40a4d04708a983387f93327d13.dir
+      size: 3457791666
+      nfiles: 1000
   generate-validation-data@synthetic:
     cmd: python -W ignore -m src.data_creation --validation --dataset=synthetic
     deps:
