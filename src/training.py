@@ -9,6 +9,9 @@ import src.constants as const
 from src import utils
 from torch_geometric.loader import DataLoader
 from src.data_processing import SDDataset
+import torch
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -71,11 +74,14 @@ def train(
             agg_loss += loss.item()
 
         print(f"Epoch: {epoch}\tLoss: {agg_loss:.4f}")
+        writer.add_scalar('Loss/train', agg_loss, epoch)
         if agg_loss < min_loss:
             print("Saving new best model ...")
             min_loss = agg_loss
             utils.save_model(model, "latest")
             utils.save_model(model, model_name)
+    writer.flush()
+    writer.close()
     return model
 
 
