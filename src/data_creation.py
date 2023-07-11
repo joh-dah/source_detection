@@ -15,7 +15,6 @@ from torch_geometric.utils.convert import to_networkx
 import torch
 import src.utils as utils
 import multiprocessing as mp
-import torch_geometric.transforms as T
 
 
 def random_generator(seed):
