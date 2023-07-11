@@ -15,5 +15,5 @@
 #SBATCH --error=/hpi/fs00/home/johanna.dahlkemper/source_detection/data_creation_slurm/slurm_%j_%N_%x_%A_%a.err
 
 source venv/bin/activate
-dvc repro generate-training-data
-# dvc repro generate-validation-data
+#dvc repro generate-training-data
+dvc repro generate-validation-data
