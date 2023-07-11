@@ -130,9 +130,8 @@ def create_data(params: tuple):
     if existing_data is not None:
         graph = to_networkx(
             existing_data, to_undirected=False, remove_self_loops=True
-        )
-        transform = T.Compose([T.LargestConnectedComponents, T.ToUndirected])
-        graph = transform(graph)
+        ).to_undirected()
+        graph = graph.subgraph(max(nx.connected_components(graph), key=len)).copy()
         graph_type = "real world"
         neighbours = -1
         prob_reconnect = -1
