@@ -20,6 +20,7 @@ N_CORES = 999
 dc = params["data_creation"]
 TRAINING_SIZE = dc["training_size"]
 VALIDATION_SIZE = dc["validation_size"]
+GRAPH_TYPE = dc["graph_type"]
 SMALL_INPUT = dc["small_input"]  # "true" or "false"
 PROPAGATIONS_PER_REAL_WORLD_GRAPH = dc["propagations_per_real_world_graph"]
 RELATIVE_N_SOURCES = tuple(dc["relative_n_sources"])

@@ -34,9 +34,11 @@ def create_graph(seed: int) -> nx.Graph:
     prob_reconnect = random_generator(seed + 2).uniform(
         *const.WATTS_STROGATZ_PROBABILITY
     )
-    graph_type = random_generator(seed + 3).choice(
-        ["watts_strogatz", "barabasi_albert"]
-    )
+    if(const.GRAPH_TYPE == "random"): 
+        graph_type = random_generator(seed + 3).choice(
+            ["watts_strogatz", "barabasi_albert"]
+        )
+    else: graph_type = const.GRAPH_TYPE
     success = False
     iterations = 0
     while not success:
