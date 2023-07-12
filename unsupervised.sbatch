@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name="unsupervised"
-#SBATCH --mem=100G
-#SBATCH -n 100
+#SBATCH --mem=254G
+#SBATCH -n 16
 #SBATCH --exclude=ic922-[01-02]
 #SBATCH --cpus-per-task=1
 #SBATCH --account=renard

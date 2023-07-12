@@ -502,12 +502,12 @@ stages:
     deps:
     - path: data/validation/airports/processed
       hash: md5
-      md5: ea1f2910eaf7ee9587cc80a56b7d88eb.dir
-      size: 20117030
-      nfiles: 102
+      md5: 5cd1fc5dc9de5a5de7d73b3d9e44c6f2.dir
+      size: 60350430
+      nfiles: 302
     - path: models/latest.pth
       hash: md5
-      md5: 495a555f1be317c9811a62cd522b25fd
+      md5: 9e3dceaee747c9b76bb792b4b8834cf9
       size: 1064975
     - path: src/validation.py
       hash: md5
@@ -824,12 +824,12 @@ stages:
     deps:
     - path: data/validation/facebook/processed
       hash: md5
-      md5: 70e557d2fbf27e1f652f1903c45d17a6.dir
-      size: 290568230
-      nfiles: 102
+      md5: e96103c7874116b8d77094d6964c3f3a.dir
+      size: 871704030
+      nfiles: 302
     - path: models/latest.pth
       hash: md5
-      md5: 495a555f1be317c9811a62cd522b25fd
+      md5: 9e3dceaee747c9b76bb792b4b8834cf9
       size: 1064975
     - path: src/validation.py
       hash: md5
@@ -843,3 +843,42 @@ stages:
       params.yaml:
         model: GCNSI
         model_name:
+  generate-validation-data@wiki:
+    cmd: python -W ignore -m src.data_creation --validation --dataset=wiki
+    deps:
+    - path: src/data_creation.py
+      hash: md5
+      md5: 6cff6d99c4a07151eccfb2fa31b39dd6
+      size: 8755
+    params:
+      params.yaml:
+        data_creation:
+          small_input: false
+          training_size: 1000
+          validation_size: 200
+          propagations_per_real_world_graph: 100
+          relative_n_sources:
+          - 0.014
+          - 0.018
+          relative_infected:
+          - 0.25
+          - 0.35
+          n_nodes:
+          - 900
+          - 1100
+          watts_strogatz_neighbours:
+          - 0.015
+          - 0.017
+          watts_strogatz_probability:
+          - 0.15
+          - 0.2
+          beta:
+          - 0.006
+          - 0.007
+          root_seed: 11650217406899810833644412201113384193
+    outs:
+    - path: data/validation/wiki/raw
+      hash: md5
+      md5: ec340418a4c47785c3371212141d5132.dir
+      size: 117450926
+      nfiles: 300
