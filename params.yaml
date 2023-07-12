@@ -1,7 +1,7 @@
 data_creation:
   small_input: false
   training_size: 1000
-  validation_size: 20
+  validation_size: 200
   propagations_per_real_world_graph: 100
   relative_n_sources: [0.014, 0.018]  # share of sources on the number of nodes
   relative_infected: [0.25, 0.35]  # share of infected nodes on the number of nodes, determines when to stop the propagation

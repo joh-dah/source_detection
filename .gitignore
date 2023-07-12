@@ -10,5 +10,8 @@ src/__pycache__/
 /figures
 /roc
 /reports
-/sbatch_out
-/data_creation_slurm
+/slurm_data_creation
+/slurm_training
+/slurm_unsup
+/slurm_val
+/report_vis/*.csv

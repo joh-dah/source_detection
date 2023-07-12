@@ -6,7 +6,6 @@ import src.constants as const
 class GCNR(torch.nn.Module):
     def __init__(self):
         super(GCNR, self).__init__()
-        torch.manual_seed(42)
         self.conv_first = GCNConv(const.GCNR_N_FEATURES, const.HIDDEN_SIZE)
         self.conv = GCNConv(const.HIDDEN_SIZE, const.HIDDEN_SIZE)
         self.classifier = torch.nn.Linear(const.HIDDEN_SIZE, 1)
