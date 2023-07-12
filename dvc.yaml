@@ -80,3 +80,12 @@ stages:
       - model
       - model_name
       - visualization
+
+  unsupervised:
+    foreach: ${datasets.validation}
+    do:
+      cmd: python -W ignore -m src.unsupervised --dataset=${item}
+      deps:
+      - src/validation.py
+      - src/unsupervised.py
+      - data/validation/${item}/raw

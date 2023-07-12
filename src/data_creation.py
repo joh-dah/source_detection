@@ -102,10 +102,10 @@ def generate_metrics(graph: nx.Graph, data: Data):
     :param data: data point to save metrics to
     """
     data.metrics = dict(
-        # diameter=nx.diameter(graph),
-        # average_shortest_path_length=nx.average_shortest_path_length(
-        #     graph, method="unweighted"
-        # ),
+        diameter=nx.diameter(graph),
+        average_shortest_path_length=nx.average_shortest_path_length(
+            graph, method="unweighted"
+        ),
         average_clustering_coefficient=nx.average_clustering(graph),
         average_degree=np.mean([x[1] for x in graph.degree]),
         n_nodes=len(graph.nodes),
@@ -197,7 +197,7 @@ def create_data_set(
         (
             i * propagations_per_graph + j,
             path,
-            existing_data[i] if existing_data is not None else None,
+            existing_data if existing_data is not None else None,
             j == 0 and generate_graph_metrics,
         )
         for j in range(propagations_per_graph)
