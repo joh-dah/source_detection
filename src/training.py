@@ -24,16 +24,8 @@ class MSLELoss(torch.nn.Module):
         self.mse = torch.nn.MSELoss()
 
     def forward(self, pred, actual):
-        # write into log file (log.txt)
-        mse = self.mse(torch.log(pred + 1), torch.log(actual + 1))
-        y_hat = pred
-        y = actual
-        with open("log.txt", "a") as f:
-            f.write(
-                f"predicted: {torch.isnan(y_hat).any()} with shape: {y_hat.shape} - actual: {torch.isnan(y).any()} with shape {y.shape}\n"
-            )
-            f.write(f"MSE: {mse}\n")
-        return mse
+        pred[pred < 0] = 0
+        return self.mse(torch.log(pred + 1), torch.log(actual + 1))
 
 
 def subsampleClasses(
@@ -90,8 +82,8 @@ def train(
         if agg_loss < min_loss:
             print("Saving new best model ...")
             min_loss = agg_loss
-            utils.save_model(model, "latest")
-            utils.save_model(model, model_name)
+            utils.save_model(model.module, "latest")
+            utils.save_model(model.module, model_name)
     writer.flush()
     writer.close()
     return model

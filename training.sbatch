@@ -18,4 +18,4 @@ source venv/bin/activate
 echo "START TRAINING"
 
 dvc repro training
-#dvc repro validation@synthetic
+dvc repro validation@synthetic
