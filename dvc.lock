@@ -328,8 +328,8 @@ stages:
           - 0.25
           - 0.35
           n_nodes:
-          - 900
-          - 1100
+          - 800
+          - 1000
           watts_strogatz_neighbours:
           - 0.015
           - 0.017
@@ -344,9 +344,9 @@ stages:
     outs:
     - path: data/validation/synthetic/processed
       hash: md5
-      md5: 635b499ba7942e6c5007b72573f936cb.dir
-      size: 7440099
-      nfiles: 31
+      md5: fb0720efc369e353fee450682c87e78a.dir
+      size: 52880770
+      nfiles: 202
   validation@synthetic:
     cmd: python -W ignore -m src.validation --dataset=synthetic
     deps:
@@ -434,8 +434,8 @@ stages:
           - 0.25
           - 0.35
           n_nodes:
-          - 900
-          - 1100
+          - 800
+          - 1000
           watts_strogatz_neighbours:
           - 0.015
           - 0.017
@@ -470,13 +470,14 @@ stages:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: watts_strogatz
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
           - 0.018
           relative_infected:
+          - 0.15
           - 0.25
-          - 0.35
           n_nodes:
           - 900
           - 1100
@@ -484,8 +485,8 @@ stages:
           - 0.015
           - 0.017
           watts_strogatz_probability:
-          - 0.15
-          - 0.2
+          - 0.1
+          - 0.13
           beta:
           - 0.006
           - 0.007
@@ -740,8 +741,8 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: a59215f4caeece11702fae73fde14909
-      size: 8758
+      md5: 6cff6d99c4a07151eccfb2fa31b39dd6
+      size: 8755
     params:
       params.yaml:
         data_creation:
@@ -750,20 +751,20 @@ stages:
           validation_size: 200
           propagations_per_real_world_graph: 100
           relative_n_sources:
-          - 0.01
+          - 0.014
           - 0.018
           relative_infected:
           - 0.25
           - 0.35
           n_nodes:
           - 800
-          - 1200
+          - 1000
           watts_strogatz_neighbours:
-          - 0.01
-          - 0.03
+          - 0.015
+          - 0.017
           watts_strogatz_probability:
+          - 0.15
           - 0.2
-          - 0.35
           beta:
           - 0.006
           - 0.007
@@ -771,9 +772,9 @@ stages:
     outs:
     - path: data/validation/actor/raw
       hash: md5
-      md5: afc428bed7312b28c2684c074e1b4109.dir
-      size: 91553334
-      nfiles: 100
+      md5: 980c12f6b0c9169ff5249005ce3f3cd2.dir
+      size: 549322754
+      nfiles: 600
   process-validation-data@facebook:
     cmd: python -W ignore -m src.data_processing --validation --dataset=facebook
     deps:
@@ -816,7 +817,7 @@ stages:
     outs:
     - path: data/validation/facebook/processed
       hash: md5
-      md5: e96103c7874116b8d77094d6964c3f3a.dir
+      md5: 67ad4a1200137486b026c48c73c92052.dir
       size: 871704030
       nfiles: 302
   validation@facebook:
@@ -882,3 +883,48 @@ stages:
       md5: ec340418a4c47785c3371212141d5132.dir
       size: 117450926
       nfiles: 300
+  process-validation-data@wiki:
+    cmd: python -W ignore -m src.data_processing --validation --dataset=wiki
+    deps:
+    - path: data/validation/wiki/raw
+      hash: md5
+      md5: ec340418a4c47785c3371212141d5132.dir
+      size: 117450926
+      nfiles: 300
+    - path: src/data_processing.py
+      hash: md5
+      md5: 7f4671c98bf63f9a165c9afe1da32f6e
+      size: 5590
+    params:
+      params.yaml:
+        data_creation:
+          small_input: false
+          training_size: 1000
+          validation_size: 200
+          propagations_per_real_world_graph: 100
+          relative_n_sources:
+          - 0.014
+          - 0.018
+          relative_infected:
+          - 0.25
+          - 0.35
+          n_nodes:
+          - 900
+          - 1100
+          watts_strogatz_neighbours:
+          - 0.015
+          - 0.017
+          watts_strogatz_probability:
+          - 0.15
+          - 0.2
+          beta:
+          - 0.006
+          - 0.007
+          root_seed: 11650217406899810833644412201113384193
+        model: GCNSI
+    outs:
+    - path: data/validation/wiki/processed
+      hash: md5
+      md5: caff10cd2e8f38122eab4550f7e4184f.dir
+      size: 125860830
+      nfiles: 302
