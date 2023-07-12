@@ -29,6 +29,8 @@ datasets:
   - karate
   - airports
   - facebook
+  - wiki
+  - actor
   visualization:
   - karate
 visualization:
