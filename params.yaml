@@ -11,7 +11,7 @@ data_creation:
   beta: [0.001, 0.01]  # beta property of the SI model
   root_seed: 0x8C3C010CB4754C905776BDA35EE7501
 model: GCNSI
-model_name: 
+model_name:
 on_cluster: false
 training:
   alpha: 0.5
