@@ -11,7 +11,6 @@ class GCNSI(torch.nn.Module):
 
     def __init__(self):
         super(GCNSI, self).__init__()
-        torch.manual_seed(42)
         self.conv_first = GCNConv(const.GCNSI_N_FEATURES, const.HIDDEN_SIZE)
         self.conv = GCNConv(const.HIDDEN_SIZE, const.HIDDEN_SIZE)
         self.classifier = torch.nn.Linear(const.HIDDEN_SIZE, 1)

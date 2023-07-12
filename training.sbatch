@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name="gnn_source_detect"
+#SBATCH --job-name="training"
 #SBATCH --gres=gpu:1
 #SBATCH --mem=40G
 #SBATCH --exclude=ac922-[01-02]
@@ -11,8 +11,8 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=johanna.dahlkemper@student.hpi.de
 #SBATCH --verbose
-#SBATCH --output=/hpi/fs00/home/johanna.dahlkemper/source_detection/sbatch_out/slurm_%j_%N_%x_%A_%a.out
-#SBATCH --error=/hpi/fs00/home/johanna.dahlkemper/source_detection/sbatch_out/slurm_%j_%N_%x_%A_%a.err
+#SBATCH --output=/hpi/fs00/home/johanna.dahlkemper/source_detection/slurm_training/slurm_%j_%N_%x_%A_%a.out
+#SBATCH --error=/hpi/fs00/home/johanna.dahlkemper/source_detection/slurm_training/slurm_%j_%N_%x_%A_%a.err
 
 source venv/bin/activate
 echo "START TRAINING"
