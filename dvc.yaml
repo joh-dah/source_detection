@@ -51,6 +51,7 @@ stages:
     params:
     - training
     - model
+    - model_name
     outs:
     - models/latest.pth
 
