@@ -1,37 +1,34 @@
 data_creation:
   small_input: false
   training_size: 1000
-  validation_size: 200
+  validation_size: 20
   propagations_per_real_world_graph: 100
-  relative_n_sources: [0.01, 0.05]  # share of sources on the number of nodes
-  relative_infected: [0.20, 0.5]  # share of infected nodes on the number of nodes, determines when to stop the propagation
-  n_nodes: [100, 5000]  # number of nodes in the graph
-  watts_strogatz_neighbours: [0.001, 0.05]  # watts strogatz neighbors property, 0.5 of it is used for barabasi albert neighbors property
-  watts_strogatz_probability: [0.0, 0.5]  # watts strogatz reconnect property
-  beta: [0.001, 0.01]  # beta property of the SI model
+  relative_n_sources: [0.014, 0.018]  # share of sources on the number of nodes
+  relative_infected: [0.25, 0.35]  # share of infected nodes on the number of nodes, determines when to stop the propagation
+  n_nodes: [900, 1100]  # number of nodes in the graph
+  watts_strogatz_neighbours: [0.015, 0.017]  # watts strogatz neighbors property, 0.5 of it is used for barabasi albert neighbors property
+  watts_strogatz_probability: [0.15, 0.2]  # watts strogatz reconnect property
+  beta: [0.006, 0.007]  # beta property of the SI model
   root_seed: 0x8C3C010CB4754C905776BDA35EE7501
 model: GCNSI
 model_name:
 on_cluster: false
 training:
   alpha: 0.5
-  batch_size: 10
-  epochs: 10
+  batch_size: 100
+  epochs: 50
   hidden_size: 512
   layers: 10
-  learning_rate: 1.0e-05
+  learning_rate: 0.1
   subsample: true
   useLogLoss: false
-  weight_decay: 1.0e-08
+  weight_decay: 1.0e-05
 datasets:
   validation:
   - synthetic
-  - airports
   - karate
+  - airports
   - facebook
-  - actor
-  - github
-  - wiki
   visualization:
   - karate
 visualization:

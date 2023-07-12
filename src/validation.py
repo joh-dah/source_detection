@@ -194,7 +194,7 @@ def distance_metrics(pred_label_set: list, data_set: list) -> dict:
         min_matching_dists.append(matching_dist)
 
     return {
-        "min matching distance": np.mean(min_matching_dists),
+        "avg min matching distance": np.mean(min_matching_dists),
         "avg dist to source": np.mean(dist_to_source),
     }
 
@@ -341,7 +341,7 @@ def unsupervised_metrics(val_data: list) -> dict:
     avg_mm_distance = min_matching_distance_netsleuth(result)
 
     metrics = {
-        "avg min matching distance of predicted source": avg_mm_distance,
+        "avg min matching distance": avg_mm_distance,
         "True positive rate": result.aggregated_results["NETSLEUTH"].TPR,
         "False positive rate": result.aggregated_results["NETSLEUTH"].FPR,
         "avg F1 score": result.aggregated_results["NETSLEUTH"].F1,
@@ -439,10 +439,9 @@ def main():
 
     metrics_dict = {}
     metrics_dict["dataset"] = dataset
-    metrics_dict["supervised"] = supervised_metrics(
+    metrics_dict["metrics"] = supervised_metrics(
         pred_labels, raw_val_data, model_name, dataset_name=dataset
     )
-    # metrics_dict["unsupervised"] = unsupervised_metrics(raw_val_data)
     metrics_dict["data stats"] = data_stats(raw_val_data)
     metrics_dict["parameters"] = yaml.full_load(open("params.yaml", "r"))
     utils.save_metrics(metrics_dict, model_name, dataset)
