@@ -147,22 +147,22 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: d5050d419a636eb0be64c719c9cdd86a
-      size: 8846
+      md5: 4300150af4211ca3ce014fc3e699928b
+      size: 8849
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
-          graph_type: watts_strogatz
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
           - 0.018
           relative_infected:
-          - 0.15
           - 0.25
+          - 0.35
           n_nodes:
           - 900
           - 1100
@@ -170,8 +170,8 @@ stages:
           - 0.015
           - 0.017
           watts_strogatz_probability:
-          - 0.1
-          - 0.13
+          - 0.15
+          - 0.2
           beta:
           - 0.006
           - 0.007
@@ -179,30 +179,30 @@ stages:
     outs:
     - path: data/training/synthetic/raw
       hash: md5
-      md5: 59913eca4f713bbdeba121a54b81fa9e.dir
-      size: 250786034
+      md5: b7b26aba379c56d477a17071273d21a3.dir
+      size: 249999282
       nfiles: 1000
   generate-validation-data@synthetic:
     cmd: python -W ignore -m src.data_creation --validation --dataset=synthetic
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: ee2b94e942c12aa99eb72b2962149057
-      size: 8799
+      md5: 4300150af4211ca3ce014fc3e699928b
+      size: 8849
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
-          graph_type: watts_strogatz
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
           - 0.018
           relative_infected:
-          - 0.15
           - 0.25
+          - 0.35
           n_nodes:
           - 900
           - 1100
@@ -210,8 +210,8 @@ stages:
           - 0.015
           - 0.017
           watts_strogatz_probability:
-          - 0.1
-          - 0.13
+          - 0.15
+          - 0.2
           beta:
           - 0.006
           - 0.007
@@ -219,22 +219,23 @@ stages:
     outs:
     - path: data/validation/synthetic/raw
       hash: md5
-      md5: aa248cf6d4b7d5a1b38ffdbf6b825927.dir
-      size: 50783762
+      md5: 823a1dcc2f0a05b8f12c8e359cabe8ca.dir
+      size: 50621906
       nfiles: 200
   generate-validation-data@airports:
     cmd: python -W ignore -m src.data_creation --validation --dataset=airports
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: ee2b94e942c12aa99eb72b2962149057
-      size: 8799
+      md5: 4300150af4211ca3ce014fc3e699928b
+      size: 8849
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
@@ -379,14 +380,15 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: ee2b94e942c12aa99eb72b2962149057
-      size: 8799
+      md5: 4300150af4211ca3ce014fc3e699928b
+      size: 8849
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
@@ -706,14 +708,15 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: ee2b94e942c12aa99eb72b2962149057
-      size: 8799
+      md5: 4300150af4211ca3ce014fc3e699928b
+      size: 8849
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
@@ -745,14 +748,15 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: ee2b94e942c12aa99eb72b2962149057
-      size: 8799
+      md5: 4300150af4211ca3ce014fc3e699928b
+      size: 8849
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
@@ -853,14 +857,15 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: ee2b94e942c12aa99eb72b2962149057
-      size: 8799
+      md5: 4300150af4211ca3ce014fc3e699928b
+      size: 8849
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
