@@ -10,7 +10,7 @@ data_creation:
   watts_strogatz_probability: [0.15, 0.2]  # watts strogatz reconnect property
   beta: [0.006, 0.007]  # beta property of the SI model
   root_seed: 0x8C3C010CB4754C905776BDA35EE7501
-model: GCNSI
+model: GCNR
 model_name:
 on_cluster: false
 training:
@@ -21,7 +21,7 @@ training:
   layers: 10
   learning_rate: 0.1
   subsample: true
-  useLogLoss: false
+  useLogLoss: true
   weight_decay: 1.0e-05
 datasets:
   validation:
@@ -29,6 +29,8 @@ datasets:
   - karate
   - airports
   - facebook
+  - wiki
+  - actor
   visualization:
   - karate
 visualization:
