@@ -317,3 +317,87 @@ stages:
       params.yaml:
         model: GCNR
         model_name:
+  generate-validation-data@wiki:
+    cmd: python -W ignore -m src.data_creation --validation --dataset=wiki
+    deps:
+    - path: src/data_creation.py
+      hash: md5
+      md5: 6cff6d99c4a07151eccfb2fa31b39dd6
+      size: 8755
+    params:
+      params.yaml:
+        data_creation:
+          small_input: false
+          training_size: 1000
+          validation_size: 200
+          propagations_per_real_world_graph: 100
+          relative_n_sources:
+          - 0.014
+          - 0.018
+          relative_infected:
+          - 0.25
+          - 0.35
+          n_nodes:
+          - 900
+          - 1100
+          watts_strogatz_neighbours:
+          - 0.015
+          - 0.017
+          watts_strogatz_probability:
+          - 0.15
+          - 0.2
+          beta:
+          - 0.006
+          - 0.007
+          root_seed: 11650217406899810833644412201113384193
+    outs:
+    - path: data/validation/wiki/raw
+      hash: md5
+      md5: ec340418a4c47785c3371212141d5132.dir
+      size: 117450926
+      nfiles: 300
+  process-validation-data@wiki:
+    cmd: python -W ignore -m src.data_processing --validation --dataset=wiki
+    deps:
+    - path: data/validation/wiki/raw
+      hash: md5
+      md5: ec340418a4c47785c3371212141d5132.dir
+      size: 117450926
+      nfiles: 300
+    - path: src/data_processing.py
+      hash: md5
+      md5: 7f4671c98bf63f9a165c9afe1da32f6e
+      size: 5590
+    params:
+      params.yaml:
+        data_creation:
+          small_input: false
+          training_size: 1000
+          validation_size: 200
+          propagations_per_real_world_graph: 100
+          relative_n_sources:
+          - 0.014
+          - 0.018
+          relative_infected:
+          - 0.25
+          - 0.35
+          n_nodes:
+          - 900
+          - 1100
+          watts_strogatz_neighbours:
+          - 0.015
+          - 0.017
+          watts_strogatz_probability:
+          - 0.15
+          - 0.2
+          beta:
+          - 0.006
+          - 0.007
+          root_seed: 11650217406899810833644412201113384193
+        model: GCNSI
+    outs:
+    - path: data/validation/wiki/processed
+      hash: md5
+      md5: caff10cd2e8f38122eab4550f7e4184f.dir
+      size: 125860830
+      nfiles: 302
