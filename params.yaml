@@ -12,7 +12,7 @@ data_creation:
   beta: [0.006, 0.007]  # beta property of the SI model
   root_seed: 0x8C3C010CB4754C905776BDA35EE7501
 model: GCNR
-model_name: GCNRUSLL_3
+model_name:
 on_cluster: false
 training:
   alpha: 0.5
@@ -27,6 +27,11 @@ training:
 datasets:
   validation:
   - synthetic
+  - karate
+  - airports
+  - facebook
+  - wiki
+  - actor
   visualization:
   - karate
 visualization:

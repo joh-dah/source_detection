@@ -139,22 +139,24 @@ def get_dataset_from_name(name: str):
     data_dir = Path(const.DATA_PATH) / "downloaded_raw_data"
     transform = T.LargestConnectedComponents()
     dataset_dict = {
-        "karate": transform(datasets.KarateClub()[0]),  # nodes: 34,  edges: 156,  avg(degree): 9.18, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.KarateClub.html#torch_geometric.datasets.KarateClub
-        "airports": transform(datasets.Airports(
-            root=data_dir, name="Europe"
-        )[0]),  # nodes: 1190,  edges: 13599,  avg(degree): 22.86, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.Airports.html#torch_geometric.datasets.Airports
-        "wiki": transform(datasets.AttributedGraphDataset(
-            root=data_dir, name="Wiki"
-        )[0]),  # nodes: 2405,  edges: 17981,  avg(degree): 13.74, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.AttributedGraphDataset.html#torch_geometric.datasets.AttributedGraphDataset
-        "facebook": transform(datasets.AttributedGraphDataset(
-            root=data_dir, name="Facebook"
-        )[0]),  # nodes: 4039,  edges: 88234,  avg(degree): 43.69, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.AttributedGraphDataset.html#torch_geometric.datasets.AttributedGraphDataset
-        "actor": transform(datasets.Actor(
-            root=data_dir / "actor"
-        )[0]),  # nodes: 7600,  edges: 30019,  avg(degree): 07.90, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.Actor.html#torch_geometric.datasets.Actor
-        "github": transform(datasets.GitHub(
-            root=data_dir / "github"
-        )[0]),  # nodes: 37700, edges: 578006, avg(degree): 30.66, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.GitHub.html#torch_geometric.datasets.GitHub
+        "karate": datasets.KarateClub(
+            transform=transform
+        ),  # nodes: 34,  edges: 156,  avg(degree): 9.18, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.KarateClub.html#torch_geometric.datasets.KarateClub
+        "airports": datasets.Airports(
+            root=data_dir, name="Europe", transform=transform
+        ),  # nodes: 1190,  edges: 13599,  avg(degree): 22.86, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.Airports.html#torch_geometric.datasets.Airports
+        "wiki": datasets.AttributedGraphDataset(
+            root=data_dir, name="Wiki", transform=transform
+        ),  # nodes: 2405,  edges: 17981,  avg(degree): 13.74, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.AttributedGraphDataset.html#torch_geometric.datasets.AttributedGraphDataset
+        "facebook": datasets.AttributedGraphDataset(
+            root=data_dir, name="Facebook", transform=transform
+        ),  # nodes: 4039,  edges: 88234,  avg(degree): 43.69, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.AttributedGraphDataset.html#torch_geometric.datasets.AttributedGraphDataset
+        "actor": datasets.Actor(
+            root=data_dir / "actor", transform=transform
+        ),  # nodes: 7600,  edges: 30019,  avg(degree): 07.90, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.Actor.html#torch_geometric.datasets.Actor
+        "github": datasets.GitHub(
+            root=data_dir / "github", transform=transform
+        ),  # nodes: 37700, edges: 578006, avg(degree): 30.66, https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.GitHub.html#torch_geometric.datasets.GitHub
     }
 
     if name.lower() not in dataset_dict:

@@ -404,12 +404,10 @@ def predictions(model: torch.nn.Module, data_set: dp.SDDataset) -> list:
     for data in tqdm(
         data_set, desc="make predictions with model", disable=const.ON_CLUSTER
     ):
-        features = data.x
-        edge_index = data.edge_index
         if const.MODEL == "GCNSI":
-            predictions.append(torch.sigmoid(model(features, edge_index)))
+            predictions.append(torch.sigmoid(model(data)))
         elif const.MODEL == "GCNR":
-            predictions.append(model(features, edge_index))
+            predictions.append(model(data))
     return predictions
 
 
