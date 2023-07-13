@@ -186,8 +186,8 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: 6cff6d99c4a07151eccfb2fa31b39dd6
-      size: 8755
+      md5: ee2b94e942c12aa99eb72b2962149057
+      size: 8799
     params:
       params.yaml:
         data_creation:
@@ -225,8 +225,8 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: 6cff6d99c4a07151eccfb2fa31b39dd6
-      size: 8755
+      md5: ee2b94e942c12aa99eb72b2962149057
+      size: 8799
     params:
       params.yaml:
         data_creation:
@@ -256,9 +256,9 @@ stages:
     outs:
     - path: data/validation/airports/raw
       hash: md5
-      md5: 7cb2fc40ea65355cc267aebb99671b37.dir
-      size: 58981166
-      nfiles: 300
+      md5: 17ec1d15dd7e1ba3ab5fbfdb6dc21889.dir
+      size: 19655798
+      nfiles: 100
   process-training-data:
     cmd: python -W ignore -m src.data_processing
     deps:
@@ -375,8 +375,8 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: 6cff6d99c4a07151eccfb2fa31b39dd6
-      size: 8755
+      md5: ee2b94e942c12aa99eb72b2962149057
+      size: 8799
     params:
       params.yaml:
         data_creation:
@@ -406,9 +406,9 @@ stages:
     outs:
     - path: data/validation/karate/raw
       hash: md5
-      md5: db8f53066ace262c6a1513b64add9a45.dir
-      size: 1773642
-      nfiles: 400
+      md5: fa731ae123b2e374fac5af4955ac0409.dir
+      size: 442998
+      nfiles: 100
   process-validation-data@karate:
     cmd: python -W ignore -m src.data_processing --validation --dataset=karate
     deps:
@@ -702,8 +702,8 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: 6cff6d99c4a07151eccfb2fa31b39dd6
-      size: 8755
+      md5: ee2b94e942c12aa99eb72b2962149057
+      size: 8799
     params:
       params.yaml:
         data_creation:
@@ -733,16 +733,16 @@ stages:
     outs:
     - path: data/validation/facebook/raw
       hash: md5
-      md5: a51a6dd101a8eb44f44ae17984247511.dir
-      size: 857246702
-      nfiles: 300
+      md5: dfa1ee992fe37988ad96a6c8bd124684.dir
+      size: 285748534
+      nfiles: 100
   generate-validation-data@actor:
     cmd: python -W ignore -m src.data_creation --validation --dataset=actor
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: 6cff6d99c4a07151eccfb2fa31b39dd6
-      size: 8755
+      md5: ee2b94e942c12aa99eb72b2962149057
+      size: 8799
     params:
       params.yaml:
         data_creation:
@@ -757,8 +757,8 @@ stages:
           - 0.25
           - 0.35
           n_nodes:
-          - 800
-          - 1000
+          - 900
+          - 1100
           watts_strogatz_neighbours:
           - 0.015
           - 0.017
@@ -772,9 +772,9 @@ stages:
     outs:
     - path: data/validation/actor/raw
       hash: md5
-      md5: 980c12f6b0c9169ff5249005ce3f3cd2.dir
-      size: 549322754
-      nfiles: 600
+      md5: 7c1185ede410cbca12d9dfac32a2d88a.dir
+      size: 91553334
+      nfiles: 100
   process-validation-data@facebook:
     cmd: python -W ignore -m src.data_processing --validation --dataset=facebook
     deps:
@@ -849,8 +849,8 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: 6cff6d99c4a07151eccfb2fa31b39dd6
-      size: 8755
+      md5: ee2b94e942c12aa99eb72b2962149057
+      size: 8799
     params:
       params.yaml:
         data_creation:
@@ -880,9 +880,9 @@ stages:
     outs:
     - path: data/validation/wiki/raw
       hash: md5
-      md5: ec340418a4c47785c3371212141d5132.dir
-      size: 117450926
-      nfiles: 300
+      md5: bdb0421331e6f77a5c98b1d7cf0ddb55.dir
+      size: 39149558
+      nfiles: 100
   process-validation-data@wiki:
     cmd: python -W ignore -m src.data_processing --validation --dataset=wiki
     deps:
