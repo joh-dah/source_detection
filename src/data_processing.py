@@ -45,6 +45,8 @@ class SDDataset(Dataset):
                 (self.pre_transform, self.raw_paths[i], i, self.processed_dir)
                 for i in range(self.size)
             ]
+            # for param in tqdm(params):
+            #     process_single(param)
             with mp.Pool(const.N_CORES) as pool:
                 print(f"Processing data set using multiprocessing ({pool})")
                 list(
