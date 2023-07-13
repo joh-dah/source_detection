@@ -1,0 +1,90 @@
+{
+    "dataset": "facebook",
+    "metrics": {
+        "avg rank of source": 1772.244,
+        "avg prediction for source": 0.574,
+        "avg prediction over all nodes": 0.516,
+        "min prediction over all nodes": 0.0,
+        "max prediction over all nodes": 0.998,
+        "avg min matching distance": 52.97,
+        "avg dist to source": 3.692,
+        "True positive rate": 0.695,
+        "False positive rate": 0.587,
+        "avg F1 score": 0.037,
+        "roc score": 0.565
+    },
+    "data stats": {
+        "graph stats": {
+            "avg number of nodes": 4039.0,
+            "avg centrality": 0.011
+        },
+        "infection stats": {
+            "avg number of sources": 64.137,
+            "avg portion of infected nodes": 0.351,
+            "std portion of infected nodes": 0.03
+        }
+    },
+    "parameters": {
+        "data_creation": {
+            "small_input": false,
+            "training_size": 1000,
+            "validation_size": 200,
+            "propagations_per_real_world_graph": 100,
+            "relative_n_sources": [
+                0.014,
+                0.018
+            ],
+            "relative_infected": [
+                0.25,
+                0.35
+            ],
+            "n_nodes": [
+                900,
+                1100
+            ],
+            "watts_strogatz_neighbours": [
+                0.015,
+                0.017
+            ],
+            "watts_strogatz_probability": [
+                0.15,
+                0.2
+            ],
+            "beta": [
+                0.006,
+                0.007
+            ],
+            "root_seed": 11650217406899810833644412201113384193
+        },
+        "model": "GCNSI",
+        "model_name": null,
+        "on_cluster": false,
+        "training": {
+            "alpha": 0.5,
+            "batch_size": 100,
+            "epochs": 50,
+            "hidden_size": 512,
+            "layers": 10,
+            "learning_rate": 0.1,
+            "subsample": true,
+            "useLogLoss": false,
+            "weight_decay": 1e-05
+        },
+        "datasets": {
+            "validation": [
+                "synthetic",
+                "karate",
+                "airports",
+                "facebook",
+                "wiki",
+                "actor"
+            ],
+            "visualization": [
+                "karate"
+            ]
+        },
+        "visualization": {
+            "seed": 123
+        }
+    }
+}

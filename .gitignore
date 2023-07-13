@@ -10,6 +10,7 @@ src/__pycache__/
 /figures
 /roc
 /reports
+/runs
 /slurm_data_creation
 /slurm_training
 /slurm_unsup

@@ -34,9 +34,11 @@ def create_graph(seed: int) -> nx.Graph:
     prob_reconnect = random_generator(seed + 2).uniform(
         *const.WATTS_STROGATZ_PROBABILITY
     )
-    graph_type = random_generator(seed + 3).choice(
-        ["watts_strogatz", "barabasi_albert"]
-    )
+    if(const.GRAPH_TYPE == "random"): 
+        graph_type = random_generator(seed + 3).choice(
+            ["watts_strogatz", "barabasi_albert"]
+        )
+    else: graph_type = const.GRAPH_TYPE
     success = False
     iterations = 0
     while not success:
@@ -197,7 +199,7 @@ def create_data_set(
         (
             i * propagations_per_graph + j,
             path,
-            existing_data if existing_data is not None else None,
+            existing_data[i] if existing_data is not None else None,
             j == 0 and generate_graph_metrics,
         )
         for j in range(propagations_per_graph)

@@ -186,6 +186,7 @@ def distance_metrics(pred_label_set: list, data_set: list) -> dict:
         if len(pred_sources) == 0:
             min_matching_dists.append(
                 get_max_dist_from_sources(true_sources, data_set[i].edge_index)
+                * len(true_sources)
             )
             continue
         matching_dist = min_matching_distance(
@@ -403,12 +404,10 @@ def predictions(model: torch.nn.Module, data_set: dp.SDDataset) -> list:
     for data in tqdm(
         data_set, desc="make predictions with model", disable=const.ON_CLUSTER
     ):
-        features = data.x
-        edge_index = data.edge_index
         if const.MODEL == "GCNSI":
-            predictions.append(torch.sigmoid(model(features, edge_index)))
+            predictions.append(torch.sigmoid(model(data)))
         elif const.MODEL == "GCNR":
-            predictions.append(model(features, edge_index))
+            predictions.append(model(data))
     return predictions
 
 
