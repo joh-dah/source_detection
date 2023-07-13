@@ -63,30 +63,30 @@ stages:
     deps:
     - path: data/training/synthetic/processed
       hash: md5
-      md5: b03f924dc041264578af8de6b7aa909e.dir
-      size: 261210082
+      md5: 3d23968b029a1308531e4ceb568d8ea9.dir
+      size: 262077154
       nfiles: 1002
     - path: src/training.py
       md5: 6e755aa1446059f1682a63de380623e9
       size: 3488
     params:
       params.yaml:
-        model: GCNSI
-        model_name:
+        model: GCNR
+        model_name: GCNRUSLL_3
         training:
           alpha: 0.5
           batch_size: 100
-          epochs: 50
+          epochs: 100
           hidden_size: 512
           layers: 10
-          learning_rate: 0.1
+          learning_rate: 0.25
           subsample: true
-          useLogLoss: false
+          useLogLoss: true
           weight_decay: 1e-05
     outs:
     - path: models/latest.pth
       hash: md5
-      md5: 9e3dceaee747c9b76bb792b4b8834cf9
+      md5: 076277b3225fa3c6b95f6df2c7848266
       size: 1064975
   visualisation:
     cmd: python -W ignore -m src.visualization
@@ -147,21 +147,22 @@ stages:
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: 6cff6d99c4a07151eccfb2fa31b39dd6
-      size: 8755
+      md5: d5050d419a636eb0be64c719c9cdd86a
+      size: 8846
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: watts_strogatz
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
           - 0.018
           relative_infected:
+          - 0.15
           - 0.25
-          - 0.35
           n_nodes:
           - 900
           - 1100
@@ -169,8 +170,8 @@ stages:
           - 0.015
           - 0.017
           watts_strogatz_probability:
-          - 0.15
-          - 0.2
+          - 0.1
+          - 0.13
           beta:
           - 0.006
           - 0.007
@@ -178,29 +179,30 @@ stages:
     outs:
     - path: data/training/synthetic/raw
       hash: md5
-      md5: b7b26aba379c56d477a17071273d21a3.dir
-      size: 249999282
+      md5: 59913eca4f713bbdeba121a54b81fa9e.dir
+      size: 250786034
       nfiles: 1000
   generate-validation-data@synthetic:
     cmd: python -W ignore -m src.data_creation --validation --dataset=synthetic
     deps:
     - path: src/data_creation.py
       hash: md5
-      md5: 6cff6d99c4a07151eccfb2fa31b39dd6
-      size: 8755
+      md5: d5050d419a636eb0be64c719c9cdd86a
+      size: 8846
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: watts_strogatz
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
           - 0.018
           relative_infected:
+          - 0.15
           - 0.25
-          - 0.35
           n_nodes:
           - 900
           - 1100
@@ -208,8 +210,8 @@ stages:
           - 0.015
           - 0.017
           watts_strogatz_probability:
-          - 0.15
-          - 0.2
+          - 0.1
+          - 0.13
           beta:
           - 0.006
           - 0.007
@@ -217,8 +219,8 @@ stages:
     outs:
     - path: data/validation/synthetic/raw
       hash: md5
-      md5: 823a1dcc2f0a05b8f12c8e359cabe8ca.dir
-      size: 50621906
+      md5: aa248cf6d4b7d5a1b38ffdbf6b825927.dir
+      size: 50783762
       nfiles: 200
   generate-validation-data@airports:
     cmd: python -W ignore -m src.data_creation --validation --dataset=airports
@@ -264,8 +266,8 @@ stages:
     deps:
     - path: data/training/synthetic/raw
       hash: md5
-      md5: b7b26aba379c56d477a17071273d21a3.dir
-      size: 249999282
+      md5: 59913eca4f713bbdeba121a54b81fa9e.dir
+      size: 250786034
       nfiles: 1000
     - path: src/data_processing.py
       md5: 7f4671c98bf63f9a165c9afe1da32f6e
@@ -276,13 +278,14 @@ stages:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: watts_strogatz
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
           - 0.018
           relative_infected:
+          - 0.15
           - 0.25
-          - 0.35
           n_nodes:
           - 900
           - 1100
@@ -290,26 +293,26 @@ stages:
           - 0.015
           - 0.017
           watts_strogatz_probability:
-          - 0.15
-          - 0.2
+          - 0.1
+          - 0.13
           beta:
           - 0.006
           - 0.007
           root_seed: 11650217406899810833644412201113384193
-        model: GCNSI
+        model: GCNR
     outs:
     - path: data/training/synthetic/processed
       hash: md5
-      md5: b03f924dc041264578af8de6b7aa909e.dir
-      size: 261210082
+      md5: 3d23968b029a1308531e4ceb568d8ea9.dir
+      size: 262077154
       nfiles: 1002
   process-validation-data@synthetic:
     cmd: python -W ignore -m src.data_processing --validation --dataset=synthetic
     deps:
     - path: data/validation/synthetic/raw
       hash: md5
-      md5: 823a1dcc2f0a05b8f12c8e359cabe8ca.dir
-      size: 50621906
+      md5: aa248cf6d4b7d5a1b38ffdbf6b825927.dir
+      size: 50783762
       nfiles: 200
     - path: src/data_processing.py
       md5: 7f4671c98bf63f9a165c9afe1da32f6e
@@ -320,13 +323,14 @@ stages:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: watts_strogatz
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
           - 0.018
           relative_infected:
+          - 0.15
           - 0.25
-          - 0.35
           n_nodes:
           - 900
           - 1100
@@ -334,42 +338,42 @@ stages:
           - 0.015
           - 0.017
           watts_strogatz_probability:
-          - 0.15
-          - 0.2
+          - 0.1
+          - 0.13
           beta:
           - 0.006
           - 0.007
           root_seed: 11650217406899810833644412201113384193
-        model: GCNSI
+        model: GCNR
     outs:
     - path: data/validation/synthetic/processed
       hash: md5
-      md5: 635b499ba7942e6c5007b72573f936cb.dir
-      size: 7440099
-      nfiles: 31
+      md5: 8cd108faa2b70823a7ad11361ddcbbe6.dir
+      size: 53057794
+      nfiles: 202
   validation@synthetic:
     cmd: python -W ignore -m src.validation --dataset=synthetic
     deps:
     - path: data/validation/synthetic/processed
       hash: md5
-      md5: fb0720efc369e353fee450682c87e78a.dir
-      size: 52880770
+      md5: 8cd108faa2b70823a7ad11361ddcbbe6.dir
+      size: 53057794
       nfiles: 202
     - path: models/latest.pth
       hash: md5
-      md5: 9e3dceaee747c9b76bb792b4b8834cf9
+      md5: 076277b3225fa3c6b95f6df2c7848266
       size: 1064975
     - path: src/validation.py
       hash: md5
-      md5: ca01f670319c018bd7a040dd81418e57
-      size: 17420
+      md5: 03eb2a6f68ae24e2c1a3853fa892320e
+      size: 17456
     - path: src/visualization.py
       md5: e586f2a081d59e05dbd8e3754694958e
       size: 6084
     params:
       params.yaml:
-        model: GCNSI
-        model_name:
+        model: GCNR
+        model_name: GCNRUSLL_3
   generate-validation-data@karate:
     cmd: python -W ignore -m src.data_creation --validation --dataset=karate
     deps:

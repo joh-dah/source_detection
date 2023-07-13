@@ -186,6 +186,7 @@ def distance_metrics(pred_label_set: list, data_set: list) -> dict:
         if len(pred_sources) == 0:
             min_matching_dists.append(
                 get_max_dist_from_sources(true_sources, data_set[i].edge_index)
+                * len(true_sources)
             )
             continue
         matching_dist = min_matching_distance(

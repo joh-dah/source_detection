@@ -1,0 +1,86 @@
+{
+    "dataset": "synthetic",
+    "metrics": {
+        "avg rank of source": 167.689,
+        "avg prediction for source": 0.717,
+        "avg prediction over all nodes": 0.327,
+        "min prediction over all nodes": 0.0,
+        "max prediction over all nodes": 0.909,
+        "avg min matching distance": 36.582,
+        "avg dist to source": 3.545,
+        "True positive rate": 0.894,
+        "False positive rate": 0.351,
+        "avg F1 score": 0.076,
+        "roc score": 0.854
+    },
+    "data stats": {
+        "graph stats": {
+            "avg number of nodes": 1005.99,
+            "avg centrality": 0.015
+        },
+        "infection stats": {
+            "avg number of sources": 15.555,
+            "avg portion of infected nodes": 0.218,
+            "std portion of infected nodes": 0.033
+        }
+    },
+    "parameters": {
+        "data_creation": {
+            "small_input": false,
+            "training_size": 1000,
+            "validation_size": 200,
+            "graph_type": "watts_strogatz",
+            "propagations_per_real_world_graph": 100,
+            "relative_n_sources": [
+                0.014,
+                0.018
+            ],
+            "relative_infected": [
+                0.15,
+                0.25
+            ],
+            "n_nodes": [
+                900,
+                1100
+            ],
+            "watts_strogatz_neighbours": [
+                0.015,
+                0.017
+            ],
+            "watts_strogatz_probability": [
+                0.1,
+                0.13
+            ],
+            "beta": [
+                0.006,
+                0.007
+            ],
+            "root_seed": 11650217406899810833644412201113384193
+        },
+        "model": "GCNSI",
+        "model_name": "GCNSIUS_2",
+        "on_cluster": false,
+        "training": {
+            "alpha": 0.5,
+            "batch_size": 100,
+            "epochs": 100,
+            "hidden_size": 512,
+            "layers": 10,
+            "learning_rate": 0.25,
+            "subsample": true,
+            "useLogLoss": false,
+            "weight_decay": 1e-05
+        },
+        "datasets": {
+            "validation": [
+                "synthetic"
+            ],
+            "visualization": [
+                "karate"
+            ]
+        },
+        "visualization": {
+            "seed": 123
+        }
+    }
+}
