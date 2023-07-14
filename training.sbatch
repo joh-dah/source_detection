@@ -2,7 +2,7 @@
 #SBATCH --job-name="gnn_source_detect"
 #SBATCH --gres=gpu:3
 #SBATCH --exclude=ac922-[01-02]
-#SBATCH --mem=40G
+#SBATCH --mem=50G
 #SBATCH --cpus-per-gpu=2
 #SBATCH --account=renard
 #SBATCH --partition=sorcery

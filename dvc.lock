@@ -63,30 +63,31 @@ stages:
     deps:
     - path: data/training/synthetic/processed
       hash: md5
-      md5: 3d23968b029a1308531e4ceb568d8ea9.dir
-      size: 262077154
+      md5: 3cff6ac1d5b0a0dac8f7605503ba7c94.dir
+      size: 262011490
       nfiles: 1002
     - path: src/training.py
-      md5: 6e755aa1446059f1682a63de380623e9
-      size: 3488
+      hash: md5
+      md5: d2ac2f7349ff7af7672e07ac1733c662
+      size: 3875
     params:
       params.yaml:
         model: GCNR
-        model_name: GCNRUSLL_3
+        model_name: GCNR_medium_3
         training:
           alpha: 0.5
           batch_size: 100
-          epochs: 100
+          epochs: 200
           hidden_size: 512
           layers: 10
-          learning_rate: 0.25
+          learning_rate: 0.2
           subsample: true
-          useLogLoss: true
+          useLogLoss: false
           weight_decay: 1e-05
     outs:
     - path: models/latest.pth
       hash: md5
-      md5: 076277b3225fa3c6b95f6df2c7848266
+      md5: 798b677741abc8d11697d30565dd40f6
       size: 1064975
   visualisation:
     cmd: python -W ignore -m src.visualization
@@ -267,26 +268,27 @@ stages:
     deps:
     - path: data/training/synthetic/raw
       hash: md5
-      md5: 59913eca4f713bbdeba121a54b81fa9e.dir
-      size: 250786034
+      md5: b7b26aba379c56d477a17071273d21a3.dir
+      size: 249999282
       nfiles: 1000
     - path: src/data_processing.py
-      md5: 7f4671c98bf63f9a165c9afe1da32f6e
-      size: 5590
+      hash: md5
+      md5: 8b1448f8fedc1342bd22fef1adc2a8b1
+      size: 6079
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
-          graph_type: watts_strogatz
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
           - 0.018
           relative_infected:
-          - 0.15
           - 0.25
+          - 0.35
           n_nodes:
           - 900
           - 1100
@@ -294,8 +296,8 @@ stages:
           - 0.015
           - 0.017
           watts_strogatz_probability:
-          - 0.1
-          - 0.13
+          - 0.15
+          - 0.2
           beta:
           - 0.006
           - 0.007
@@ -304,43 +306,44 @@ stages:
     outs:
     - path: data/training/synthetic/processed
       hash: md5
-      md5: 3d23968b029a1308531e4ceb568d8ea9.dir
-      size: 262077154
+      md5: 3cff6ac1d5b0a0dac8f7605503ba7c94.dir
+      size: 262011490
       nfiles: 1002
   process-validation-data@synthetic:
     cmd: python -W ignore -m src.data_processing --validation --dataset=synthetic
     deps:
     - path: data/validation/synthetic/raw
       hash: md5
-      md5: aa248cf6d4b7d5a1b38ffdbf6b825927.dir
-      size: 50783762
+      md5: 823a1dcc2f0a05b8f12c8e359cabe8ca.dir
+      size: 50621906
       nfiles: 200
     - path: src/data_processing.py
-      md5: 7f4671c98bf63f9a165c9afe1da32f6e
-      size: 5590
+      hash: md5
+      md5: 8b1448f8fedc1342bd22fef1adc2a8b1
+      size: 6079
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
-          graph_type: watts_strogatz
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
           - 0.018
           relative_infected:
-          - 0.15
           - 0.25
+          - 0.35
           n_nodes:
-          - 800
-          - 1000
+          - 900
+          - 1100
           watts_strogatz_neighbours:
           - 0.015
           - 0.017
           watts_strogatz_probability:
-          - 0.1
-          - 0.13
+          - 0.15
+          - 0.2
           beta:
           - 0.006
           - 0.007
@@ -349,32 +352,32 @@ stages:
     outs:
     - path: data/validation/synthetic/processed
       hash: md5
-      md5: 8cd108faa2b70823a7ad11361ddcbbe6.dir
-      size: 53057794
+      md5: 81be78af41be7bb0451455c0d48685ad.dir
+      size: 53040962
       nfiles: 202
   validation@synthetic:
     cmd: python -W ignore -m src.validation --dataset=synthetic
     deps:
     - path: data/validation/synthetic/processed
       hash: md5
-      md5: 8cd108faa2b70823a7ad11361ddcbbe6.dir
-      size: 53057794
+      md5: 81be78af41be7bb0451455c0d48685ad.dir
+      size: 53040962
       nfiles: 202
     - path: models/latest.pth
       hash: md5
-      md5: 076277b3225fa3c6b95f6df2c7848266
+      md5: 798b677741abc8d11697d30565dd40f6
       size: 1064975
     - path: src/validation.py
       hash: md5
-      md5: 03eb2a6f68ae24e2c1a3853fa892320e
-      size: 17456
+      md5: 09f4ad86d2c7b7e322931c0dee982cbb
+      size: 17468
     - path: src/visualization.py
       md5: e586f2a081d59e05dbd8e3754694958e
       size: 6084
     params:
       params.yaml:
         model: GCNR
-        model_name: GCNRUSLL_3
+        model_name: GCNR_medium_3
   generate-validation-data@karate:
     cmd: python -W ignore -m src.data_creation --validation --dataset=karate
     deps:
@@ -420,18 +423,20 @@ stages:
     deps:
     - path: data/validation/karate/raw
       hash: md5
-      md5: db8f53066ace262c6a1513b64add9a45.dir
-      size: 1773642
-      nfiles: 400
+      md5: fa731ae123b2e374fac5af4955ac0409.dir
+      size: 442998
+      nfiles: 100
     - path: src/data_processing.py
-      md5: 7f4671c98bf63f9a165c9afe1da32f6e
-      size: 5590
+      hash: md5
+      md5: 8b1448f8fedc1342bd22fef1adc2a8b1
+      size: 6079
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
@@ -440,8 +445,8 @@ stages:
           - 0.25
           - 0.35
           n_nodes:
-          - 800
-          - 1000
+          - 900
+          - 1100
           watts_strogatz_neighbours:
           - 0.015
           - 0.017
@@ -452,38 +457,39 @@ stages:
           - 0.006
           - 0.007
           root_seed: 11650217406899810833644412201113384193
-        model: GCNSI
+        model: GCNR
     outs:
     - path: data/validation/karate/processed
       hash: md5
-      md5: ca04c9801ffa5e6a87ea09356034289f.dir
-      size: 1849530
-      nfiles: 402
+      md5: 6a483a38012d3391c77265446a96af63.dir
+      size: 488614
+      nfiles: 102
   process-validation-data@airports:
     cmd: python -W ignore -m src.data_processing --validation --dataset=airports
     deps:
     - path: data/validation/airports/raw
       hash: md5
-      md5: 7cb2fc40ea65355cc267aebb99671b37.dir
-      size: 58981166
-      nfiles: 300
+      md5: 17ec1d15dd7e1ba3ab5fbfdb6dc21889.dir
+      size: 19655798
+      nfiles: 100
     - path: src/data_processing.py
-      md5: 7f4671c98bf63f9a165c9afe1da32f6e
-      size: 5590
+      hash: md5
+      md5: 8b1448f8fedc1342bd22fef1adc2a8b1
+      size: 6079
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
-          graph_type: watts_strogatz
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
           - 0.018
           relative_infected:
-          - 0.15
           - 0.25
+          - 0.35
           n_nodes:
           - 900
           - 1100
@@ -491,65 +497,65 @@ stages:
           - 0.015
           - 0.017
           watts_strogatz_probability:
-          - 0.1
-          - 0.13
+          - 0.15
+          - 0.2
           beta:
           - 0.006
           - 0.007
           root_seed: 11650217406899810833644412201113384193
-        model: GCNSI
+        model: GCNR
     outs:
     - path: data/validation/airports/processed
       hash: md5
-      md5: 5cd1fc5dc9de5a5de7d73b3d9e44c6f2.dir
-      size: 60350430
-      nfiles: 302
+      md5: d97ad7d189007d6e74f6b354908ae56c.dir
+      size: 20143014
+      nfiles: 102
   validation@airports:
     cmd: python -W ignore -m src.validation --dataset=airports
     deps:
     - path: data/validation/airports/processed
       hash: md5
-      md5: 5cd1fc5dc9de5a5de7d73b3d9e44c6f2.dir
-      size: 60350430
-      nfiles: 302
+      md5: d97ad7d189007d6e74f6b354908ae56c.dir
+      size: 20143014
+      nfiles: 102
     - path: models/latest.pth
       hash: md5
-      md5: 9e3dceaee747c9b76bb792b4b8834cf9
+      md5: 798b677741abc8d11697d30565dd40f6
       size: 1064975
     - path: src/validation.py
       hash: md5
-      md5: ca01f670319c018bd7a040dd81418e57
-      size: 17420
+      md5: 09f4ad86d2c7b7e322931c0dee982cbb
+      size: 17468
     - path: src/visualization.py
       md5: e586f2a081d59e05dbd8e3754694958e
       size: 6084
     params:
       params.yaml:
-        model: GCNSI
-        model_name:
+        model: GCNR
+        model_name: GCNR_medium_3
   validation@karate:
     cmd: python -W ignore -m src.validation --dataset=karate
     deps:
     - path: data/validation/karate/processed
       hash: md5
-      md5: ca04c9801ffa5e6a87ea09356034289f.dir
-      size: 1849530
-      nfiles: 402
+      md5: 6a483a38012d3391c77265446a96af63.dir
+      size: 488614
+      nfiles: 102
     - path: models/latest.pth
       hash: md5
-      md5: 9e3dceaee747c9b76bb792b4b8834cf9
+      md5: 798b677741abc8d11697d30565dd40f6
       size: 1064975
     - path: src/validation.py
       hash: md5
-      md5: ca01f670319c018bd7a040dd81418e57
-      size: 17420
+      md5: 09f4ad86d2c7b7e322931c0dee982cbb
+      size: 17468
     - path: src/visualization.py
       md5: e586f2a081d59e05dbd8e3754694958e
       size: 6084
     params:
       params.yaml:
-        model: GCNSI
-        model_name:
+        model: GCNR
+        model_name: GCNR_medium_3
   visualisation@airports:
     cmd: python -W ignore -m src.visualization --dataset=airports
     deps:
@@ -668,15 +674,18 @@ stages:
     cmd: python -W ignore -m src.unsupervised --dataset=airports
     deps:
     - path: data/validation/airports/raw
-      md5: 08ac9f8a417b518f8dec406ce075bf29.dir
-      size: 1963570
-      nfiles: 10
+      hash: md5
+      md5: 17ec1d15dd7e1ba3ab5fbfdb6dc21889.dir
+      size: 19655798
+      nfiles: 100
     - path: src/unsupervised.py
-      md5: 98d535515c6900802e6185bc7cfde798
-      size: 917
+      hash: md5
+      md5: b8ad0d03a43bd795b0cfafeba4759ac7
+      size: 955
     - path: src/validation.py
-      md5: 87808e916f3446d77b6aab421aef740d
-      size: 17061
+      hash: md5
+      md5: 09f4ad86d2c7b7e322931c0dee982cbb
+      size: 17468
   unsupervised@synthetic:
     cmd: python -W ignore -m src.unsupervised --dataset=synthetic
     deps:
@@ -694,15 +703,18 @@ stages:
     cmd: python -W ignore -m src.unsupervised --dataset=karate
     deps:
     - path: data/validation/karate/raw
-      md5: 083256815f46b001b1a84bdd8841dfdf.dir
-      size: 42290
-      nfiles: 10
+      hash: md5
+      md5: fa731ae123b2e374fac5af4955ac0409.dir
+      size: 442998
+      nfiles: 100
     - path: src/unsupervised.py
-      md5: 98d535515c6900802e6185bc7cfde798
-      size: 917
+      hash: md5
+      md5: b8ad0d03a43bd795b0cfafeba4759ac7
+      size: 955
     - path: src/validation.py
-      md5: 87808e916f3446d77b6aab421aef740d
-      size: 17061
+      hash: md5
+      md5: 09f4ad86d2c7b7e322931c0dee982cbb
+      size: 17468
   generate-validation-data@facebook:
     cmd: python -W ignore -m src.data_creation --validation --dataset=facebook
     deps:
@@ -788,19 +800,20 @@ stages:
     deps:
     - path: data/validation/facebook/raw
       hash: md5
-      md5: a51a6dd101a8eb44f44ae17984247511.dir
-      size: 857246702
-      nfiles: 300
+      md5: dfa1ee992fe37988ad96a6c8bd124684.dir
+      size: 285748534
+      nfiles: 100
     - path: src/data_processing.py
       hash: md5
-      md5: 7f4671c98bf63f9a165c9afe1da32f6e
-      size: 5590
+      md5: 8b1448f8fedc1342bd22fef1adc2a8b1
+      size: 6079
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
@@ -821,37 +834,37 @@ stages:
           - 0.006
           - 0.007
           root_seed: 11650217406899810833644412201113384193
-        model: GCNSI
+        model: GCNR
     outs:
     - path: data/validation/facebook/processed
       hash: md5
-      md5: 67ad4a1200137486b026c48c73c92052.dir
-      size: 871704030
-      nfiles: 302
+      md5: f763788b0ed781fabfd571e869857574.dir
+      size: 290594214
+      nfiles: 102
   validation@facebook:
     cmd: python -W ignore -m src.validation --dataset=facebook
     deps:
     - path: data/validation/facebook/processed
       hash: md5
-      md5: e96103c7874116b8d77094d6964c3f3a.dir
-      size: 871704030
-      nfiles: 302
+      md5: f763788b0ed781fabfd571e869857574.dir
+      size: 290594214
+      nfiles: 102
     - path: models/latest.pth
       hash: md5
-      md5: 9e3dceaee747c9b76bb792b4b8834cf9
+      md5: 798b677741abc8d11697d30565dd40f6
       size: 1064975
     - path: src/validation.py
       hash: md5
-      md5: ca01f670319c018bd7a040dd81418e57
-      size: 17420
+      md5: 09f4ad86d2c7b7e322931c0dee982cbb
+      size: 17468
     - path: src/visualization.py
       hash: md5
       md5: e586f2a081d59e05dbd8e3754694958e
       size: 6084
     params:
       params.yaml:
-        model: GCNSI
-        model_name:
+        model: GCNR
+        model_name: GCNR_medium_3
   generate-validation-data@wiki:
     cmd: python -W ignore -m src.data_creation --validation --dataset=wiki
     deps:
@@ -897,19 +910,20 @@ stages:
     deps:
     - path: data/validation/wiki/raw
       hash: md5
-      md5: ec340418a4c47785c3371212141d5132.dir
-      size: 117450926
-      nfiles: 300
+      md5: bdb0421331e6f77a5c98b1d7cf0ddb55.dir
+      size: 39149558
+      nfiles: 100
     - path: src/data_processing.py
       hash: md5
-      md5: 7f4671c98bf63f9a165c9afe1da32f6e
-      size: 5590
+      md5: 8b1448f8fedc1342bd22fef1adc2a8b1
+      size: 6079
     params:
       params.yaml:
         data_creation:
           small_input: false
           training_size: 1000
           validation_size: 200
+          graph_type: random
           propagations_per_real_world_graph: 100
           relative_n_sources:
           - 0.014
@@ -930,10 +944,104 @@ stages:
           - 0.006
           - 0.007
           root_seed: 11650217406899810833644412201113384193
-        model: GCNSI
+        model: GCNR
     outs:
     - path: data/validation/wiki/processed
       hash: md5
-      md5: caff10cd2e8f38122eab4550f7e4184f.dir
-      size: 125860830
-      nfiles: 302
+      md5: 7bd242cd4b35e38ab5d119f6468fb33a.dir
+      size: 41979814
+      nfiles: 102
+  process-validation-data@actor:
+    cmd: python -W ignore -m src.data_processing --validation --dataset=actor
+    deps:
+    - path: data/validation/actor/raw
+      hash: md5
+      md5: 7c1185ede410cbca12d9dfac32a2d88a.dir
+      size: 91553334
+      nfiles: 100
+    - path: src/data_processing.py
+      hash: md5
+      md5: 8b1448f8fedc1342bd22fef1adc2a8b1
+      size: 6079
+    params:
+      params.yaml:
+        data_creation:
+          small_input: false
+          training_size: 1000
+          validation_size: 200
+          graph_type: random
+          propagations_per_real_world_graph: 100
+          relative_n_sources:
+          - 0.014
+          - 0.018
+          relative_infected:
+          - 0.25
+          - 0.35
+          n_nodes:
+          - 900
+          - 1100
+          watts_strogatz_neighbours:
+          - 0.015
+          - 0.017
+          watts_strogatz_probability:
+          - 0.15
+          - 0.2
+          beta:
+          - 0.006
+          - 0.007
+          root_seed: 11650217406899810833644412201113384193
+        model: GCNR
+    outs:
+    - path: data/validation/actor/processed
+      hash: md5
+      md5: 354711e19765f895899da575eddac1c7.dir
+      size: 100674214
+      nfiles: 102
+  validation@wiki:
+    cmd: python -W ignore -m src.validation --dataset=wiki
+    deps:
+    - path: data/validation/wiki/processed
+      hash: md5
+      md5: 7bd242cd4b35e38ab5d119f6468fb33a.dir
+      size: 41979814
+      nfiles: 102
+    - path: models/latest.pth
+      hash: md5
+      md5: 798b677741abc8d11697d30565dd40f6
+      size: 1064975
+    - path: src/validation.py
+      hash: md5
+      md5: 09f4ad86d2c7b7e322931c0dee982cbb
+      size: 17468
+    - path: src/visualization.py
+      hash: md5
+      md5: e586f2a081d59e05dbd8e3754694958e
+      size: 6084
+    params:
+      params.yaml:
+        model: GCNR
+        model_name: GCNR_medium_3
+  validation@actor:
+    cmd: python -W ignore -m src.validation --dataset=actor
+    deps:
+    - path: data/validation/actor/processed
+      hash: md5
+      md5: 354711e19765f895899da575eddac1c7.dir
+      size: 100674214
+      nfiles: 102
+    - path: models/latest.pth
+      hash: md5
+      md5: 798b677741abc8d11697d30565dd40f6
+      size: 1064975
+    - path: src/validation.py
+      hash: md5
+      md5: 09f4ad86d2c7b7e322931c0dee982cbb
+      size: 17468
+    - path: src/visualization.py
+      hash: md5
+      md5: e586f2a081d59e05dbd8e3754694958e
+      size: 6084
+    params:
+      params.yaml:
+        model: GCNR
+        model_name: GCNR_medium_3

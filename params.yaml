@@ -12,12 +12,12 @@ data_creation:
   beta: [0.006, 0.007]  # beta property of the SI model
   root_seed: 0x8C3C010CB4754C905776BDA35EE7501
 model: GCNR
-model_name:
+model_name: GCNR_medium_3
 on_cluster: false
 training:
   alpha: 0.5
   batch_size: 100
-  epochs: 100
+  epochs: 200
   hidden_size: 512
   layers: 10
   learning_rate: 0.2
