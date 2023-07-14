@@ -17,6 +17,7 @@ def main():
     args = parser.parse_args()
 
     dataset = args.dataset.lower()
+    print(f"Load Dataset: {dataset}")
     raw_val_data = utils.load_raw_data(dataset, True)
 
     metrics_dict = {}
