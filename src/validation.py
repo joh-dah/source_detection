@@ -105,7 +105,7 @@ def compute_roc_curve(
     all_true_labels = []
     all_pred_labels = []
     for i, pred_labels in enumerate(
-        tqdm(pred_label_set[:10], desc="evaluate model", disable=const.ON_CLUSTER)
+        tqdm(pred_label_set[:10], desc="compute roc curve", disable=const.ON_CLUSTER)
     ):
         all_true_labels += data_set[i].y.tolist()
         all_pred_labels += pred_labels.tolist()
@@ -175,7 +175,9 @@ def distance_metrics(pred_label_set: list, data_set: list) -> dict:
     dist_to_source = []
 
     for i, pred_labels in enumerate(
-        tqdm(pred_label_set, desc="evaluate model", disable=const.ON_CLUSTER)
+        tqdm(
+            pred_label_set, desc="calculate distance metrics", disable=const.ON_CLUSTER
+        )
     ):
         true_labels = data_set[i].y
         true_sources = torch.where(true_labels == 1)[0].tolist()
@@ -214,7 +216,7 @@ def TP_FP_metrics(pred_label_set: list, data_set: list) -> dict:
     n_positives = 0
     n_negatives = 0
     for i, pred_labels in enumerate(
-        tqdm(pred_label_set, desc="evaluate model", disable=const.ON_CLUSTER)
+        tqdm(pred_label_set, desc="calculate TP/FP metrics", disable=const.ON_CLUSTER)
     ):
         true_sources = torch.where(data_set[i].y == 1)[0].tolist()
         pred_sources = predicted_sources(pred_labels)
@@ -247,7 +249,11 @@ def prediction_metrics(pred_label_set: list, data_set: list) -> dict:
     general_predictions = []
 
     for i, pred_labels in enumerate(
-        tqdm(pred_label_set, desc="evaluate model", disable=const.ON_CLUSTER)
+        tqdm(
+            pred_label_set,
+            desc="calculate prediction metrics",
+            disable=const.ON_CLUSTER,
+        )
     ):
         true_sources = torch.where(data_set[i].y == 1)[0].tolist()
         ranked_predictions = (utils.ranked_source_predictions(pred_labels)).tolist()
