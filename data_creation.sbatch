@@ -16,4 +16,6 @@
 
 source venv/bin/activate
 dvc repro generate-training-data
-dvc repro generate-validation-data
+dvc repro generate-validation-data@synthetic
+dvc repro process-training-data
+dvc repro process-validation-data

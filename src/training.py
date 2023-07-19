@@ -10,6 +10,7 @@ from src import utils
 from torch_geometric.loader import DataLoader, DataListLoader
 from torch_geometric.nn.data_parallel import DataParallel
 from src.data_processing import SDDataset
+from torch_geometric.data import Data
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -28,6 +29,18 @@ class MSLELoss(torch.nn.Module):
         return self.mse(torch.log(pred + 1), torch.log(actual + 1))
 
 
+class WeightedMSELoss(torch.nn.Module):
+    """
+    Weights the MSE using a vector of weights for each sample.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, pred, actual, weight):
+        return (weight * (pred - actual) ** 2).sum()
+
+
 def subsampleClasses(
     y: torch.Tensor, y_hat: torch.Tensor
 ) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -39,6 +52,34 @@ def subsampleClasses(
     subsampled_non_sources = non_sources[random_numbers]
     indices = torch.cat((subsampled_non_sources, sources))
     return y[indices], y_hat[indices]
+
+
+def node_weights(y: torch.Tensor) -> torch.Tensor:
+    """
+    Calculates the weights for each sample in the batch.
+    :param y: The labels of the batch.
+    :return: The weights for each sample in the batch.
+    """
+    source_indicator = 0 if const.MODEL == "GCNR" else 1
+    non_sources = torch.where(y != source_indicator)[0]
+    sources = torch.where(y == source_indicator)[0]
+    weights = torch.ones(y.shape[0])
+    weights[non_sources] = 1
+    weights[sources] = 1 / sources.shape[0] * non_sources.shape[0]
+    return weights
+
+
+def graph_weights(data_list: list[Data]) -> torch.Tensor:
+    """
+    Calculates node weights based on the size of the graph.
+    Each nodes weight is 1 / number of nodes in the graph.
+    :param data_list: The list of graphs.
+    :return: A vector of weights containing a weight for each node.
+    """
+    weights = []
+    for data in data_list:
+        weights.extend([1 / data.num_nodes] * data.num_nodes)
+    return torch.Tensor(weights)
 
 
 def train(
@@ -72,7 +113,15 @@ def train(
             y = torch.cat([data.y for data in data_list]).to(out.device)
             if const.SUBSAMPLE:
                 y, out = subsampleClasses(y, out)
-            loss = criterion(out, y)
+            w = torch.ones(y.shape[0])
+            if const.CLASS_WEIGHTING:
+                w = node_weights(y).to(out.device)
+            if const.GRAPH_WEIGHTING:
+                w *= graph_weights(data_list).to(out.device)
+            if const.GRAPH_WEIGHTING or const.CLASS_WEIGHTING:
+                loss = criterion(out, y, w)
+            else:
+                loss = criterion(out, y)
             loss.backward()
             optimizer.step()
             agg_loss += loss.item()
@@ -105,6 +154,8 @@ def main():
     if const.MODEL == "GCNR":
         model = GCNR()
         criterion = MSLELoss() if const.USE_LOG_LOSS else torch.nn.MSELoss()
+        if const.CLASS_WEIGHTING or const.GRAPH_WEIGHTING:
+            criterion = WeightedMSELoss()
 
     elif const.MODEL == "GCNSI":
         model = GCNSI()

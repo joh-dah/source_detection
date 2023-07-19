@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name="gnn_source_detect"
-#SBATCH --gres=gpu:3
+#SBATCH --gres=gpu:4
 #SBATCH --exclude=ac922-[01-02]
-#SBATCH --mem=40G
+#SBATCH --mem=100G
 #SBATCH --cpus-per-gpu=2
 #SBATCH --account=renard
 #SBATCH --partition=sorcery
@@ -17,5 +17,21 @@
 source venv/bin/activate
 echo "START TRAINING"
 
+# python -m src.training
+# python -m src.validation --dataset=synthetic
+# python -m src.validation --dataset=karate
+# python -m src.validation --dataset=airports
+# python -m src.validation --dataset=facebook
+# python -m src.validation --dataset=wiki
+# python -m src.validation --dataset=actor
+# python -m src.training
+# python -m src.validation --dataset=synthetic
+# python -m src.validation --dataset=karate
+# python -m src.validation --dataset=airports
+# python -m src.validation --dataset=facebook
+# python -m src.validation --dataset=wiki
+# python -m src.validation --dataset=actor
+
 dvc repro training
+dvc repro validation@synthetic
 dvc repro validation

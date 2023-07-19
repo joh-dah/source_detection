@@ -28,7 +28,8 @@ N_NODES = tuple(dc["n_nodes"])
 WATTS_STROGATZ_NEIGHBOURS = tuple(dc["watts_strogatz_neighbours"])
 WATTS_STROGATZ_PROBABILITY = tuple(dc["watts_strogatz_probability"])
 BETA = tuple(dc["beta"])
-ROOT_SEED = dc["root_seed"]
+ROOT_SEED_TRAINING = dc["root_seed_training"]
+ROOT_SEED_VALIDATION = dc["root_seed_validation"]
 
 # Training
 training = params["training"]
@@ -41,11 +42,15 @@ WEIGHT_DECAY = training["weight_decay"]
 BATCH_SIZE = training["batch_size"]
 USE_LOG_LOSS = training["useLogLoss"]
 SUBSAMPLE = training["subsample"]
-GCNR_N_FEATURES = 4
+CLASS_WEIGHTING = training["class_weighting"]
+GRAPH_WEIGHTING = training["graph_weighting"]
+
 if SMALL_INPUT:
     GCNSI_N_FEATURES = 1
+    GCNR_N_FEATURES = 1
 else:
     GCNSI_N_FEATURES = 4
+    GCNR_N_FEATURES = 4
 
 # Visualization
 SEED = params["visualization"]["seed"]

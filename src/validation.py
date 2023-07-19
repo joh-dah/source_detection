@@ -94,7 +94,7 @@ def min_matching_distance(
 
 def compute_roc_curve(
     pred_label_set: list, data_set: list
-) -> tuple[float, np.ndarray, np.ndarray]:
+) -> tuple[float, np.ndarray, np.ndarray, np.ndarray]:
     """
     Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC) and the false positive rates and
     true positive rates for the given data set and the predicted labels.
@@ -108,15 +108,16 @@ def compute_roc_curve(
         tqdm(pred_label_set[:10], desc="evaluate model", disable=const.ON_CLUSTER)
     ):
         all_true_labels += data_set[i].y.tolist()
-        all_pred_labels += pred_labels.tolist()
+        all_pred_labels += pred_labels.flatten().tolist()
 
-    pos_label = 0 if const.MODEL == "GCNR" else 1
-    false_positive, true_positive, _ = roc_curve(
-        all_true_labels, all_pred_labels, pos_label=pos_label
+    if const.MODEL == "GCNR":
+        all_pred_labels = 0 - np.array(all_pred_labels)
+    false_positive, true_positive, thresholds = roc_curve(
+        all_true_labels, all_pred_labels, pos_label=1
     )
     roc_score = roc_auc_score(all_true_labels, all_pred_labels)
-    roc_score = 1 - roc_score if const.MODEL == "GCNR" else roc_score
-    return roc_score, true_positive, false_positive
+    roc_score = roc_score if const.MODEL == "GCNR" else roc_score
+    return roc_score, true_positive, false_positive, thresholds
 
 
 def predicted_sources(pred_labels: list) -> list:
@@ -278,10 +279,12 @@ def supervised_metrics(
     metrics = {}
 
     print("Evaluating Model ...")
-    roc_score, true_positives, false_positives = compute_roc_curve(
+    roc_score, true_positives, false_positives, thresholds = compute_roc_curve(
         pred_label_set, data_set
     )
-    vis.plot_roc_curve(true_positives, false_positives, model_name, dataset_name)
+    vis.plot_roc_curve(
+        true_positives, false_positives, thresholds, model_name, dataset_name
+    )
 
     metrics |= prediction_metrics(pred_label_set, data_set)
     metrics |= distance_metrics(pred_label_set, data_set)

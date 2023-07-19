@@ -8,6 +8,7 @@ from torch_geometric.utils.convert import to_networkx
 import networkx as nx
 from ndlib.models import DiffusionModel
 from tqdm import tqdm
+import multiprocessing as mp
 
 from rpasdt.algorithm.diffusion import (
     get_and_init_diffusion_model,
@@ -86,29 +87,43 @@ def perform_diffusion_simulation(
     return result
 
 
+def _perform_source_detection(args):
+    data, source_detection_config = args
+    G = to_networkx(data, to_undirected=True)
+    infected_nodes = data.x.nonzero().flatten().tolist()
+    IG = G.subgraph(infected_nodes)
+    source_nodes = data.y.nonzero().flatten().tolist()
+    for (
+        name,
+        source_detector_config,
+    ) in source_detection_config.source_detectors.items():
+        source_detector = get_source_detector(
+            algorithm=source_detector_config.alg,
+            G=G,
+            IG=IG,
+            config=source_detector_config.config,
+            number_of_sources=len(source_nodes),
+        )
+        sd_evaluation = source_detector.evaluate_sources(source_nodes)
+        return name, source_detector_config, sd_evaluation
+
+
 def perform_source_detection_simulation(
     source_detection_config: SourceDetectionSimulationConfig, data_set
 ) -> SourceDetectionSimulationResult:
     result = SourceDetectionSimulationResult(
         source_detection_config=source_detection_config
     )
-    for data in tqdm(data_set):
-        G = to_networkx(data, to_undirected=True)
-        infected_nodes = data.x.nonzero().flatten().tolist()
-        IG = G.subgraph(infected_nodes)
-        source_nodes = data.y.nonzero().flatten().tolist()
-        for (
-            name,
-            source_detector_config,
-        ) in source_detection_config.source_detectors.items():
-            source_detector = get_source_detector(
-                algorithm=source_detector_config.alg,
-                G=G,
-                IG=IG,
-                config=source_detector_config.config,
-                number_of_sources=len(source_nodes),
+    with mp.Pool(100) as pool:
+        print(pool)
+        args = [(data, source_detection_config) for data in data_set]
+        results = list(
+            tqdm(
+                pool.imap_unordered(_perform_source_detection, args),
+                total=len(data_set),
             )
-            sd_evaluation = source_detector.evaluate_sources(source_nodes)
+        )
+        for name, source_detector_config, sd_evaluation in results:
             result.add_result(name, source_detector_config, sd_evaluation)
     return result
 
