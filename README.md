@@ -38,7 +38,7 @@ The pipeline can be configured by the parameter in `params.yaml` and is defined 
 
 ## Documentation
 
-You can find the documentation here.
+You can find the documentation [here](https://github.com/joh-dah/source_detection/blob/main/docs/overview.md).
 
 ## Recources
 
