@@ -12,7 +12,7 @@ data_creation:
   root_seed_training: 0x8C3C010CB4754C905776BDA35EE7501
   root_seed_validation: 0x8C3C010CB4754C905776BDA35EE7502
 model: GCNR
-model_name:
+model_name:   # The name of the trained model, if None, it will be auto-generated based on the current time
 on_cluster: false
 training:
   alpha: 0.5
@@ -21,13 +21,13 @@ training:
   hidden_size: 512
   layers: 10
   learning_rate: 0.000001
-  subsample: true
-  useLogLoss: true
-  class_weighting: false
-  graph_weighting: false
+  subsample: true  # Whether to perform subsampling of the majority class during training
+  useLogLoss: true  # Whether to use logarithmic loss (MSLELoss) for the GCNR model
+  class_weighting: false  # Whether to weight classes according to their presents in the data, to avoid the need of undersampling
+  graph_weighting: false  # Whether to generate node weights so that each graph has the same influence on the loss regardless its size
   weight_decay: 1.0e-08
 datasets:
-  validation:
+  validation:  # List of datasets to be used for validation
   - synthetic
   - karate
   - airports

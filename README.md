@@ -6,20 +6,21 @@ The pipeline consists of several key steps, including the generation of training
 
 ## Setup 
 
-### Setup Virtual Environment:
+### Setup Virtual Environment (Linux):
 ```
 sudo apt install python3.10
 sudo apt install python3-virtualenv
 
-# for Linux:
 virtualenv -p python3.10 venv
 source venv/bin/activate
-
-# for Windows: TODO: TEST
-python -m venv venv
-venv/Scripts/Activate/.ps1
 ```
 
+### Setup Virtual Environment (Windows):
+Requirements: Python 3.10
+```
+python3.10 -m venv venv
+venv\Scripts\activate
+```
 ### Install Requirements
 ```
 pip install -r requirements.txt
@@ -27,42 +28,17 @@ pip install -r requirements.txt
 
 ## Example-Script
 
-To run a validation for an already trained model on some real world graphs you can run the following script:
-
-// TODO
-
 The results of the validation will be written in a `json` file in the `reports` folder. Additionaly a roc curve will be generated in the `roc` folder. 
 You can look in the documentation metioned below for a better understanding of the results.
 
 ## Usage (DVC)
 This projects uses a dvc pipeline (https://dvc.org/).
 To execute all stepts from the creation of the data, the processing, the training of the model and the evaluation you can execute `dvc repro`. 
-The pipeline can be configured by the parameter in `params.json` and is defined as follows:
-
-```
-                  +---------------+
-                  | data-creation |
-                  +---------------+
-                           *                                        
-                           *                           
-                  +-----------------+                  
-                  | data-processing |                  
-            ******+-----------------+*******                      
-       *****               *                ****       
-   ****                    *                    ****   
- **                  +----------+                   **
-  **                 | training |                 **  
-    **               +----------+               **    
-      **            **           **           **             
-        **       **                   **    **          
-     +---------------+            +------------+       
-     | visualisation |            | validation |       
-     +---------------+            +------------+ 
-```
+The pipeline can be configured by the parameter in `params.yaml` and is defined in `dvc.yaml`.
 
 ## Documentation
 
-// TODO
+You can find the documentation here.
 
 ## Recources
 
