@@ -17,39 +17,50 @@ import src.utils as utils
 import multiprocessing as mp
 
 
-def random_generator(seed):
-    return np.random.default_rng([seed, const.ROOT_SEED])
+def random_generator(seed, root_seed):
+    return np.random.default_rng([seed, root_seed])
 
 
-def create_graph(seed: int) -> nx.Graph:
+def create_graph(seed: int, root_seed: int) -> nx.Graph:
     """
     Creates a graph of the given type.
     :return: created graph
     """
-    n = random_generator(seed).integers(*const.N_NODES)
-    neighbours = (
-        random_generator(seed + 1).uniform(*const.WATTS_STROGATZ_NEIGHBOURS) * n
-    )
-    neighbours = np.clip(neighbours, 2, n).astype(int)
-    prob_reconnect = random_generator(seed + 2).uniform(
-        *const.WATTS_STROGATZ_PROBABILITY
-    )
-    graph_type = random_generator(seed + 3).choice(
-        ["watts_strogatz", "barabasi_albert"]
-    )
     success = False
     iterations = 0
     while not success:
+        n = random_generator(seed + iterations, root_seed).integers(*const.N_NODES)
+        neighbours = random_generator(seed + 1 + iterations, root_seed).uniform(
+            *const.WATTS_STROGATZ_NEIGHBOURS
+        ) * np.sqrt(n)
+        neighbours = np.clip(neighbours, 3, n).astype(int)
+        prob_reconnect = random_generator(seed + 2 + iterations, root_seed).uniform(
+            *const.WATTS_STROGATZ_PROBABILITY
+        )
+        graph_type = random_generator(seed + 3 + iterations, root_seed).choice(
+            ["watts_strogatz", "barabasi_albert"]
+        )
         if graph_type == "watts_strogatz":
             graph = nx.watts_strogatz_graph(
-                n, neighbours, prob_reconnect, seed=seed + 4 + iterations
+                n,
+                neighbours,
+                prob_reconnect,
+                seed=int(
+                    random_generator(seed + 4 + iterations, root_seed).integers(0, 10e5)
+                ),
             )
         elif graph_type == "barabasi_albert":
             neighbours = int(neighbours / 2)
-            graph = nx.barabasi_albert_graph(n, neighbours, seed=seed + 4 + iterations)
+            graph = nx.barabasi_albert_graph(
+                n,
+                neighbours,
+                seed=int(
+                    random_generator(seed + 4 + iterations, root_seed).integers(0, 10e5)
+                ),
+            )
         success = nx.is_connected(graph)
         iterations += 1
-        prob_reconnect /= 2
+        prob_reconnect *= 0.75
         if iterations > 10:
             raise Exception("Could not create connected graph.")
 
@@ -76,20 +87,27 @@ def iterate_until(threshold_infected: float, model: ep.SIModel) -> int:
     return iterations
 
 
-def signal_propagation(seed: int, graph: nx.Graph):
+def signal_propagation(seed: int, graph: nx.Graph, root_seed: int):
     """
     Simulates signal propagation on the given graph.
     :param graph: graph to simulate signal propagation on
     :return: list of infected nodes
     """
-    model = ep.SIModel(graph, seed=seed + 1)
+    model = ep.SIModel(
+        graph,
+        seed=int(random_generator(seed + 1, root_seed).integers(0, 10e5)),
+    )
     config = mc.Configuration()
-    beta = random_generator(seed).uniform(*const.BETA)
+    beta = random_generator(seed, root_seed).uniform(*const.BETA)
     config.add_model_parameter("beta", beta)
-    percentage_infected = random_generator(seed + 2).uniform(*const.RELATIVE_N_SOURCES)
+    percentage_infected = random_generator(seed + 2, root_seed).uniform(
+        *const.RELATIVE_N_SOURCES
+    )
     config.add_model_parameter("percentage_infected", percentage_infected)
     model.set_initial_status(config)
-    threshold_infected = random_generator(seed + 3).uniform(*const.RELATIVE_INFECTED)
+    threshold_infected = random_generator(seed + 3, root_seed).uniform(
+        *const.RELATIVE_INFECTED
+    )
     iterations = iterate_until(threshold_infected, model)
     return model, iterations, percentage_infected, beta, threshold_infected
 
@@ -123,7 +141,7 @@ def create_data(params: tuple):
     :param existing_data: existing data point, if supplied the signal propagation will be performed on the given graph
     """
 
-    i, path, existing_data, metrics = params
+    i, path, existing_data, metrics, root_seed = params
 
     seed = i * 20
     if existing_data is not None:
@@ -135,14 +153,14 @@ def create_data(params: tuple):
         prob_reconnect = -1
 
     else:
-        graph, graph_type, neighbours, prob_reconnect = create_graph(seed)
+        graph, graph_type, neighbours, prob_reconnect = create_graph(seed, root_seed)
     (
         prop_model,
         iterations,
         percentage_infected,
         beta,
         threshold_infected,
-    ) = signal_propagation(seed + 15, graph)
+    ) = signal_propagation(seed + 15, graph, root_seed)
     X = torch.tensor(list(prop_model.status.values()), dtype=torch.float)
     y = torch.tensor(list(prop_model.initial_status.values()), dtype=torch.float)
     edge_index = (
@@ -173,6 +191,7 @@ def create_data(params: tuple):
 def create_data_set(
     n_graphs: int,
     path: Path,
+    root_seed: int,
     existing_data: Optional[Dataset] = None,
     propagations_per_graph: int = 1,
     generate_graph_metrics: bool = True,
@@ -199,6 +218,7 @@ def create_data_set(
             path,
             existing_data[i] if existing_data is not None else None,
             j == 0 and generate_graph_metrics,
+            root_seed,
         )
         for j in range(propagations_per_graph)
         for i in range(n_graphs)
@@ -235,19 +255,22 @@ def main():
     if args.validation:
         if args.dataset == "synthetic":
             print("Create Synthetic Validation Data:")
-            create_data_set(const.VALIDATION_SIZE, path)
+            create_data_set(
+                const.VALIDATION_SIZE, path, root_seed=const.ROOT_SEED_VALIDATION
+            )
         else:
             print(f"{args.dataset} Validation Data:")
             dataset = utils.get_dataset_from_name(args.dataset)
             create_data_set(
                 len(dataset),
                 path,
-                dataset,
+                root_seed=const.ROOT_SEED_VALIDATION,
+                existing_data=dataset,
                 propagations_per_graph=const.PROPAGATIONS_PER_REAL_WORLD_GRAPH,
             )
     else:
         print("Create Synthetic Train Data:")
-        create_data_set(const.TRAINING_SIZE, path)
+        create_data_set(const.TRAINING_SIZE, path, root_seed=const.ROOT_SEED_TRAINING)
 
 
 if __name__ == "__main__":

@@ -98,6 +98,7 @@ def plot_matching_graph(
 def plot_roc_curve(
     true_positives: np.ndarray,
     false_positives: np.ndarray,
+    thresholds: np.ndarray,
     model_name: str,
     dataset_name: str,
 ):
@@ -110,9 +111,26 @@ def plot_roc_curve(
     """
     print("Visualize ROC curve:")
     (Path(const.ROC_PATH) / model_name).mkdir(parents=True, exist_ok=True)
-    plt.plot(false_positives, true_positives)
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
+    plt.scatter(
+        false_positives,
+        true_positives,
+        c=thresholds,
+        cmap="viridis",
+        label="ROC curve",
+    )
+    plt.plot(
+        false_positives,
+        true_positives,
+        color="black",
+        linestyle="-",
+        alpha=0.5,
+    )
+    plt.colorbar(label="Threshold")
+    plt.plot([0, 1], [0, 1], color="black", linestyle="--", label="Random guess")
+    plt.xlabel("False positive rate")
+    plt.ylabel("True positive rate")
+    plt.title(f"ROC curve for {model_name} on {dataset_name}")
+    plt.legend()
     plt.savefig(Path(const.ROC_PATH) / model_name / f"{dataset_name}_roc.png")
     plt.close()
 

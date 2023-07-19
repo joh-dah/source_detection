@@ -147,6 +147,17 @@ def process_gcnr_data(data: Data) -> Data:
     return data
 
 
+def process_simplified_gcnr_data(data: Data) -> Data:
+    """
+    Features and Labels for the GCNR model.
+    :param data: input data to be processed.
+    :return: processed data with expanded features and labels
+    """
+    data.x = data.x.unsqueeze(1).float()
+    data.y = create_distance_labels(to_networkx(data, to_undirected=True), data.y)
+    return data
+
+
 def main():
     """
     Creates new processed data based on the selected model.
@@ -175,7 +186,10 @@ def main():
         else:
             pre_transform_function = process_gcnsi_data
     elif const.MODEL == "GCNR":
-        pre_transform_function = process_gcnr_data
+        if const.SMALL_INPUT:
+            pre_transform_function = process_simplified_gcnr_data
+        else:
+            pre_transform_function = process_gcnr_data
 
     # triggers the process function of the dataset
     SDDataset(
