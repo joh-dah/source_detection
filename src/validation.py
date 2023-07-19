@@ -108,14 +108,15 @@ def compute_roc_curve(
         tqdm(pred_label_set[:10], desc="evaluate model", disable=const.ON_CLUSTER)
     ):
         all_true_labels += data_set[i].y.tolist()
-        all_pred_labels += pred_labels.tolist()
+        all_pred_labels += pred_labels.flatten().tolist()
 
-    pos_label = 0 if const.MODEL == "GCNR" else 1
+    if const.MODEL == "GCNR":
+        all_pred_labels = 0 - np.array(all_pred_labels)
     false_positive, true_positive, thresholds = roc_curve(
-        all_true_labels, all_pred_labels, pos_label=pos_label
+        all_true_labels, all_pred_labels, pos_label=1
     )
     roc_score = roc_auc_score(all_true_labels, all_pred_labels)
-    roc_score = 1 - roc_score if const.MODEL == "GCNR" else roc_score
+    roc_score = roc_score if const.MODEL == "GCNR" else roc_score
     return roc_score, true_positive, false_positive, thresholds
 
 
