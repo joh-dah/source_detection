@@ -12,6 +12,7 @@ import rpasdt.algorithm.models as rpasdt_models
 from rpasdt.algorithm.simulation import perform_source_detection_simulation
 from rpasdt.algorithm.taxonomies import SourceDetectionAlgorithm
 from torch_geometric.utils.convert import from_networkx
+from torcheval.metrics.functional import binary_f1_score
 
 import src.data_processing as dp
 from architectures.GCNR import GCNR
@@ -116,19 +117,21 @@ def compute_roc_curve(
         all_true_labels, all_pred_labels, pos_label=1
     )
     roc_score = roc_auc_score(all_true_labels, all_pred_labels)
-    roc_score = roc_score if const.MODEL == "GCNR" else roc_score
     return roc_score, true_positive, false_positive, thresholds
 
 
-def predicted_sources(pred_labels: list) -> list:
+def predicted_sources(pred_labels: list, threshold: float) -> list:
     """
     Get the predicted sources from the predicted labels.
     :param pred_labels: the predicted labels for the instances
     :param true_sources: list of true sources
     :return: list of predicted sources
     """
-    pos_label = 0 if const.MODEL == "GCNR" else 1
-    return torch.where(torch.round(pred_labels) == pos_label)[0].tolist()
+    if const.MODEL == "GCNR":
+        pred_sources = torch.where(pred_labels < threshold)[0]
+    if const.MODEL == "GCNSI":
+        pred_sources = torch.where(pred_labels > threshold)[0]
+    return pred_sources.tolist()
 
 
 def get_max_dist_from_sources(sources: list, edge_index: torch.tensor) -> float:
@@ -165,7 +168,7 @@ def get_avg_dist_from_sources(sources: list, edge_index: torch.tensor) -> float:
     return np.mean(avg_dists)
 
 
-def distance_metrics(pred_label_set: list, data_set: list) -> dict:
+def distance_metrics(pred_label_set: list, data_set: list, threshold: float) -> dict:
     """
     Get the average min matching distance and the average distance to the source in general.
     :param pred_label_set: list of predicted labels for each data instance in the data set
@@ -180,7 +183,7 @@ def distance_metrics(pred_label_set: list, data_set: list) -> dict:
     ):
         true_labels = data_set[i].y
         true_sources = torch.where(true_labels == 1)[0].tolist()
-        pred_sources = predicted_sources(pred_labels)
+        pred_sources = predicted_sources(pred_labels, threshold)
         dist_to_source.append(
             get_avg_dist_from_sources(true_sources, data_set[i].edge_index)
         )
@@ -200,7 +203,7 @@ def distance_metrics(pred_label_set: list, data_set: list) -> dict:
     }
 
 
-def TP_FP_metrics(pred_label_set: list, data_set: list) -> dict:
+def TP_FP_metrics(pred_label_set: list, data_set: list, threshold: float) -> dict:
     """
     Calculate the true positive rate and false positive rate metrics based on the predicted labels and data set.
     :param pred_label_set: predicted labels for each data instance in the data set
@@ -217,7 +220,7 @@ def TP_FP_metrics(pred_label_set: list, data_set: list) -> dict:
         tqdm(pred_label_set, desc="evaluate model", disable=const.ON_CLUSTER)
     ):
         true_sources = torch.where(data_set[i].y == 1)[0].tolist()
-        pred_sources = predicted_sources(pred_labels)
+        pred_sources = predicted_sources(pred_labels, threshold)
         n_TP = len(np.intersect1d(true_sources, pred_sources))
         n_FP = len(pred_sources) - n_TP
         n_FN = len(true_sources) - n_TP
@@ -267,13 +270,18 @@ def prediction_metrics(pred_label_set: list, data_set: list) -> dict:
 
 
 def supervised_metrics(
-    pred_label_set: list, data_set: list, model_name: str, dataset_name: str
+    pred_label_set: list,
+    data_set: list,
+    model_name: str,
+    threshold: float,
+    dataset_name: str,
 ) -> dict:
     """
     Performs supervised evaluation metrics for models that predict whether each node is a source or not.
     :param pred_label_set: list of predicted labels for each data instance in the data set
     :param data_set: the data set containing true labels
     :param model_name: name of the model being evaluated
+    :param threshold: threshold for the predicted labels
     :return: dictionary containing the evaluation metrics
     """
     metrics = {}
@@ -287,8 +295,8 @@ def supervised_metrics(
     )
 
     metrics |= prediction_metrics(pred_label_set, data_set)
-    metrics |= distance_metrics(pred_label_set, data_set)
-    metrics |= TP_FP_metrics(pred_label_set, data_set)
+    metrics |= distance_metrics(pred_label_set, data_set, threshold)
+    metrics |= TP_FP_metrics(pred_label_set, data_set, threshold)
     metrics |= {"roc score": roc_score}
 
     for key, value in metrics.items():
@@ -407,10 +415,34 @@ def predictions(model: torch.nn.Module, data_set: dp.SDDataset) -> list:
         data_set, desc="make predictions with model", disable=const.ON_CLUSTER
     ):
         if const.MODEL == "GCNSI":
-            predictions.append(torch.sigmoid(model(data)))
+            predictions.append(torch.sigmoid(model(data).detach()))
         elif const.MODEL == "GCNR":
-            predictions.append(model(data))
+            predictions.append(model(data).detach())
     return predictions
+
+
+def optimize_threshold(model: torch.nn.Module, data_set: dp.SDDataset) -> float | float:
+    """
+    Calculates the optimal threshold for the given model on the given data set. The optimal threshold is the one that
+    maximizes the F1 score. For performance reasons, only the first n samples of the data set are used.
+    :param model: the model to optimize the threshold for
+    :param data_set: the data set used for determining the optimal threshold
+    :return: the optimal threshold and the corresponding F1 score on the given data set
+    """
+    n_samples = 100
+    y_hat = torch.cat(predictions(model, data_set[:n_samples])).flatten()
+    y = torch.cat([data.y for data in data_set[:n_samples]]).flatten()
+    if const.MODEL == "GCNR":
+        y_hat = 0 - y_hat
+        y = torch.where(y == 0, 1, 0)
+    thresholds = y_hat.unique()
+    f1_scores = []
+    for threshold in thresholds:
+        f1 = binary_f1_score(input=y_hat, target=y, threshold=threshold)
+        f1_scores.append(f1)
+    if const.MODEL == "GCNR":
+        thresholds = -thresholds.numpy()
+    return thresholds[np.argmax(f1_scores)], np.max(f1_scores)
 
 
 def main():
@@ -438,10 +470,16 @@ def main():
     raw_val_data = utils.load_raw_data(dataset, True)
     pred_labels = predictions(model, processed_val_data)
 
+    print("Deriving optimal threshold...")
+    threshold, f1 = optimize_threshold(
+        model, processed_val_data  # utils.load_processed_data("synthetic", False)
+    )
+    print(f"Optimal threshold based on training dataset: {threshold}, F1 score: {f1}")
+
     metrics_dict = {}
     metrics_dict["dataset"] = dataset
     metrics_dict["metrics"] = supervised_metrics(
-        pred_labels, raw_val_data, model_name, dataset_name=dataset
+        pred_labels, raw_val_data, model_name, threshold, dataset_name=dataset
     )
     metrics_dict["data stats"] = data_stats(raw_val_data)
     metrics_dict["parameters"] = yaml.full_load(open("params.yaml", "r"))

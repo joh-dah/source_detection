@@ -16,5 +16,6 @@ myst-parser==0.15.2
 
 torch
 torch_geometric
+torcheval
 pylint
 dvc

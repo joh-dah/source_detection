@@ -92,6 +92,8 @@ def load_processed_data(dataset: str, validation: bool = False):
 
     if const.MODEL == "GCNSI" and const.SMALL_INPUT:
         pre_transform = dp.process_simplified_gcnsi_data
+    elif const.MODEL == "GCNR" and const.SMALL_INPUT:
+        pre_transform = dp.process_simplified_gcnr_data
     elif const.MODEL == "GCNSI":
         pre_transform = dp.process_gcnsi_data
     elif const.MODEL == "GCNR":
