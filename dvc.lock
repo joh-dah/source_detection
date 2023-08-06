@@ -1,194 +1,650 @@
 schema: '2.0'
 stages:
-  generate-validation-data@karate:
-    cmd: python -W ignore -m src.data_creation --validation --dataset=karate
+  generate-validation-data@synthetic:
+    cmd: python -W ignore -m src.data_creation --validation --dataset=synthetic
     deps:
     - path: src/data_creation.py
-      md5: c0be7bed9571a10e4a90bc555e3882da
-      size: 9621
+      md5: 68913568557605de18de4e3f06600687
+      size: 9677
     params:
       params.yaml:
         data_creation:
-          small_input: true
-          training_size: 1000
-          validation_size: 200
-          propagations_per_real_world_graph: 100
-          relative_n_sources:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
           - 0.005
-          - 0.05
-          relative_infected:
-          - 0.2
-          - 0.5
+          - 0.01
           n_nodes:
           - 500
           - 5000
-          watts_strogatz_neighbours:
+          propagations_per_real_world_graph: 200
+          relative_infected:
           - 0.1
-          - 2.0
-          watts_strogatz_probability:
-          - 0.1
-          - 0.4
-          beta:
-          - 0.001
-          - 0.005
-          root_seed_training: 11650217406899810833644412201113384193
-          root_seed_validation: 11650217406899810833644412201113384194
-    outs:
-    - path: data/validation/karate/raw
-      md5: e97b1120280b980c813d5755646ee23b.dir
-      size: 442998
-      nfiles: 100
-  process-validation-data@karate:
-    cmd: python -W ignore -m src.data_processing --validation --dataset=karate
-    deps:
-    - path: data/validation/karate/raw
-      md5: e97b1120280b980c813d5755646ee23b.dir
-      size: 442998
-      nfiles: 100
-    - path: src/data_processing.py
-      md5: 5275e981cbb0f68c1aa88a3de15156f2
-      size: 6544
-    params:
-      params.yaml:
-        data_creation:
-          small_input: true
-          training_size: 1000
-          validation_size: 200
-          propagations_per_real_world_graph: 100
+          - 0.5
           relative_n_sources:
           - 0.005
           - 0.05
-          relative_infected:
-          - 0.2
-          - 0.5
-          n_nodes:
-          - 500
-          - 5000
-          watts_strogatz_neighbours:
-          - 0.1
-          - 2.0
-          watts_strogatz_probability:
-          - 0.1
-          - 0.4
-          beta:
-          - 0.001
-          - 0.005
           root_seed_training: 11650217406899810833644412201113384193
           root_seed_validation: 11650217406899810833644412201113384194
-        model: GCNR
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
     outs:
-    - path: data/validation/karate/processed
-      md5: 33dc30fa1dca246b3eebd0c8788632f3.dir
-      size: 450214
-      nfiles: 102
+    - path: data/validation/synthetic/raw
+      md5: 872f79a463598836624d3e8f594610c2.dir
+      size: 312953894
+      nfiles: 500
   generate-training-data:
     cmd: python -W ignore -m src.data_creation --dataset="synthetic"
     deps:
     - path: src/data_creation.py
-      md5: c0be7bed9571a10e4a90bc555e3882da
-      size: 9621
+      md5: 68913568557605de18de4e3f06600687
+      size: 9677
     params:
       params.yaml:
         data_creation:
-          small_input: true
-          training_size: 1000
-          validation_size: 200
-          propagations_per_real_world_graph: 100
-          relative_n_sources:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
           - 0.005
-          - 0.05
-          relative_infected:
-          - 0.2
-          - 0.5
+          - 0.01
           n_nodes:
           - 500
           - 5000
-          watts_strogatz_neighbours:
+          propagations_per_real_world_graph: 200
+          relative_infected:
           - 0.1
-          - 2.0
-          watts_strogatz_probability:
-          - 0.1
-          - 0.4
-          beta:
-          - 0.001
+          - 0.5
+          relative_n_sources:
           - 0.005
+          - 0.05
           root_seed_training: 11650217406899810833644412201113384193
           root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
     outs:
     - path: data/training/synthetic/raw
-      md5: 11cc09db8447eccaae1a75e34fb5640c.dir
-      size: 2600772978
-      nfiles: 1000
+      md5: 0b79e92c570f10df4a451f0a68c1320b.dir
+      size: 1227750930
+      nfiles: 2000
   process-training-data:
     cmd: python -W ignore -m src.data_processing
     deps:
     - path: data/training/synthetic/raw
-      md5: 11cc09db8447eccaae1a75e34fb5640c.dir
-      size: 2600772978
-      nfiles: 1000
+      md5: 0b79e92c570f10df4a451f0a68c1320b.dir
+      size: 1227750930
+      nfiles: 2000
     - path: src/data_processing.py
       md5: 5275e981cbb0f68c1aa88a3de15156f2
       size: 6544
     params:
       params.yaml:
         data_creation:
-          small_input: true
-          training_size: 1000
-          validation_size: 200
-          propagations_per_real_world_graph: 100
-          relative_n_sources:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
           - 0.005
-          - 0.05
-          relative_infected:
-          - 0.2
-          - 0.5
+          - 0.01
           n_nodes:
           - 500
           - 5000
-          watts_strogatz_neighbours:
+          propagations_per_real_world_graph: 200
+          relative_infected:
           - 0.1
-          - 2.0
-          watts_strogatz_probability:
-          - 0.1
-          - 0.4
-          beta:
-          - 0.001
+          - 0.5
+          relative_n_sources:
           - 0.005
+          - 0.05
           root_seed_training: 11650217406899810833644412201113384193
           root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
         model: GCNR
     outs:
     - path: data/training/synthetic/processed
-      md5: 35add1910174c981d4b64bc968297fd8.dir
-      size: 2600781602
-      nfiles: 1002
-  training:
-    cmd: python -W ignore -m src.training
+      md5: 965e1a49ebcfb109518ef10be6354ce7.dir
+      size: 1292894210
+      nfiles: 2002
+  generate-validation-data@facebook:
+    cmd: python -W ignore -m src.data_creation --validation --dataset=facebook
     deps:
-    - path: data/training/synthetic/processed
-      md5: 35add1910174c981d4b64bc968297fd8.dir
-      size: 2600781602
-      nfiles: 1002
-    - path: src/training.py
-      md5: c6941bd9fd3e5a6d0ba6882d7526686a
-      size: 5623
+    - path: src/data_creation.py
+      md5: 68913568557605de18de4e3f06600687
+      size: 9677
     params:
       params.yaml:
-        model: GCNR
-        model_name:
-        training:
-          alpha: 0.5
-          batch_size: 10
-          epochs: 100
-          hidden_size: 512
-          layers: 10
-          learning_rate: 1e-06
-          subsample: true
-          useLogLoss: true
-          class_weighting: false
-          graph_weighting: false
-          weight_decay: 1e-08
+        data_creation:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
+          - 0.005
+          - 0.01
+          n_nodes:
+          - 500
+          - 5000
+          propagations_per_real_world_graph: 200
+          relative_infected:
+          - 0.1
+          - 0.5
+          relative_n_sources:
+          - 0.005
+          - 0.05
+          root_seed_training: 11650217406899810833644412201113384193
+          root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
     outs:
-    - path: models/latest.pth
-      md5: 0449036bc25ca97922364aed9103bf96
-      size: 1058831
+    - path: data/validation/facebook/raw
+      md5: 35fd732562b837ab94f919b70342d198.dir
+      size: 571497234
+      nfiles: 200
+  process-validation-data@facebook:
+    cmd: python -W ignore -m src.data_processing --validation --dataset=facebook
+    deps:
+    - path: data/validation/facebook/raw
+      md5: 35fd732562b837ab94f919b70342d198.dir
+      size: 571497234
+      nfiles: 200
+    - path: src/data_processing.py
+      md5: 5275e981cbb0f68c1aa88a3de15156f2
+      size: 6544
+    params:
+      params.yaml:
+        data_creation:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
+          - 0.005
+          - 0.01
+          n_nodes:
+          - 500
+          - 5000
+          propagations_per_real_world_graph: 200
+          relative_infected:
+          - 0.1
+          - 0.5
+          relative_n_sources:
+          - 0.005
+          - 0.05
+          root_seed_training: 11650217406899810833644412201113384193
+          root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
+        model: GCNR
+    outs:
+    - path: data/validation/facebook/processed
+      md5: 5a0500d0fa127bc3f758b86e66215f87.dir
+      size: 581187714
+      nfiles: 202
+  generate-validation-data@airports:
+    cmd: python -W ignore -m src.data_creation --validation --dataset=airports
+    deps:
+    - path: src/data_creation.py
+      md5: 68913568557605de18de4e3f06600687
+      size: 9677
+    params:
+      params.yaml:
+        data_creation:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
+          - 0.005
+          - 0.01
+          n_nodes:
+          - 500
+          - 5000
+          propagations_per_real_world_graph: 200
+          relative_infected:
+          - 0.1
+          - 0.5
+          relative_n_sources:
+          - 0.005
+          - 0.05
+          root_seed_training: 11650217406899810833644412201113384193
+          root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
+    outs:
+    - path: data/validation/airports/raw
+      md5: 5a6e49b58bbe85e1cbe7ebefc0531704.dir
+      size: 39318098
+      nfiles: 200
+  process-validation-data@airports:
+    cmd: python -W ignore -m src.data_processing --validation --dataset=airports
+    deps:
+    - path: data/validation/airports/raw
+      md5: 5a6e49b58bbe85e1cbe7ebefc0531704.dir
+      size: 39318098
+      nfiles: 200
+    - path: src/data_processing.py
+      md5: 5275e981cbb0f68c1aa88a3de15156f2
+      size: 6544
+    params:
+      params.yaml:
+        data_creation:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
+          - 0.005
+          - 0.01
+          n_nodes:
+          - 500
+          - 5000
+          propagations_per_real_world_graph: 200
+          relative_infected:
+          - 0.1
+          - 0.5
+          relative_n_sources:
+          - 0.005
+          - 0.05
+          root_seed_training: 11650217406899810833644412201113384193
+          root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
+        model: GCNR
+    outs:
+    - path: data/validation/airports/processed
+      md5: 95bfee489db466dc604030b36fb41033.dir
+      size: 40285314
+      nfiles: 202
+  process-validation-data@synthetic:
+    cmd: python -W ignore -m src.data_processing --validation --dataset=synthetic
+    deps:
+    - path: data/validation/synthetic/raw
+      md5: 872f79a463598836624d3e8f594610c2.dir
+      size: 312953894
+      nfiles: 500
+    - path: src/data_processing.py
+      md5: 5275e981cbb0f68c1aa88a3de15156f2
+      size: 6544
+    params:
+      params.yaml:
+        data_creation:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
+          - 0.005
+          - 0.01
+          n_nodes:
+          - 500
+          - 5000
+          propagations_per_real_world_graph: 200
+          relative_infected:
+          - 0.1
+          - 0.5
+          relative_n_sources:
+          - 0.005
+          - 0.05
+          root_seed_training: 11650217406899810833644412201113384193
+          root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
+        model: GCNR
+    outs:
+    - path: data/validation/synthetic/processed
+      md5: de5f7d586ca2dbf7cdede0612970dff1.dir
+      size: 329949590
+      nfiles: 502
+  generate-validation-data@actor:
+    cmd: python -W ignore -m src.data_creation --validation --dataset=actor
+    deps:
+    - path: src/data_creation.py
+      md5: 68913568557605de18de4e3f06600687
+      size: 9677
+    params:
+      params.yaml:
+        data_creation:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
+          - 0.005
+          - 0.01
+          n_nodes:
+          - 500
+          - 5000
+          propagations_per_real_world_graph: 200
+          relative_infected:
+          - 0.1
+          - 0.5
+          relative_n_sources:
+          - 0.005
+          - 0.05
+          root_seed_training: 11650217406899810833644412201113384193
+          root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
+    outs:
+    - path: data/validation/actor/raw
+      md5: 806993bedebec4a6478188b1061ef61b.dir
+      size: 183106834
+      nfiles: 200
+  process-validation-data@actor:
+    cmd: python -W ignore -m src.data_processing --validation --dataset=actor
+    deps:
+    - path: data/validation/actor/raw
+      md5: 806993bedebec4a6478188b1061ef61b.dir
+      size: 183106834
+      nfiles: 200
+    - path: src/data_processing.py
+      md5: 5275e981cbb0f68c1aa88a3de15156f2
+      size: 6544
+    params:
+      params.yaml:
+        data_creation:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
+          - 0.005
+          - 0.01
+          n_nodes:
+          - 500
+          - 5000
+          propagations_per_real_world_graph: 200
+          relative_infected:
+          - 0.1
+          - 0.5
+          relative_n_sources:
+          - 0.005
+          - 0.05
+          root_seed_training: 11650217406899810833644412201113384193
+          root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
+        model: GCNR
+    outs:
+    - path: data/validation/actor/processed
+      md5: 9ecabbd27921da997af81654dda46fad.dir
+      size: 201347714
+      nfiles: 202
+  generate-validation-data@wiki:
+    cmd: python -W ignore -m src.data_creation --validation --dataset=wiki
+    deps:
+    - path: src/data_creation.py
+      md5: 68913568557605de18de4e3f06600687
+      size: 9677
+    params:
+      params.yaml:
+        data_creation:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
+          - 0.005
+          - 0.01
+          n_nodes:
+          - 500
+          - 5000
+          propagations_per_real_world_graph: 200
+          relative_infected:
+          - 0.1
+          - 0.5
+          relative_n_sources:
+          - 0.005
+          - 0.05
+          root_seed_training: 11650217406899810833644412201113384193
+          root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
+    outs:
+    - path: data/validation/wiki/raw
+      md5: f4a210985d0ab1568f61606939a54b49.dir
+      size: 78299858
+      nfiles: 200
+  process-validation-data@wiki:
+    cmd: python -W ignore -m src.data_processing --validation --dataset=wiki
+    deps:
+    - path: data/validation/wiki/raw
+      md5: f4a210985d0ab1568f61606939a54b49.dir
+      size: 78299858
+      nfiles: 200
+    - path: src/data_processing.py
+      md5: 5275e981cbb0f68c1aa88a3de15156f2
+      size: 6544
+    params:
+      params.yaml:
+        data_creation:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
+          - 0.005
+          - 0.01
+          n_nodes:
+          - 500
+          - 5000
+          propagations_per_real_world_graph: 200
+          relative_infected:
+          - 0.1
+          - 0.5
+          relative_n_sources:
+          - 0.005
+          - 0.05
+          root_seed_training: 11650217406899810833644412201113384193
+          root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
+        model: GCNR
+    outs:
+    - path: data/validation/wiki/processed
+      md5: 7d1cea49571a0f8b996e7deddeb0e6ea.dir
+      size: 83958914
+      nfiles: 202
+  generate-validation-data@karate:
+    cmd: python -W ignore -m src.data_creation --validation --dataset=karate
+    deps:
+    - path: src/data_creation.py
+      md5: 68913568557605de18de4e3f06600687
+      size: 9677
+    params:
+      params.yaml:
+        data_creation:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
+          - 0.005
+          - 0.01
+          n_nodes:
+          - 500
+          - 5000
+          propagations_per_real_world_graph: 200
+          relative_infected:
+          - 0.1
+          - 0.5
+          relative_n_sources:
+          - 0.005
+          - 0.05
+          root_seed_training: 11650217406899810833644412201113384193
+          root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
+    outs:
+    - path: data/validation/karate/raw
+      md5: d83e8b4583ec2fdfd912ab60370b4df4.dir
+      size: 886098
+      nfiles: 200
+  process-validation-data@karate:
+    cmd: python -W ignore -m src.data_processing --validation --dataset=karate
+    deps:
+    - path: data/validation/karate/raw
+      md5: d83e8b4583ec2fdfd912ab60370b4df4.dir
+      size: 886098
+      nfiles: 200
+    - path: src/data_processing.py
+      md5: 5275e981cbb0f68c1aa88a3de15156f2
+      size: 6544
+    params:
+      params.yaml:
+        data_creation:
+          barabasi_albert_neighbours:
+          - 2
+          - 7
+          beta:
+          - 0.005
+          - 0.01
+          n_nodes:
+          - 500
+          - 5000
+          propagations_per_real_world_graph: 200
+          relative_infected:
+          - 0.1
+          - 0.5
+          relative_n_sources:
+          - 0.005
+          - 0.05
+          root_seed_training: 11650217406899810833644412201113384193
+          root_seed_validation: 11650217406899810833644412201113384194
+          small_input: false
+          training_size: 2000
+          validation_size: 500
+          watts_strogatz_neighbours:
+          - 10
+          - 30
+          watts_strogatz_probability:
+          - 0.01
+          - 0.31
+        model: GCNR
+    outs:
+    - path: data/validation/karate/processed
+      md5: 95207489f96d3f5f1d51f26ec66c658e.dir
+      size: 976514
+      nfiles: 202
+  unsupervised@karate:
+    cmd: python -W ignore -m src.unsupervised --dataset=karate
+    deps:
+    - path: data/validation/karate/raw
+      md5: d83e8b4583ec2fdfd912ab60370b4df4.dir
+      size: 886098
+      nfiles: 200
+    - path: src/unsupervised.py
+      md5: 98d535515c6900802e6185bc7cfde798
+      size: 917
+    - path: src/validation.py
+      md5: 248ce082369863da012e4c3312940570
+      size: 19105
+  unsupervised@airports:
+    cmd: python -W ignore -m src.unsupervised --dataset=airports
+    deps:
+    - path: data/validation/airports/raw
+      md5: 5a6e49b58bbe85e1cbe7ebefc0531704.dir
+      size: 39318098
+      nfiles: 200
+    - path: src/unsupervised.py
+      md5: 98d535515c6900802e6185bc7cfde798
+      size: 917
+    - path: src/validation.py
+      md5: 248ce082369863da012e4c3312940570
+      size: 19105
+  unsupervised@wiki:
+    cmd: python -W ignore -m src.unsupervised --dataset=wiki
+    deps:
+    - path: data/validation/wiki/raw
+      md5: f4a210985d0ab1568f61606939a54b49.dir
+      size: 78299858
+      nfiles: 200
+    - path: src/unsupervised.py
+      md5: 98d535515c6900802e6185bc7cfde798
+      size: 917
+    - path: src/validation.py
+      md5: 248ce082369863da012e4c3312940570
+      size: 19105
