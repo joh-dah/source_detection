@@ -472,7 +472,7 @@ def main():
 
     print("Deriving optimal threshold...")
     threshold, f1 = optimize_threshold(
-        model, processed_val_data  # utils.load_processed_data("synthetic", False)
+        model, utils.load_processed_data("synthetic", False)
     )
     print(f"Optimal threshold based on training dataset: {threshold}, F1 score: {f1}")
 

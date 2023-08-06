@@ -114,7 +114,7 @@ def perform_source_detection_simulation(
     result = SourceDetectionSimulationResult(
         source_detection_config=source_detection_config
     )
-    with mp.Pool(100) as pool:
+    with mp.Pool() as pool:
         print(pool)
         args = [(data, source_detection_config) for data in data_set]
         results = list(

@@ -1,40 +1,56 @@
+GCNR_layer_type: GCN
 data_creation:
-  small_input: true
-  training_size: 1000
-  validation_size: 200
-  propagations_per_real_world_graph: 100
-  relative_n_sources: [0.005, 0.05]  # share of sources on the number of nodes
-  relative_infected: [0.2, 0.5]  # share of infected nodes on the number of nodes, determines when to stop the propagation
-  n_nodes: [500, 5000]  # number of nodes in the graph
-  watts_strogatz_neighbours: [0.1, 2.0]  # watts strogatz neighbors property, 0.5 of it is used for barabasi albert neighbors property
-  watts_strogatz_probability: [0.1, 0.4]  # watts strogatz reconnect property
-  beta: [0.001, 0.005]  # beta property of the SI model
-  root_seed_training: 0x8C3C010CB4754C905776BDA35EE7501
-  root_seed_validation: 0x8C3C010CB4754C905776BDA35EE7502
+    barabasi_albert_neighbours:
+    - 2
+    - 7
+    beta:
+    - 0.005
+    - 0.01
+    n_nodes:
+    - 500
+    - 5000
+    propagations_per_real_world_graph: 200
+    relative_infected:
+    - 0.1
+    - 0.5
+    relative_n_sources:
+    - 0.005
+    - 0.05
+    root_seed_training: 11650217406899810833644412201113384193
+    root_seed_validation: 11650217406899810833644412201113384194
+    small_input: false
+    training_size: 2000
+    validation_size: 500
+    watts_strogatz_neighbours:
+    - 10
+    - 30
+    watts_strogatz_probability:
+    - 0.01
+    - 0.31
+datasets:
+    validation:
+    - synthetic
+    - karate
+    - airports
+    - facebook
+    - wiki
+    - actor
+    visualization:
+    - karate
 model: GCNR
-model_name:
+model_name: GCNSI_08-01_04-32
 on_cluster: false
 training:
-  alpha: 0.5
-  batch_size: 10
-  epochs: 100
-  hidden_size: 512
-  layers: 10
-  learning_rate: 0.000001
-  subsample: true
-  useLogLoss: true
-  class_weighting: false
-  graph_weighting: false
-  weight_decay: 1.0e-08
-datasets:
-  validation:
-  - synthetic
-  - karate
-  - airports
-  - facebook
-  - wiki
-  - actor
-  visualization:
-  - karate
+    alpha: 0.5
+    batch_size: 30
+    class_weighting: false
+    epochs: 100
+    graph_weighting: false
+    hidden_size: 512
+    layers: 10
+    learning_rate: 1.0e-06
+    subsample: true
+    useLogLoss: false
+    weight_decay: 1.0e-08
 visualization:
-  seed: 123
+    seed: 123
