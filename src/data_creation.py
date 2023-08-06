@@ -30,17 +30,17 @@ def create_graph(seed: int, root_seed: int) -> nx.Graph:
     iterations = 0
     while not success:
         n = random_generator(seed + iterations, root_seed).integers(*const.N_NODES)
-        neighbours = random_generator(seed + 1 + iterations, root_seed).uniform(
-            *const.WATTS_STROGATZ_NEIGHBOURS
-        ) * np.sqrt(n)
-        neighbours = np.clip(neighbours, 3, n).astype(int)
-        prob_reconnect = random_generator(seed + 2 + iterations, root_seed).uniform(
-            *const.WATTS_STROGATZ_PROBABILITY
-        )
         graph_type = random_generator(seed + 3 + iterations, root_seed).choice(
             ["watts_strogatz", "barabasi_albert"]
         )
+        prob_reconnect = -1
         if graph_type == "watts_strogatz":
+            neighbours = random_generator(seed + 1 + iterations, root_seed).integers(
+                *const.WATTS_STROGATZ_NEIGHBOURS
+            )
+            prob_reconnect = random_generator(seed + 2 + iterations, root_seed).uniform(
+                *const.WATTS_STROGATZ_PROBABILITY
+            )
             graph = nx.watts_strogatz_graph(
                 n,
                 neighbours,
@@ -50,7 +50,9 @@ def create_graph(seed: int, root_seed: int) -> nx.Graph:
                 ),
             )
         elif graph_type == "barabasi_albert":
-            neighbours = int(neighbours / 2)
+            neighbours = random_generator(seed + 1 + iterations, root_seed).integers(
+                *const.BARABASI_ALBERT_NEIGHBOURS
+            )
             graph = nx.barabasi_albert_graph(
                 n,
                 neighbours,
@@ -60,7 +62,6 @@ def create_graph(seed: int, root_seed: int) -> nx.Graph:
             )
         success = nx.is_connected(graph)
         iterations += 1
-        prob_reconnect *= 0.75
         if iterations > 10:
             raise Exception("Could not create connected graph.")
 
@@ -79,7 +80,7 @@ def iterate_until(threshold_infected: float, model: ep.SIModel) -> int:
     iterations = 0
     threshold = int(threshold_infected * len(model.status))
     n_infected_nodes = sum([x if x == 1 else 0 for x in model.status.values()])
-    while n_infected_nodes <= threshold and iterations < 50:
+    while n_infected_nodes <= threshold and iterations < 100:
         n_infected_nodes = sum([x if x == 1 else 0 for x in model.status.values()])
         model.iteration(False)
         iterations += 1

@@ -5,6 +5,7 @@ params = yaml.full_load(open("params.yaml", "r"))
 
 # General
 MODEL = params["model"]  # "GCNR" or "GCNSI"
+GCNR_LAYER_TYPE = params["GCNR_layer_type"]  # "GCN" or "GAT"
 MODEL_NAME = params["model_name"]  # defins
 DATA_PATH = "data"
 RAW_DATA_PATH = "data/raw"
@@ -26,6 +27,7 @@ RELATIVE_N_SOURCES = tuple(dc["relative_n_sources"])
 RELATIVE_INFECTED = tuple(dc["relative_infected"])
 N_NODES = tuple(dc["n_nodes"])
 WATTS_STROGATZ_NEIGHBOURS = tuple(dc["watts_strogatz_neighbours"])
+BARABASI_ALBERT_NEIGHBOURS = tuple(dc["barabasi_albert_neighbours"])
 WATTS_STROGATZ_PROBABILITY = tuple(dc["watts_strogatz_probability"])
 BETA = tuple(dc["beta"])
 ROOT_SEED_TRAINING = dc["root_seed_training"]

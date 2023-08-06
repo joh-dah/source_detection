@@ -1,5 +1,5 @@
 import torch
-from torch_geometric.nn import GCNConv
+from torch_geometric.nn import GCNConv, GATv2Conv
 import src.constants as const
 
 
@@ -8,7 +8,10 @@ class GCNR(torch.nn.Module):
         super(GCNR, self).__init__()
         print(const.GCNR_N_FEATURES)
         self.conv_first = GCNConv(const.GCNR_N_FEATURES, const.HIDDEN_SIZE)
-        self.conv = GCNConv(const.HIDDEN_SIZE, const.HIDDEN_SIZE)
+        if const.GCNR_LAYER_TYPE == "GCN":
+            self.conv = GCNConv(const.HIDDEN_SIZE, const.HIDDEN_SIZE)
+        elif const.GCNR_LAYER_TYPE == "GAT":
+            self.conv = GATv2Conv(const.HIDDEN_SIZE, const.HIDDEN_SIZE)
         self.classifier = torch.nn.Linear(const.HIDDEN_SIZE, 1)
 
     def forward(self, data):

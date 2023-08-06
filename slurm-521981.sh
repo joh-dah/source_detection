@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name="training_0_2"
+#SBATCH --job-name="gnn_source_detect"
 #SBATCH --gres=gpu:3
 #SBATCH --exclude=ac922-[01-02]
 #SBATCH --mem=100G
@@ -18,14 +18,6 @@ source venv/bin/activate
 echo "START TRAINING"
 
 python update_params.py --idx 0
-python -m src.training
-python -m src.validation --dataset=synthetic
-python -m src.validation --dataset=karate
-python -m src.validation --dataset=airports
-python -m src.validation --dataset=facebook
-python -m src.validation --dataset=wiki
-python -m src.validation --dataset=actor
-
 python -m src.training
 python -m src.validation --dataset=synthetic
 python -m src.validation --dataset=karate
