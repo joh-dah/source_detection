@@ -1,0 +1,98 @@
+{
+    "dataset": "wiki",
+    "metrics": {
+        "avg rank of source": 417.35,
+        "avg prediction for source": 0.48,
+        "avg prediction over all nodes": 1.488,
+        "min prediction over all nodes": -0.057,
+        "max prediction over all nodes": 4.241,
+        "avg min matching distance": 10.47,
+        "avg dist to source": 3.65,
+        "True positive rate": 0.23,
+        "False positive rate": 0.031,
+        "avg F1 score": 0.157,
+        "roc score": 0.857
+    },
+    "data stats": {
+        "graph stats": {
+            "avg number of nodes": 2357.0,
+            "avg centrality": 0.004
+        },
+        "infection stats": {
+            "avg number of sources": 67.905,
+            "avg portion of infected nodes": 0.321,
+            "std portion of infected nodes": 0.119
+        }
+    },
+    "parameters": {
+        "GCNR_layer_type": "GCN",
+        "data_creation": {
+            "barabasi_albert_neighbours": [
+                2,
+                7
+            ],
+            "beta": [
+                0.005,
+                0.01
+            ],
+            "n_nodes": [
+                500,
+                5000
+            ],
+            "propagations_per_real_world_graph": 200,
+            "relative_infected": [
+                0.1,
+                0.5
+            ],
+            "relative_n_sources": [
+                0.005,
+                0.05
+            ],
+            "root_seed_training": 11650217406899810833644412201113384193,
+            "root_seed_validation": 11650217406899810833644412201113384194,
+            "small_input": false,
+            "training_size": 2000,
+            "validation_size": 500,
+            "watts_strogatz_neighbours": [
+                10,
+                30
+            ],
+            "watts_strogatz_probability": [
+                0.01,
+                0.31
+            ]
+        },
+        "datasets": {
+            "validation": [
+                "synthetic",
+                "karate",
+                "airports",
+                "facebook",
+                "wiki",
+                "actor"
+            ],
+            "visualization": [
+                "karate"
+            ]
+        },
+        "model": "GCNR",
+        "model_name": null,
+        "on_cluster": false,
+        "training": {
+            "alpha": 0.5,
+            "batch_size": 30,
+            "class_weighting": false,
+            "epochs": 100,
+            "graph_weighting": false,
+            "hidden_size": 512,
+            "layers": 10,
+            "learning_rate": 1e-06,
+            "subsample": true,
+            "useLogLoss": true,
+            "weight_decay": 1e-08
+        },
+        "visualization": {
+            "seed": 123
+        }
+    }
+}
